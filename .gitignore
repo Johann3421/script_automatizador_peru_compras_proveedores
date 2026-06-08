@@ -1,0 +1,34 @@
+# Entorno Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.env
+venv/
+.venv/
+
+# Build / distribucion (instaladores, comprimidos)
+build/
+dist/
+Output/
+*.tar.gz
+*.zip
+*.exe
+*.msi
+*.spec
+installer.iss
+install_perucombras.py
+create_installer.py
+build_installer.py
+hook-runtime.py
+
+# Archivos de prueba temporales
+_test_*
+*_procesado_*
+
+# Datos sensibles del usuario
+*.xlsx
+*.xls
+
+# Playwright browsers (se descargan automaticamente)
+__pycache__/
