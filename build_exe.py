@@ -83,7 +83,7 @@ def build():
     pyi_args = [
         sys.executable, "-m", "PyInstaller",
         "--name", EXE_NAME,
-        "--windowed",            # No abrir consola
+        "--windowed",            # Sin consola (GUI)
         "--onedir",              # Carpeta con todos los archivos
         "--clean",
         "--noconfirm",
@@ -113,6 +113,9 @@ def build():
         "playwright._impl._api_structures",
         "playwright.driver",
         "pandas",
+        "numpy",
+        "numpy._core",
+        "numpy._core._exceptions",
         "openpyxl",
         "PIL",
         "PIL.Image",

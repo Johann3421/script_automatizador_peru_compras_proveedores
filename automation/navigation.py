@@ -85,8 +85,11 @@ def setup_catalog_search(page: Page, log: LogWriter, catalog_bridge=None,
             time.sleep(3)
 
         page.evaluate("""
-            document.querySelectorAll('.modal-backdrop, .modal.open, .modal.show, .swal2-container')
-                .forEach(el => el.remove());
+            document.querySelectorAll(
+                '.modal-backdrop, .modal.open, .modal.show, '
+                + '.swal2-container, #_wModal_bg, '
+                + '._wModal, ._wModal_delete'
+            ).forEach(el => el.remove());
             document.body.style.overflow = '';
             document.body.classList.remove('modal-open');
         """)

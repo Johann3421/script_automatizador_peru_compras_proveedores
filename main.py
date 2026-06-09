@@ -267,19 +267,34 @@ class PeruComprasApp(ctk.CTk):
 
             opts = ["-- Seleccionar --"] + cols
             self.combo_parte.configure(values=opts, state="readonly")
-            if "Part Number" in cols:
-                self.combo_parte.set("Part Number")
-            elif "N° de Parte" in cols:
-                self.combo_parte.set("N° de Parte")
-            else:
+            parte_found = False
+            for col in cols:
+                cl = col.lower()
+                for g in ["part number", "n° de parte", "nro.parte", "nro. parte",
+                          "código único", "codigo unico"]:
+                    if g in cl:
+                        self.combo_parte.set(col)
+                        parte_found = True
+                        break
+                if parte_found:
+                    break
+            if not parte_found:
                 self.combo_parte.set(opts[0])
 
             self.combo_precio.configure(values=opts, state="readonly")
-            for guess in ["PRECIO DE LISTA", "PRECIOS DE LISTA", "Precio"]:
-                if guess in cols:
-                    self.combo_precio.set(guess)
+            precio_found = False
+            for col in cols:
+                cl = col.lower()
+                for g in ["precio de lista", "precios de lista",
+                          "precio referencial", "precio unitario",
+                          "precio"]:
+                    if g in cl:
+                        self.combo_precio.set(col)
+                        precio_found = True
+                        break
+                if precio_found:
                     break
-            else:
+            if not precio_found:
                 self.combo_precio.set(opts[0])
 
             self.lbl_excel_info.configure(
@@ -549,7 +564,8 @@ class PeruComprasApp(ctk.CTk):
             results = run_offer_loop(page, data["rows"], data["parte_col"], data["precio_col"],
                            log, stop, creds, creds["captcha_key"],
                            creds["usuario"], creds["password"],
-                           self.captcha_bridge, self.catalog_bridge)
+                           self.captcha_bridge, self.catalog_bridge,
+                           pre_selected=pre_selected)
 
             # Escribir Excel coloreado
             if results and data.get("path") and data.get("sheet"):

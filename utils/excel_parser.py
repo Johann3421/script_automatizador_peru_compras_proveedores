@@ -9,20 +9,26 @@ def get_sheets(filepath: str) -> list[str]:
 
 
 def find_header_row(ws, max_scan=15) -> int:
+    best_row = 1
+    best_texts = 0
+
     for row_idx in range(1, min(ws.max_row + 1, max_scan + 1)):
-        texts = []
-        numbers = []
+        texts = 0
+        numbers = 0
         for col_idx in range(1, ws.max_column + 1):
             v = ws.cell(row=row_idx, column=col_idx).value
             if v is None:
                 continue
             if isinstance(v, str) and len(v.strip()) > 1:
-                texts.append(v.strip())
+                texts += 1
             elif isinstance(v, (int, float)):
-                numbers.append(v)
-        if len(texts) >= 2 and len(texts) >= len(numbers):
-            return row_idx
-    return 1
+                numbers += 1
+
+        if texts >= 2 and texts >= numbers and texts > best_texts:
+            best_texts = texts
+            best_row = row_idx
+
+    return best_row
 
 
 def get_columns(filepath: str, sheet_name: str = None) -> list[str]:
