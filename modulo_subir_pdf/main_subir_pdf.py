@@ -143,40 +143,49 @@ class SubirPdfApp(ctk.CTk):
         self.grid_rowconfigure(1, weight=1)
         self.grid_rowconfigure(2, weight=0)
 
-        # ── HEADER ──
+        # ── HEADER CORPORATIVO ──
         header = ctk.CTkFrame(self, fg_color="transparent")
-        header.grid(row=0, column=0, padx=20, pady=(16, 4), sticky="ew")
+        header.grid(row=0, column=0, padx=20, pady=(14, 4), sticky="ew")
+
         ctk.CTkLabel(
             header,
-            text=f"Peru Compras Automation v{VERSION}",
-            font=ctk.CTkFont(size=22, weight="bold"),
+            text=f"Perú Compras Automation",
+            font=ctk.CTkFont(size=20, weight="bold"),
+            text_color="#f8fafc",
         ).pack(side="left")
+
         ctk.CTkLabel(
             header,
-            text="PDF + Certificaciones + Stock/Cobertura/Plazo",
+            text=f"v{VERSION} — Gestión de Productos, Fichas y Stock",
             font=ctk.CTkFont(size=12),
-            text_color="gray60",
+            text_color="#94a3b8",
         ).pack(side="left", padx=12)
 
-        # ── BADGE de módulo ──
-        ctk.CTkLabel(
+        # ── BADGE ESTADO CORPORATIVO ──
+        self.badge_status = ctk.CTkLabel(
             header,
-            text="  MÓDULO INDEPENDIENTE  ",
+            text=" SISTEMA LISTO ",
             font=ctk.CTkFont(size=10, weight="bold"),
-            fg_color="#1a4a1a",
-            text_color="#5dade2",
+            fg_color="#1e293b",
+            text_color="#38bdf8",
             corner_radius=6,
-        ).pack(side="right")
+            padx=10,
+            pady=4,
+        )
+        self.badge_status.pack(side="right")
 
-        # ── TABS (Pestañas) ──
+        # ── TABS (Pestañas Organizadas) ──
         self.tabs = ctk.CTkTabview(self, width=900, height=620)
         self.tabs.grid(row=1, column=0, padx=20, pady=(0, 8), sticky="nsew")
-        self.tabs.add("📦 Modificar Productos")
-        self.tabs.add("📊 Stock/Cobertura/Plazo")
-        self.tabs.add("💰 Subir Precios JSON")
 
-        # ── Pestaña 1: Modificar Productos (flujo original) ──
-        tab1 = self.tabs.tab("📦 Modificar Productos")
+        self.tabs.add("Carga de PDFs")
+        self.tabs.add("Análisis de Stock")
+        self.tabs.add("Precios JSON")
+        self.tabs.add("Guía e Instrucciones")
+        self.tabs.add("Herramientas Avanzadas")
+
+        # ── Pestaña 1: Carga de PDFs ──
+        tab1 = self.tabs.tab("Carga de PDFs")
         tab1.grid_columnconfigure(0, weight=1, minsize=340)
         tab1.grid_columnconfigure(1, weight=1, minsize=340)
         tab1.grid_rowconfigure(0, weight=1)
@@ -189,114 +198,168 @@ class SubirPdfApp(ctk.CTk):
         self._build_catalog_section(left)
         self._build_opciones_section(left)
 
-        right = ctk.CTkFrame(tab1)
+        right = ctk.CTkFrame(tab1, fg_color="#252538")
         right.grid(row=0, column=1, padx=(6, 0), sticky="nsew")
         right.grid_columnconfigure(0, weight=1)
         right.grid_rowconfigure(0, weight=1)
         self._build_execution_section(right)
 
-        # ── Pestaña 2: Stock/Cobertura/Plazo (nuevo flujo) ──
-        tab2 = self.tabs.tab("📊 Stock/Cobertura/Plazo")
+        # ── Pestaña 2: Análisis de Stock ──
+        tab2 = self.tabs.tab("Análisis de Stock")
         tab2.grid_columnconfigure(0, weight=1, minsize=340)
         tab2.grid_columnconfigure(1, weight=1, minsize=340)
         tab2.grid_rowconfigure(0, weight=1)
         self._build_stock_tab(left_col=None, right_col=None, parent=tab2)
 
-        # ── Pestaña 3: Subir Precios JSON ──
-        tab3 = self.tabs.tab("💰 Subir Precios JSON")
+        # ── Pestaña 3: Precios JSON ──
+        tab3 = self.tabs.tab("Precios JSON")
         tab3.grid_columnconfigure(0, weight=1, minsize=340)
         tab3.grid_columnconfigure(1, weight=1, minsize=340)
         tab3.grid_rowconfigure(0, weight=1)
         import tab_precios_json
         tab_precios_json.build_precios_json_tab(self, parent=tab3)
 
-        # ── FOOTER (3 filas lógicas) ──
-        footer = ctk.CTkFrame(self, fg_color="transparent")
-        footer.grid(row=2, column=0, padx=12, pady=(4, 8), sticky="ew")
+        # ── Pestaña 4: Guía e Instrucciones ──
+        tab4 = self.tabs.tab("Guía e Instrucciones")
+        import gui_instructions_tab
+        gui_instructions_tab.build_instructions_tab(tab4)
+
+        # ── Pestaña 5: Herramientas Avanzadas ──
+        tab5 = self.tabs.tab("Herramientas Avanzadas")
+        self._build_advanced_tools_tab(tab5)
+
+        # ── FOOTER LIMPIO (2 Botones Principales según Ley de Tesler) ──
+        footer = ctk.CTkFrame(self, fg_color="#181825", corner_radius=8)
+        footer.grid(row=2, column=0, padx=20, pady=(4, 12), sticky="ew")
         footer.grid_columnconfigure(0, weight=1)
 
-        # ── Fila 1: Acciones principales (grandes, en uso) ──
-        row1 = ctk.CTkFrame(footer, fg_color="transparent")
-        row1.pack(fill="x", pady=(0, 4))
-        ctk.CTkLabel(row1, text="▶ Ejecución",
-                     font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color="gray50").pack(side="left", padx=(4, 12))
-        self.btn_launch = ctk.CTkButton(
-            row1, text="▶  Iniciar Procesamiento", width=200, height=38,
-            font=ctk.CTkFont(size=14, weight="bold"),
-            command=self._on_launch,
+        f_layout = ctk.CTkFrame(footer, fg_color="transparent")
+        f_layout.pack(fill="x", padx=12, pady=8)
+
+        # Estado corto en texto
+        self.lbl_footer_status = ctk.CTkLabel(
+            f_layout,
+            text="Listo para iniciar.",
+            font=ctk.CTkFont(size=12),
+            text_color="#94a3b8",
         )
-        self.btn_launch.pack(side="left", padx=(0, 6))
-        self.btn_test = ctk.CTkButton(
-            row1, text="🔬  Test (1 ficha)", width=150, height=38,
-            fg_color="#2c3e50", hover_color="#34495e",
-            font=ctk.CTkFont(size=13, weight="bold"),
-            command=self._on_test,
-        )
-        self.btn_test.pack(side="left", padx=(0, 6))
+        self.lbl_footer_status.pack(side="left", padx=4)
+
+        # Botón Detener (Derecha)
         self.btn_stop = ctk.CTkButton(
-            row1, text="■  Detener", width=110, height=38,
-            fg_color="#c0392b", hover_color="#96281b", state="disabled",
+            f_layout,
+            text="Detener",
+            width=120,
+            height=38,
+            fg_color="#dc2626",
+            hover_color="#b91c1c",
+            state="disabled",
             font=ctk.CTkFont(size=13, weight="bold"),
             command=self._on_stop,
         )
-        self.btn_stop.pack(side="right")
+        self.btn_stop.pack(side="right", padx=(6, 0))
 
-        # ── Fila 2: Correcciones puntuales ──
-        row2 = ctk.CTkFrame(footer, fg_color="transparent")
-        row2.pack(fill="x", pady=2)
-        ctk.CTkLabel(row2, text="🏷️ Correcciones",
-                     font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color="gray50").pack(side="left", padx=(4, 12))
+        # Botón Principal Iniciar Procesamiento (Derecha)
+        self.btn_launch = ctk.CTkButton(
+            f_layout,
+            text="Iniciar Procesamiento",
+            width=220,
+            height=38,
+            fg_color="#2563eb",
+            hover_color="#1d4ed8",
+            font=ctk.CTkFont(size=14, weight="bold"),
+            command=self._on_launch,
+        )
+        self.btn_launch.pack(side="right", padx=6)
+
+    def _build_advanced_tools_tab(self, parent):
+        """Construye la pestaña de Herramientas Avanzadas para desarrollo/pruebas."""
+        parent.grid_columnconfigure(0, weight=1)
+        parent.grid_rowconfigure(0, weight=1)
+
+        box = ctk.CTkScrollableFrame(parent, fg_color="transparent")
+        box.grid(row=0, column=0, padx=16, pady=16, sticky="nsew")
+        box.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            box,
+            text="Herramientas de Diagnóstico y Pruebas",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            text_color="#f8fafc",
+        ).pack(anchor="w", pady=(0, 8))
+
+        ctk.CTkLabel(
+            box,
+            text="Acceso a scripts de extracción, pruebas unitarias y descubrimiento de endpoints.",
+            font=ctk.CTkFont(size=11),
+            text_color="#94a3b8",
+        ).pack(anchor="w", pady=(0, 16))
+
+        # Grupo 1: Pruebas Cortas
+        g1 = ctk.CTkFrame(box, fg_color="#252538", corner_radius=8)
+        g1.pack(fill="x", pady=6, ipadx=12, ipady=10)
+        ctk.CTkLabel(g1, text="Pruebas Directas", font=ctk.CTkFont(size=13, weight="bold"), text_color="#2563eb").pack(anchor="w", padx=12, pady=4)
+
+        b_row1 = ctk.CTkFrame(g1, fg_color="transparent")
+        b_row1.pack(fill="x", padx=12, pady=4)
+
+        self.btn_test = ctk.CTkButton(
+            b_row1, text="Test (1 Ficha)", width=160, height=34,
+            fg_color="#334155", hover_color="#475569",
+            command=self._on_test,
+        )
+        self.btn_test.pack(side="left", padx=(0, 8))
+
         self.btn_nro = ctk.CTkButton(
-            row2, text="🏷️  Solo N° de Parte", width=160, height=32,
-            fg_color="#d35400", hover_color="#e67e22",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            b_row1, text="Solo N° de Parte", width=160, height=34,
+            fg_color="#334155", hover_color="#475569",
             command=self._on_nro_parte,
         )
-        self.btn_nro.pack(side="left", padx=(0, 6))
+        self.btn_nro.pack(side="left", padx=8)
+
         self.btn_certs = ctk.CTkButton(
-            row2, text="🏅  Solo Certificaciones", width=170, height=32,
-            fg_color="#8e44ad", hover_color="#7d3c98",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            b_row1, text="Solo Certificaciones", width=170, height=34,
+            fg_color="#334155", hover_color="#475569",
             command=self._on_certs_only,
         )
-        self.btn_certs.pack(side="left", padx=(0, 6))
+        self.btn_certs.pack(side="left", padx=8)
 
-        # ── Fila 3: Herramientas de análisis ──
-        row3 = ctk.CTkFrame(footer, fg_color="transparent")
-        row3.pack(fill="x", pady=(2, 0))
-        ctk.CTkLabel(row3, text="🔧 Herramientas",
-                     font=ctk.CTkFont(size=10, weight="bold"),
-                     text_color="gray50").pack(side="left", padx=(4, 12))
+        # Grupo 2: Extracción y Discovery
+        g2 = ctk.CTkFrame(box, fg_color="#252538", corner_radius=8)
+        g2.pack(fill="x", pady=6, ipadx=12, ipady=10)
+        ctk.CTkLabel(g2, text="Extracción y Scrapers", font=ctk.CTkFont(size=13, weight="bold"), text_color="#2563eb").pack(anchor="w", padx=12, pady=4)
+
+        b_row2 = ctk.CTkFrame(g2, fg_color="transparent")
+        b_row2.pack(fill="x", padx=12, pady=4)
+
         self.btn_extract = ctk.CTkButton(
-            row3, text="📊  Extraer Reportes", width=160, height=32,
-            fg_color="#1a5276", hover_color="#2471a3",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            b_row2, text="Extraer Reportes", width=160, height=34,
+            fg_color="#334155", hover_color="#475569",
             command=self._on_extract,
         )
-        self.btn_extract.pack(side="left", padx=(0, 6))
+        self.btn_extract.pack(side="left", padx=(0, 8))
+
         self.btn_compare = ctk.CTkButton(
-            row3, text="🔍  Comparar Fichas", width=150, height=32,
-            fg_color="#16a085", hover_color="#1abc9c",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            b_row2, text="Comparar Fichas", width=150, height=34,
+            fg_color="#334155", hover_color="#475569",
             command=self._on_compare,
         )
-        self.btn_compare.pack(side="left", padx=(0, 6))
+        self.btn_compare.pack(side="left", padx=8)
+
         self.btn_discovery = ctk.CTkButton(
-            row3, text="🕵️  Discovery", width=120, height=32,
-            fg_color="#2c3e50", hover_color="#34495e",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            b_row2, text="Discovery v1", width=130, height=34,
+            fg_color="#334155", hover_color="#475569",
             command=self._on_discovery,
         )
-        self.btn_discovery.pack(side="left", padx=(0, 6))
+        self.btn_discovery.pack(side="left", padx=8)
+
         self.btn_discovery2 = ctk.CTkButton(
-            row3, text="🕵️  v2", width=75, height=32,
-            fg_color="#566573", hover_color="#7b8a8b",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            b_row2, text="Discovery v2", width=130, height=34,
+            fg_color="#334155", hover_color="#475569",
             command=self._on_discovery2,
         )
-        self.btn_discovery2.pack(side="left", padx=(0, 6))
+        self.btn_discovery2.pack(side="left", padx=8)
+
 
     # ── Credentials Section ───────────────────────────────────────
 
