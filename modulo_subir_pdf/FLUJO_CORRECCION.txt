@@ -1,0 +1,201 @@
+FLUJO DETALLADO — modulo_subir_pdf (corrección de fichas + PDF)
+================================================================
+
+OBJETIVO
+--------
+Tomar un Excel con productos a corregir (características + N° de parte + certificaciones)
+y aplicar las correcciones en PeruCompras masivamente.
+
+ARCHIVO DE ENTRADA
+------------------
+Excel: LISTA_CORRECCION_VALORES_FICHA OBSER._PC_KENYA_REASIGN..xlsx
+Hoja: REASIGNACION (1053 filas, 30 columnas)
+
+COLUMNAS DEL EXCEL (auto-detectadas por nombre)
+------------------------------------------------
+- N°                  : índice (1, 2, 3, ...) — NO se usa
+- FICHA N°            : ID INTERNO de PeruCompras (2267958, etc.) — CLAVE DE BÚSQUEDA
+- IMAGEN (PDF)        : modelo (texto libre, no se usa para el flujo)
+- FICHA TECNICA (PDF) : N° de parte NUEVO que debe quedar (EMU5R6000, etc.)
+- PRECIO SUGERIDO     : no se usa
+- PROCESADOR a SISTEMA DE MANEJO DE RAEE : columnas de características a comparar/corregir
+- CERTIFICACION 1..5  : certificaciones esperadas (5 cols)
+
+Cada fila del Excel se mapea a un dict con:
+  {
+    "parte": <N° de parte NUEVO del Excel>,    # ej "EMU5R6000"
+    "ficha": <FICHA N° del Excel>,             # ej "2267958"  ← BÚSQUEDA
+    "caracteristicas": {nombre: valor_esperado},
+    "certs_esperadas": [listado de 5 certs],
+  }
+
+DIRECTORIO DE PDFs
+------------------
+Hardcodeado: D:\SISTEMAS 02\Downloads\COMPUTADORAS\COMPUTADORAS\{parte}.pdf
+Donde {parte} = N° de parte NUEVO del Excel.
+
+CREDENCIALES (pre-cargadas en la UI)
+-------------------------------------
+Usuario: almerco.03
+Contraseña: 4lm3rKenYa@#
+
+ESTRUCTURA DE MÓDULOS
+---------------------
+modulo_subir_pdf/
+├── run_subir_pdf.py            # launcher
+├── main_subir_pdf.py            # UI (customtkinter)
+├── combinaciones_computadoras.json
+├── automation_mod/
+│   ├── bulk_subir_pdf.py        # flujo masivo (API search)
+│   └── navegacion_productos.py  # funciones de navegación
+├── utils_mod/
+│   ├── excel_parser_mod.py      # parser del Excel
+│   └── excel_writer_mod.py      # coloreado de Excel
+└── test_1_ficha.py              # test de 1 ficha
+
+FLUJO PRINCIPAL (por cada producto)
+------------------------------------
+1. BÚSQUEDA POR FICHA (no por N° de parte)
+   - El N° de parte del Excel es NUEVO (todavía no existe en PeruCompras).
+   - Se busca por FICHA N° (columna "FICHA N°") usando el endpoint API:
+     GET /t_CatalogoProductoMarca/_CatalogoProductoIndex
+       ?N_Catalogo=252
+       &N_Categoria=11735
+       &C_Descripcion={FICHA N°}    ← se usa la ficha como query
+       &C_EstadoNav=OBSERVADO
+   - Devuelve el ID_CatalogoProducto (ID interno de PeruCompras, ej 2380651).
+
+2. NAVEGACIÓN DIRECTA A LA FICHA DE EDICIÓN
+   - URL: /t_CatalogoProductoMarca/CatalogoProductoEdit
+            ?ID_CatalogoProducto={id}
+            &C_EstadoNav=OBSERVADO
+            &C_Moneda=USD
+   - Más rápido que pasar por la lista de búsqueda (la tabla con miles de fichas
+     tarda 5+ minutos en cargar).
+
+3. SUBIR PDF
+   - Selector: input[type="file"] con id #AdjFile
+   - Llamada: file_input.set_input_files(ruta_pdf)
+   - Espera 3s para que PeruCompras procese.
+   - El PDF es el que está en PDF_DIR con el nombre del N° de parte nuevo.
+
+4. GUARDAR
+   - Selector: #btnGuardar
+   - Espera el modal de éxito (cualquiera de: #MensajeModal, #modalContent, .bootbox.modal).
+   - Timeout: 360s (PeruCompras es lento).
+   - Si no aparece modal: asumir guardado OK y continuar.
+   - Cierra el modal con #btnSalir o "Aceptar".
+
+5. LEER CARACTERÍSTICAS DE LA PÁGINA
+   - Tabla con rows que tienen .col-md-4 (hidden inputs + nombre + valor).
+   - Cada char tiene: nombre, valor, id (ID_CatFichaProducto).
+   - El ID se usa para abrir el modal de edición.
+
+6. COMPARAR CON EXCEL
+   - Por cada char del Excel, busca match en la página por nombre.
+   - Si los valores no coinciden, agrega a la lista de "diferentes".
+
+7. CORREGIR CADA DIFERENCIA
+   - Llama a link_caracteristicaEdit(id, 'OBSERVADO') por JS.
+   - Espera el form #form_editCaracteristica.
+   - Lee opciones del dropdown #N_ValCaracteristica.
+   - Busca match en 3 niveles:
+     1. EXACTO: "SI" == "SI"
+     2. SUFIJO: "SI" matchea "TECLADO: SI" o "MOUSE: SI"
+     3. CONTAINS: cualquier opción que contenga el valor
+   - Selecciona y click en #btn_guardar.
+   - Cierra modal de éxito.
+   - Si la página se recargó (link_caracteristicaEdit no está disponible),
+     re-navega a edit_url antes de continuar.
+
+8. AGREGAR CERTIFICACIONES FALTANTES
+   - Lee tabla de certificaciones de la página.
+   - Compara con certs_esperadas del Excel.
+   - Certs no-ISO (CE, RoHS, FCC) que falten: SKIP (no se pueden agregar automáticamente).
+   - ISO 9001 y 14001 faltantes: agregar usando agregar_caracteristicas() (función
+     original de modulo_modificar_productos que abre #wm_caracteristicaNueva).
+
+PROBLEMAS CONOCIDOS
+-------------------
+1. PeruCompras es LENTO:
+   - Búsqueda con tabla: 5+ minutos con miles de fichas
+     → Solución: usar API search + navegación directa a edit URL
+   - Modal de éxito tras guardar: puede tardar minutos
+     → Solución: timeout 360s
+   - El campo select2 de la ficha puede tardar en cargar opciones
+     → Solución: polling hasta 10 intentos con 1.5s c/u
+
+2. Detección de sesión:
+   - Cuando ya hay sesión, /AccesoGeneral redirige a la raíz
+     → Solución: _tiene_campos_login() — verificar que existan los inputs
+       antes de intentar login
+   - URL con accesogeneral o login + sin inputs = sesión activa
+
+3. Modal de éxito tiene múltiples selectores:
+   - #MensajeModal (después de Guardar principal)
+   - #modalContent (después de editar característica)
+   - .bootbox.modal (genérico)
+   - Cerrar con #btnSalir o texto "Aceptar"/"Cerrar"/"OK"
+
+4. link_caracteristicaEdit se pierde tras guardar:
+   - El form submit recarga la página
+   - Solución: re-navegar a edit_url entre correcciones
+
+5. SI/NO match:
+   - Excel tiene "SI" o "NO" (sin prefijo)
+   - Página tiene "TECLADO: SI", "MOUSE: NO", etc.
+   - Solución: match por sufijo ": SI" o ": NO"
+
+ENDPOINTS
+---------
+- Login:           POST /AccesoGeneral
+- Búsqueda API:    GET  /t_CatalogoProductoMarca/_CatalogoProductoIndex
+- Edit:            GET  /t_CatalogoProductoMarca/CatalogoProductoEdit
+- Guardar PDF:     POST /t_CatalogoProductoMarca/CatalogoProductoEdit (mismo URL)
+- Edit char form:  POST /t_CatalogoProductoMarca/CaracteristicaEdit
+- Add cert:        POST /t_CatalogoProductoMarca/CaracteristicaCreate (vía modal)
+
+SELECTORES CLAVE
+----------------
+- Input file PDF: #AdjFile
+- Botón Guardar:   #btnGuardar
+- Botón Editar char: <a onclick="link_caracteristicaEdit({id}, 'OBSERVADO');">Editar</a>
+- Form edit char:  #form_editCaracteristica
+- Select valor:    #form_editCaracteristica #N_ValCaracteristica
+- Botón Guardar char: #form_editCaracteristica #btn_guardar
+- Botón Añadir Característica: #btn_caracteristicaNueva
+- Modal añadir char: #wm_caracteristicaNueva
+- Select tipo char: #wm_caracteristicaNueva #N_Caracteristica
+- Select valor cert: #wm_caracteristicaNueva #N_ValCaracteristica
+- Modal éxito:     #MensajeModal, #modalContent, .bootbox.modal
+- Botón cerrar:    #btnSalir
+
+CÓMO EJECUTAR
+-------------
+1. App de escritorio:
+   cd modulo_subir_pdf
+   python run_subir_pdf.py
+   - Cargar el Excel
+   - El dropdown "Columna N° de Parte" se auto-selecciona a NRO_PARTE
+   - Click "Iniciar Procesamiento" o "Test Flow"
+
+2. Test de 1 ficha (con navegador visible):
+   cd modulo_subir_pdf
+   python test_1_ficha.py 2   # 3ra fila (EMU5R6002)
+
+3. Variables de entorno opcionales:
+   CAT=252 CAT_EG=11735 EST=OBSERVADO
+   python test_1_ficha.py 2
+
+ARCHIVOS CLAVE
+--------------
+- main_subir_pdf.py:        UI + _execute_test() y _execute() (flujo bulk con API)
+- bulk_subir_pdf.py:        run_bulk_subir_pdf() y buscar_producto_api()
+- navegacion_productos.py:  subir_pdf_en_edicion, guardar_cambios,
+                            leer_caracteristicas_pagina, leer_certificaciones_pagina,
+                            comparar_caracteristicas, corregir_caracteristica,
+                            agregar_certificaciones_faltantes, agregar_caracteristicas,
+                            _tiene_campos_login, ensure_logged_in_and_ready, _relogin
+- excel_parser_mod.py:      detect_columns, parse_excel (con char_cols, cert_expected_cols,
+                            ficha_col)
+- excel_writer_mod.py:      write_colored_results

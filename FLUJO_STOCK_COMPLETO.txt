@@ -1,0 +1,441 @@
+================================================================================
+FLUJO COMPLETO - ACTUALIZACION DE STOCK (PeruComprasBot)
+================================================================================
+Archivo: modulo_subir_pdf/automation_otro_bot/stock.py
+Fecha: 2026-06-24
+Autor: Sistema automatizado
+Proposito: Guia completa para que cualquier IA comprenda el flujo de stock
+================================================================================
+
+1. RESUMEN GENERAL
+================================================================================
+El flujo de stock actualiza la cantidad de existencias de productos en el
+portal PeruCompras (https://www.catalogos.perucompras.gob.pe).
+
+Pasos macro:
+  1. Validar Excel de entrada (columnas: Parte, Stock, [Ficha])
+  2. Iniciar navegador (Playwright, Chromium)
+  3. Login con OCR de CAPTCHA
+  4. Navegar a MejoraBasica
+  5. Seleccionar filtros: Acuerdo > Catalogo > Categoria
+  6. Para cada producto:
+     - Buscar numero de parte en la tabla
+     - Abrir modal "Existencias"
+     - Cambiar valor de stock
+     - Guardar
+     - Cerrar modal de confirmacion y exito
+  7. Generar reporte Excel con 3 hojas (Resumen, Detalle, Solo Fallidos)
+
+================================================================================
+2. CREDENCIALES POR DEFECTO (UI)
+================================================================================
+Pestana Stock/Cobertura/Plazo:
+  Usuario:  fernando.trinidad
+  Password: po!tLKB#8^r4e
+
+Pestana Principal (PDF/Certificaciones):
+  Usuario:  almerco.03
+  (la contrasena se ingresa manualmente en la UI)
+
+Estas credenciales estan hardcodeadas en main_subir_pdf.py pero el usuario
+puede cambiarlas en los campos de texto de la interfaz.
+
+================================================================================
+3. URLs DEL PORTAL
+================================================================================
+BASE_URL     = https://www.catalogos.perucompras.gob.pe
+LOGIN_URL    = https://www.catalogos.perucompras.gob.pe/AccesoGeneral
+MEJORA_URL   = https://www.catalogos.perucompras.gob.pe/MejoraBasica
+MEJORA_COBERTURA_URL = https://www.catalogos.perucompras.gob.pe/MejoraCobertura
+MEJORA_PLAZO_URL     = https://www.catalogos.perucompras.gob.pe/MejoraPlazo/IndexMejora
+
+URL de edicion directa (si se tiene la ficha):
+  {BASE_URL}/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto={FICHA}&C_EstadoNav=OBSERVADO&C_Moneda=USD
+
+================================================================================
+4. CONSTANTES DE TIEMPO
+================================================================================
+WAIT_NORMAL           = 30 segundos
+WAIT_LARGO            = 60 segundos
+WAIT_CORTO            = 10 segundos
+PAUSA_ENTRE_PRODUCTOS = 2 segundos (entre cada producto)
+MAX_REINTENTOS        = 3 (reintentos por producto individual)
+MAX_INTENTOS_LOGIN    = 5 (intentos de login con OCR)
+
+TIEMPOS DE ESPERA EN actualizar_producto():
+  - Spinner de carga:        hasta 60 segundos
+  - Buscador dinamico:       hasta 30 segundos
+  - Filtrado DataTables:     5 segundos de sleep
+  - Resultado de busqueda:   5 segundos de sleep
+  - Modal de existencias:    10 segundos
+  - Modal de confirmacion:   15 segundos
+  - Modal de exito:          15 segundos
+
+NOTA IMPORTANTE: El portal de PeruCompras demora entre 5 y 8 minutos en
+responder a veces. Los timeouts fueron aumentados para soportar esto.
+
+================================================================================
+5. LOGIN / RE-LOGIN
+================================================================================
+5.1 LOGIN INICIAL
+------------------
+Funcion: login_with_ocr(page, usuario, password, captcha_bridge=None, ...)
+
+Pasos:
+  1. page.goto(LOGIN_URL, wait_until="networkidle", timeout=60s)
+  2. page.wait_for_load_state("domcontentloaded")
+  3. time.sleep(3)
+  4. Loop de 1 a MAX_INTENTOS_LOGIN:
+     a. clear_modals(page)   <- limpia modales antes de cada intento
+     b. Si URL no contiene "accesogeneral" ni "login" -> ya logueado, return True
+     c. Escribir usuario en #ID_Usuario (con trigger Materialize)
+     d. Escribir password en #Contrasena (con trigger Materialize)
+     e. Resolver CAPTCHA:
+        - Si hay captcha_bridge: screenshot de #imgCaptcha -> enviar a bridge
+        - Si no: OCR local con pytesseract (4 thresholds: 140, 120, 100, 80)
+     f. Escribir CAPTCHA en #CodigoCaptcha
+     g. clear_modales(page)
+     h. Click en boton submit (#btnLogin, o fallback JS)
+     i. time.sleep(2)
+     j. Verificar URL:
+        - Si NO esta en accesogeneral/login -> exito
+        - Si esta en ValidarAcceso -> page.go_back() y continuar
+     k. Si fallo: page.goto(LOGIN_URL) y reintentar
+
+5.2 RE-LOGIN (cuando la sesion expira)
+---------------------------------------
+Funcion: _relogin(page, usuario, password, log_func, stop_event, captcha_bridge)
+
+CUANDO SE DISPARA:
+  - Antes de cada producto, se verifica:
+    a) _is_logged_in(page) -> False (formulario de login visible)
+    b) _esta_en_mejorabasica(page) -> False (no estamos en la pagina correcta)
+  - NO se dispara por fallos de producto (producto no encontrado != sesion expirada)
+
+Pasos de _relogin:
+  1. page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=60s)
+  2. time.sleep(2)
+  3. do_login(page, usuario, password, "", log_adapter, stop_event, captcha_bridge, max_retries=5)
+     - Usa automation.login.do_login (LA MISMA funcion del login inicial)
+     - Tiene _eliminar_modales() mas agresivo que clear_modals() del stock
+     - Navega internamente a LOGIN_URL, llena credenciales, resuelve CAPTCHA,
+       clic en #btnLogin y espera redireccion
+  4. Si login OK: page.goto(MEJORA_URL, wait_until="domcontentloaded", timeout=60s)
+  5. page.wait_for_load_state("networkidle", timeout=30s)
+  6. time.sleep(2)
+  7. return True
+
+NOTA: _LogAdapter convierte log_func() simple a la interfaz LogWriter que espera do_login.
+
+5.3 DETECCION DE SESION EXPIRADA
+---------------------------------
+Funcion: _is_logged_in(page)
+
+Logica:
+  1. Obtener URL actual en minusculas
+  2. Si contiene "accesogeneral" o "login" -> return False
+  3. Si campo #ID_Usuario esta visible (wait_for state="visible", timeout=2000ms)
+     -> return False (sesion realmente expirada)
+  4. En cualquier otro caso -> return True
+
+Funcion: _esta_en_mejorabasica(page)
+  - Verifica que URL contenga "mejorabasica"
+  - Si no esta en MejoraBasica, se re-loginea y se reaplican filtros
+
+================================================================================
+6. LIMPIEZA DE MODALES
+================================================================================
+Funcion: clear_modals(page)
+
+Problema: El portal PeruCompras deja modales abiertos que bloquean clicks.
+
+Operaciones JS que realiza:
+  1. Click en botones de cierre:
+     [data-dismiss="modal"], .modal-header button.close, .modal .close,
+     button[aria-label="Close"], button[title="Close"], button[title="Cerrar"],
+     ._wModal_close, ._wModal_btn_ok, ._wModal_btn_cancel,
+     .swal2-confirm, .swal2-cancel, .swal2-close
+  2. Eliminar modales por selector:
+     ._wModal, ._wModal_delete, ._wModal_bg,
+     .sweet-alert, .swal2-container, .swal2-popup, .swal2-backdrop,
+     .modal.fade.in, .modal.fade.show, .modal.show, .modal-backdrop,
+     [role="dialog"], [aria-modal="true"], dialog[open]
+  3. Resetear body:
+     document.body.style.overflow = ''
+     document.body.style.paddingRight = ''
+     document.body.classList.remove('modal-open')
+
+Se llama:
+  - Antes de cada intento de login
+  - Antes de cada submit de login
+  - En _relogin, despues de navegar a login
+  - Dentro de actualizar_producto() antes de buscar
+
+================================================================================
+7. MENU DINAMICO (Acuerdo > Catalogo > Categoria)
+================================================================================
+Funcion: paso3_filtros_stock(page, acuerdo, catalogo, categoria)
+
+Valores por defecto:
+  ACUERDO_TEXTO  = "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTATILES Y ESCANERES"
+  CATALOGO_TEXTO = "COMPUTADORAS DE ESCRITORIO"
+  CATEGORIA_TEXTO = "MONITOR"
+
+Selectores HTML:
+  Acuerdo:   #ajaxAcuerdo
+  Catalogo:  #ajaxCatalogo
+  Categoria: #ajaxCategoria
+
+Logica de seleccion (funcion seleccionar_por_texto_flexible):
+  1. Normalizar texto (quitar tildes, minusculas)
+  2. Obtener todas las opciones del <select> via JS
+  3. Match exacto (normalizado)
+  4. Si no: opcion contiene al target
+  5. Si no: target contiene a la opcion
+  6. Si encuentra: page.select_option(select_id, value=opt["value"])
+
+Funcion auxiliar: _wait_for_select_options(page, select_id, timeout_ms=30_000)
+  - Espera via page.wait_for_function() a que el <select> tenga opciones con value no vacio.
+
+Pasos:
+  1. Esperar #ajaxAcuerdo disponible (WAIT_NORMAL = 30s)
+  2. Seleccionar Acuerdo
+  3. Esperar 3s + _wait_for_select_options('#ajaxCatalogo')
+  4. Seleccionar Catalogo
+  5. Esperar 3s + _wait_for_select_options('#ajaxCategoria')
+  6. Seleccionar Categoria
+  7. Esperar 3s + esperar spinner desaparezca (60s)
+  8. Esperar buscador dinamico visible (30s)
+  9. Esperar 2s adicionales y return True
+
+Tiempos entre selecciones: 3 segundos + espera de opciones + espera de tabla
+
+================================================================================
+8. BUSQUEDA Y ACTUALIZACION DE PRODUCTO
+================================================================================
+Funcion: actualizar_producto(page, parte, stock, ficha, stop_event)
+
+8.1 SI TIENE FICHA (columna Ficha en Excel)
+--------------------------------------------
+  1. Construir URL de edicion directa con ID_CatalogoProducto={ficha}
+  2. page.goto(edit_url, wait_until="networkidle", timeout=60s)
+  3. time.sleep(2)
+  4. Ir directo al paso 5 (buscar input de stock)
+
+8.2 SI NO TIENE FICHA (busqueda normal)
+----------------------------------------
+  1. Limpiar modales y overlays
+  2. Limpiar filtro principal #C_Descripcion (fill "")
+  3. Esperar spinner desaparezca (timeout 60s)
+  4. Buscar buscador dinamico DataTables:
+     input[type='search'][aria-controls='TablaProductos']
+     - wait_for(state="visible", timeout=30s)
+  5. SI hay buscador dinamico:
+     - dynamic_search.fill("")
+     - dynamic_search.fill(parte)
+     - time.sleep(5)  <- esperar filtrado client-side
+  6. SI NO hay buscador dinamico (primera vez):
+     - search_input.fill(parte)
+     - Click #btnBuscar o press Enter
+     - time.sleep(5)  <- esperar resultados
+  7. Verificar fila encontrada:
+     - row = page.locator(f"tr:has-text('{parte}')").first
+     - Buscar parte en cada celda (td) con inner_text()
+     - Si no aparece visible, buscar en el HTML completo de la fila (texto + atributos)
+     - Solo fallar si no aparece en ninguno de los dos
+  8. Click en "Existencias" de esa fila:
+     - row.locator("a:has-text('Existencias'), button:has-text('Existencias')").first.click()
+  9. time.sleep(2)
+
+8.3 MODAL DE STOCK
+------------------
+  1. Esperar modal visible:
+     .modal:visible, [role='dialog']:visible, #MensajeModal:visible (timeout 10s)
+  2. time.sleep(1)
+  3. Buscar input de stock EDITABLE (NO readonly):
+     - Primero: #N_Stock:not([readonly]), input[name='N_Stock']:not([readonly])
+     - Fallback: cualquier input editable con id/name que contenga "stock" o "existencia"
+  4. Si no se encuentra -> return False, "Campo de stock editable no encontrado"
+  5. stock_input.fill("")
+  6. stock_input.fill(str(stock))
+  7. time.sleep(0.5)
+  8. Click #btn_guardar (timeout 10s, fallback force=True)
+  9. Modal de CONFIRMACION:
+     - Esperar ._wModal_holder:visible (timeout 15s)
+     - Click ._wModal_btn_ok o ._wModal_btn_blue (force=True)
+  10. time.sleep(2)
+  11. Modal de EXITO:
+      - Esperar #MensajeModal con texto "Actualizacion" (timeout 15s)
+      - Click #btnSalir o button[name='btnCerrar'] (force=True)
+  12. time.sleep(1)
+  13. return True, ""
+
+================================================================================
+9. MANEJO DE ERRORES / CLASIFICACION
+================================================================================
+Funcion: clasificar_error(mensaje)
+
+Posibles errores:
+  - "Navegador cerrado"                         -> usuario cerro Chromium o pestana
+  - "Producto no encontrado en la tabla"        -> el numero de parte no existe
+  - "Modal de stock no se abrio"                -> no se pudo abrir el modal
+  - "Tiempo de espera agotado"                  -> timeout de Playwright
+  - "Elemento de pagina no encontrado"          -> selector fallo
+  - "Pagina cambio durante la operacion"        -> staleness
+  - "Error inesperado"                          -> cualquier otro
+
+Funcion: _browser_cerrado(mensaje)
+  Detecta errores como:
+    "browser has been closed"
+    "browser was closed"
+    "connection closed"
+    "target page, context or browser has been closed"
+  Cuando detecta esto, cancela reintentos y sale del bucle principal inmediatamente.
+
+IMPORTANTE: "Producto no encontrado" NO dispara re-login. El producto simplemente
+no esta en el catalogo seleccionado. El re-login solo ocurre cuando:
+  a) El formulario de login esta visible (sesion real expirada)
+  b) La URL no contiene "mejorabasica" (nos sacaron de la pagina)
+
+IMPORTANTE: "Navegador cerrado" tampoco dispara re-login. Detiene todo el flujo.
+
+================================================================================
+10. FLUJO DE PASO4 (BUCLE PRINCIPAL)
+================================================================================
+Funcion: paso4_actualizar_stock(page, df, pausa, log_func, usuario, password,
+                                captcha_bridge, acuerdo, catalogo, categoria)
+
+Por cada producto en df:
+  1. Si STOP_EVENT -> break
+  2. Verificar sesion:
+     if not _is_logged_in(page) or not _esta_en_mejorabasica(page):
+         _relogin(...) -> si falla, break
+         paso3_filtros_stock(page, acuerdo, catalogo, categoria)
+  3. Si PAUSA_EVENT -> esperar en loop
+  4. Si STOP_EVENT -> break
+  5. Log: "📦 [i/total] parte (stock=X, ficha=Y)"
+  6. Loop de reintentos (1 a MAX_REINTENTOS=3):
+     actualizar_producto(page, parte, stock, ficha, STOP_EVENT)
+     Si exito -> break
+     Si error contiene "browser closed" / "connection closed" ->
+        log "Navegador cerrado, cancelando reintentos" -> break
+     Si fallo -> log reintento, sleep interrumpible de 2s (4x0.5s chequeando STOP_EVENT)
+  7. Si STOP_EVENT o navegador cerrado -> break
+  8. Guardar resultado en RESULTADOS[]
+  9. time.sleep(pausa)  <- 2 segundos entre productos
+
+================================================================================
+11. REPORTE EXCEL
+================================================================================
+Funcion: generar_reporte_excel(output_path, acuerdo, catalogo, categoria)
+
+3 hojas:
+  1. Resumen:
+     - Total, Exitosos, Fallidos, Ratio %
+     - Grafico de pie (exito vs fallo)
+     - Tabla de fallos por tipo
+     - Grafico de barras (fallos por tipo)
+  2. Detalle por Producto:
+     - #, Parte, Stock, Ficha, Estado, Tipo de Fallo, Descripcion, Duracion
+     - Fila verde si OK, roja si FALLO
+  3. Solo Fallidos:
+     - Misma estructura que Detalle pero solo los que fallaron
+
+Colores:
+  OK    -> verde (#C6EFCE)
+  FALLO -> rojo  (#FFC7CE)
+
+================================================================================
+12. ARCHIVOS DE CONFIGURACION / DATOS
+================================================================================
+modulo_subir_pdf/dropdowns_mejora_basica.json
+  - Contiene los valores de Acuerdo/Catalogo/Categoria para menus dinamicos
+  - Claves: acuerdos[], combinaciones[]
+
+modulo_subir_pdf/combinaciones_computadoras.json
+  - Usado por el flujo principal (no stock)
+
+resources/icon.ico
+  - Icono del instalador y ejecutable
+
+tesseract/
+  - Tesseract OCR empaquetado (para evitar instalacion externa)
+
+browsers/chromium-1223/
+  - Chromium de Playwright empaquetado
+
+================================================================================
+13. BUILD / INSTALACION
+================================================================================
+Requisitos para compilar:
+  - Python 3.12+
+  - winget (para descargar Inno Setup)
+  - PyInstaller
+  - Inno Setup 6 (descargado automaticamente por build.bat)
+
+Comando:
+  build.bat
+
+Pasos que realiza build.bat:
+  1. Crear venv_build
+  2. Instalar dependencias (requirements.txt + pyinstaller)
+  3. Buscar/descargar ISCC.exe (Inno Setup Compiler)
+  4. Descargar/verificar Tesseract OCR
+  5. Generar icono placeholder si no existe
+  6. Limpiar directorios debug (output_extract, discovery_output, etc.)
+  7. Ejecutar PyInstaller (PeruComprasBot.spec)
+  8. Generar setup_config.iss con ruta absoluta al dist/
+  9. Compilar instalador con Inno Setup
+  10. Output: installer/Output/Script_Peru_Compras_Setup.exe
+
+================================================================================
+14. TIPS PARA DEPURACION
+================================================================================
+- Si el login falla repetidamente: verificar que Tesseract este en tesseract/tesseract.exe
+- Si modales bloquean: clear_modals() se llama en multiples puntos, revisar logs
+- Si producto no se encuentra: verificar que el numero de parte este correcto y
+  que los filtros (Acuerdo/Catalogo/Categoria) sean los correctos
+- Si la pagina demora mucho: los timeouts fueron aumentados a 30-60s, pero el
+  portal puede demorar hasta 5-8 min. Considerar aumentar mas si es necesario.
+- Si re-login ocurre muy seguido: revisar _is_logged_in() - solo debe pasar cuando
+  el formulario de login esta VISIBLE, no por falsos positivos de URL
+- Para forzar re-login: navegar manualmente a AccesoGeneral en el browser
+
+================================================================================
+15. SELECTORES CSS CLAVE
+================================================================================
+Login:
+  #ID_Usuario, #Contrasena, #CodigoCaptcha, #imgCaptcha, #btnLogin
+
+Filtros:
+  #ajaxAcuerdo, #ajaxCatalogo, #ajaxCategoria
+
+Busqueda:
+  #C_Descripcion, #btnBuscar, input[type='search'][aria-controls='TablaProductos']
+
+Tabla:
+  tr:has-text('PARTE'), a:has-text('Existencias')
+
+Modal stock:
+  #N_Stock, #btn_guardar, #MensajeModal, #btnSalir, ._wModal_holder, ._wModal_btn_ok
+
+================================================================================
+16. CAMBIOS RECIENTES (2026-06-24)
+================================================================================
+- Re-login ahora navega siempre a AccesoGeneral y hace login de cero
+- _is_logged_in usa wait_for(state="visible", timeout=2000) para evitar falsos
+  positivos por flashes del formulario durante transiciones
+- _esta_en_mejorabasica verifica que la URL contenga "mejorabasica"
+- consec_fail >= 3 eliminado: ya no fuerza re-login por productos fallidos
+- paso3_filtros_stock tras re-login usa los parametros originales (no defaults)
+- Tiempos de espera aumentados: spinner 60s, buscador 30s, DataTables 5s,
+  resultado busqueda 5s
+- clear_modals agregado en _relogin despues de navegar a login
+- login_with_ocr acepta skip_goto para evitar navegacion duplicada
+- _browser_cerrado() detecta cierre de Chromium/pestaña y detiene el flujo
+- Loop de reintentos cancela inmediatamente si el navegador fue cerrado
+- Sleep entre reintentos ahora es interrumpible por STOP_EVENT
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================

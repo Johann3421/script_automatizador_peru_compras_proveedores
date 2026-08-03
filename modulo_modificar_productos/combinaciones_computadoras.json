@@ -1,0 +1,662 @@
+{
+  "acuerdo": {
+    "value": "249",
+    "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+  },
+  "selects_order": [
+    "ajaxCatalogo",
+    "ajaxCategoria",
+    "ajaxEstado"
+  ],
+  "combinaciones": [
+    {
+      "value": "251",
+      "text": "ESCÁNERES",
+      "children": [
+        {
+          "value": "11737",
+          "text": "ESCANER DE PLANOS",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11738",
+          "text": "ESCANER DE DOCUMENTOS",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11739",
+          "text": "ESCANER DE LIBROS",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "value": "252",
+      "text": "COMPUTADORAS DE ESCRITORIO",
+      "children": [
+        {
+          "value": "11751",
+          "text": "DISPOSITIVOS DE ALMACENAMIENTO INTERNO",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11735",
+          "text": "COMPUTADORA DE ESCRITORIO",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11736",
+          "text": "COMPUTADORA TODO EN UNO",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11740",
+          "text": "ESTACION DE TRABAJO",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11741",
+          "text": "MONITOR",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11742",
+          "text": "PANTALLA PUBLICITARIA",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11747",
+          "text": "DISPOSITIVOS DE ALMACENAMIENTO EXTERNO",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11749",
+          "text": "PANTALLA INTERACTIVA",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "12518",
+          "text": "COMPUTADORA DE ESCRITORIO II",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "12621",
+          "text": "ESTACION DE TRABAJO II",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "12627",
+          "text": "MONITOR II",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "12599",
+          "text": "COMPUTADORA TODO EN UNO II",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11748",
+          "text": "MEMORIA FLASH USB",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "value": "250",
+      "text": "COMPUTADORAS PORTÁTILES",
+      "children": [
+        {
+          "value": "11744",
+          "text": "ESTACION DE TRABAJO PORTATIL",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11743",
+          "text": "COMPUTADORA PORTATIL",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "11745",
+          "text": "TABLETA",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "12622",
+          "text": "COMPUTADORA PORTATIL II",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        },
+        {
+          "value": "12626",
+          "text": "ESTACION DE TRABAJO PORTATIL II",
+          "children": [
+            {
+              "value": "ACTIVO",
+              "text": "ACTIVO"
+            },
+            {
+              "value": "PENDIENTE",
+              "text": "PENDIENTE"
+            },
+            {
+              "value": "OBSERVADO",
+              "text": "OBSERVADO"
+            },
+            {
+              "value": "SUBSANADO",
+              "text": "SUBSANADO"
+            },
+            {
+              "value": "APROBADA",
+              "text": "APROBADA"
+            },
+            {
+              "value": "TODOS",
+              "text": "TODOS"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "total_catalogos": 3
+}

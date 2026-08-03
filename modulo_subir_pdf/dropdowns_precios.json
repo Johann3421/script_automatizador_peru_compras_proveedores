@@ -1,0 +1,94 @@
+[
+  {
+    "acuerdo": {
+      "value": "249",
+      "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+    },
+    "catalogo": {
+      "value": "251",
+      "text": "ESCÁNERES"
+    },
+    "categorias": [
+      {
+        "value": "11737",
+        "text": "ESCANER DE PLANOS"
+      },
+      {
+        "value": "11738",
+        "text": "ESCANER DE DOCUMENTOS"
+      },
+      {
+        "value": "11739",
+        "text": "ESCANER DE LIBROS"
+      }
+    ]
+  },
+  {
+    "acuerdo": {
+      "value": "249",
+      "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+    },
+    "catalogo": {
+      "value": "252",
+      "text": "COMPUTADORAS DE ESCRITORIO"
+    },
+    "categorias": [
+      {
+        "value": "11751",
+        "text": "DISPOSITIVOS DE ALMACENAMIENTO INTERNO"
+      },
+      {
+        "value": "11735",
+        "text": "COMPUTADORA DE ESCRITORIO"
+      },
+      {
+        "value": "11736",
+        "text": "COMPUTADORA TODO EN UNO"
+      },
+      {
+        "value": "11740",
+        "text": "ESTACION DE TRABAJO"
+      },
+      {
+        "value": "11741",
+        "text": "MONITOR"
+      },
+      {
+        "value": "11742",
+        "text": "PANTALLA PUBLICITARIA"
+      },
+      {
+        "value": "11747",
+        "text": "DISPOSITIVOS DE ALMACENAMIENTO EXTERNO"
+      },
+      {
+        "value": "11749",
+        "text": "PANTALLA INTERACTIVA"
+      }
+    ]
+  },
+  {
+    "acuerdo": {
+      "value": "249",
+      "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+    },
+    "catalogo": {
+      "value": "250",
+      "text": "COMPUTADORAS PORTÁTILES"
+    },
+    "categorias": [
+      {
+        "value": "11744",
+        "text": "ESTACION DE TRABAJO PORTATIL"
+      },
+      {
+        "value": "11743",
+        "text": "COMPUTADORA PORTATIL"
+      },
+      {
+        "value": "11745",
+        "text": "TABLETA"
+      }
+    ]
+  }
+]

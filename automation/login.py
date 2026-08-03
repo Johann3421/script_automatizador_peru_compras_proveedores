@@ -16,13 +16,19 @@ DASHBOARD_URL = "https://www.catalogos.perucompras.gob.pe/"
 # Ruta de Tesseract: portable (junto al .exe) o del sistema
 import sys, os
 
+# Asegurar que resource_helper se pueda importar desde cualquier cwd
+try:
+    from resource_helper import resource_path
+except ImportError:
+    _root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _root not in sys.path:
+        sys.path.insert(0, _root)
+    from resource_helper import resource_path
+
+
 def _find_tesseract() -> str:
-    # 1. Junto al ejecutable (modo empaquetado)
-    if getattr(sys, "frozen", False):
-        base = os.path.dirname(sys.executable)
-    else:
-        base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    portable = os.path.join(base, "tesseract", "tesseract.exe")
+    # 1. Bundled portable (PyInstaller o desarrollo)
+    portable = resource_path("tesseract/tesseract.exe")
     if os.path.isfile(portable):
         return portable
     # 2. Instalación estándar de winget / UB-Mannheim
@@ -40,32 +46,14 @@ pytesseract.pytesseract.tesseract_cmd = _find_tesseract()
 
 
 def _eliminar_modales(page: Page):
-    page.evaluate("""
-        document.querySelectorAll('.modal.open, .modal.show, [id*="PopUp"][class*="modal"]')
-            .forEach(function(m) { m.remove(); });
-        document.querySelectorAll('.modal-backdrop, .modal-overlay')
-            .forEach(function(el) { el.remove(); });
-        document.body.style.overflow = '';
-        document.body.classList.remove('modal-open');
-    """)
+    try:
+        sel = "#btnSalir, #btnWSSalir, .modal-close, button:has-text('Cerrar'), [data-dismiss='modal']"
+        el = page.locator(sel).first
+        if el.count() > 0 and el.is_visible(timeout=1000):
+            el.click(force=True)
+    except Exception:
+        pass
     time.sleep(0.3)
-
-    close_selectors = [
-        "#btnSalir", "#btnWSSalir", ".modal-close",
-        "button:has-text('Cerrar')", "[data-dismiss='modal']",
-    ]
-    for sel in close_selectors:
-        try:
-            els = page.locator(sel)
-            count = els.count()
-            for i in range(count):
-                btn = els.nth(i)
-                if btn.is_visible(timeout=1000):
-                    btn.click(force=True, timeout=2000)
-                    time.sleep(0.2)
-        except Exception:
-            pass
-
 
 def _trigger_materialize_validation(page: Page, input_id: str):
     page.evaluate(f"""
@@ -81,90 +69,18 @@ def _trigger_materialize_validation(page: Page, input_id: str):
 
 
 def _ocr_captcha(image_bytes: bytes) -> str:
-    """
-    OCR del CAPTCHA con múltiples estrategias + votación.
-    El CAPTCHA tiene 6 caracteres alfanuméricos en mayúsculas.
-    """
-    from PIL import Image, ImageFilter, ImageOps, ImageEnhance
+    """OCR del CAPTCHA."""
+    from PIL import Image
     from io import BytesIO
+    import re
 
-    img_original = Image.open(BytesIO(image_bytes))
-
-    # Escalar 4x para mejor resolución
-    w, h = img_original.size
-    img_base = img_original.resize((w * 4, h * 4), Image.LANCZOS)
-    img_gray = img_base.convert("L")
-
-    candidates = []
-
-    # Estrategia 0: umbral 140 + sharpen
-    im0 = img_gray.filter(ImageFilter.SHARPEN)
-    im0 = im0.point(lambda p: 0 if p < 140 else 255)
-    candidates.append((im0, "th140"))
-
-    # Estrategia 1: umbral 120
-    im1 = img_gray.point(lambda p: 0 if p < 120 else 255)
-    im1 = im1.filter(ImageFilter.SHARPEN)
-    candidates.append((im1, "th120"))
-
-    # Estrategia 2: umbral 100 + sharpen
-    im2 = img_gray.point(lambda p: 0 if p < 100 else 255)
-    im2 = im2.filter(ImageFilter.SHARPEN)
-    candidates.append((im2, "th100"))
-
-    # Estrategia 3: umbral 80
-    im3 = img_gray.point(lambda p: 0 if p < 80 else 255)
-    candidates.append((im3, "th80"))
-
-    # Estrategia 4: contraste alto + umbral adaptativo suave
-    enhancer = ImageEnhance.Contrast(img_gray)
-    im4 = enhancer.enhance(2.5)
-    im4 = im4.point(lambda p: 0 if p < 128 else 255)
-    candidates.append((im4, "contrast"))
-
-    # Estrategia 5: invertir + umbral
-    im5 = ImageOps.invert(img_gray)
-    im5 = im5.point(lambda p: 0 if p < 110 else 255)
-    im5 = ImageOps.invert(im5)
-    im5 = im5.filter(ImageFilter.SHARPEN)
-    candidates.append((im5, "invert"))
-
-    # Estrategia 6: escala de grises pura (sin umbral) — a veces Tesseract lo maneja mejor
-    candidates.append((img_gray, "raw"))
-
-    # Whitelist solo mayúsculas + dígitos (reduce confusión con minúsculas)
-    whitelist = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    configs = [
-        ("--psm 7", "psm7"),
-        ("--psm 8", "psm8"),
-        ("--psm 13", "psm13"),
-    ]
-
-    # Recolectar resultados con peso
-    from collections import Counter
-    votes = Counter()
-
-    for img, img_label in candidates:
-        for psm, cfg_label in configs:
-            try:
-                full_config = f"{psm} -c tessedit_char_whitelist={whitelist}"
-                text = pytesseract.image_to_string(img, config=full_config)
-                text = re.sub(r"[^A-Z0-9]", "", text)[:6]
-                if len(text) == 6:
-                    votes[text] += 1
-                elif len(text) >= 4:
-                    votes[text] += 0.5  # medio voto para resultados de 4-5 chars
-            except Exception:
-                pass
-
-    # Devolver el más votado entre los de 6 caracteres
-    if votes:
-        # Ordenar por votos descendente, luego por longitud descendente
-        best = max(votes, key=lambda k: (votes[k], len(k)))
-        if votes[best] >= 1:
-            return best
-
-    return ""
+    img = Image.open(BytesIO(image_bytes)).convert("L")
+    config = "--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    try:
+        text = pytesseract.image_to_string(img, config=config)
+        return re.sub(r"[^A-Z0-9]", "", text)[:6]
+    except Exception:
+        return ""
 
 
 

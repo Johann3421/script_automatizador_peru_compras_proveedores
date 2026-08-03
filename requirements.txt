@@ -4,3 +4,6 @@ pandas>=2.2
 openpyxl>=3.1
 pytesseract>=0.3.10
 Pillow>=10.0
+httpx>=0.25
+requests>=2.31
+pywin32>=306

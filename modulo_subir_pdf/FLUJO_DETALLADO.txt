@@ -1,0 +1,265 @@
+================================================================================
+FLUJO DETALLADO — Modificar Productos en Perú Compras (Catálogos Electrónicos)
+================================================================================
+Objetivo: Subir PDF + certificaciones ISO 9001/14001 a fichas de producto
+          en la sección "Gestión de productos" del portal Perú Compras.
+Plataforma: ASP.NET / DNN con Select2, DataTables, Bootstrap, modales
+
+================================================================================
+1. LOGIN
+================================================================================
+URL: https://www.catalogos.perucompras.gob.pe/AccesoGeneral/Login
+Método: POST con formulario (usuario, contraseña, CAPTCHA si aplica)
+Cookies: ASP.NET_SessionId, .ASPXAUTH, __RequestVerificationToken
+Usuario: almerco.03
+Password: KY300582@$
+
+El login usa CAPTCHA manual (imagen en base64). El CAPTCHA se puede omitir
+si la sesión ya tiene historial de uso reciente.
+
+================================================================================
+2. NAVEGACIÓN — PÁGINA DE GESTIÓN
+================================================================================
+URL: https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca
+
+Esta página carga un formulario con 4 dropdowns tipo Select2:
+  - ajaxAcuerdo    (Acuerdo Marco)
+  - ajaxCatalogo   (Catálogo Electrónico)
+  - ajaxCategoria  (Categoría)
+  - ajaxEstado     (Estado)
+
+Cada dropdown es un <select> oculto con un widget Select2 superpuesto.
+El contenedor visible de cada Select2 tiene ID: select2-{select_id}-container
+
+Dropdown values para EXT-CE-2022-5 (Computadoras/Escáneres):
+  ajaxAcuerdo     = 249  (EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES)
+  ajaxCatalogo    = 251  (ESCÁNERES)
+                    = 252  (COMPUTADORAS DE ESCRITORIO)
+                    = 253  (COMPUTADORAS PORTÁTILES)
+  ajaxCategoria   = (depende del catálogo, ej: 11734, 11735, 11737, etc.)
+  ajaxEstado      = ACTIVO | PENDIENTE | OBSERVADO | SUBSANADO | APROBADO
+
+La cascada funciona así:
+  ajaxAcuerdo → cambia → ajaxCatalogo recarga opciones
+  ajaxCatalogo → cambia → ajaxCategoria recarga opciones
+  ajaxCategoria → cambia → ajaxEstado recarga opciones (o no si ya tiene)
+
+Cómo seleccionar en Select2:
+  1. Hacer click en el contenedor: #select2-{id}-container
+  2. Esperar que aparezca la lista: li.select2-results__option
+  3. Click en la opción por texto
+  4. O usar JS directo: document.getElementById(id).value = valor;
+     + dispatchEvent('change') + $(sel).trigger('change.select2')
+
+Botón Buscar: #btnBuscar
+  Al hacer click, la página hace un postback ASP.NET y carga la tabla de resultados.
+
+================================================================================
+3. TABLA DE RESULTADOS
+================================================================================
+Tabla ID: #TablaProductos (con T mayúscula)
+Estructura: table > tbody > tr (cada fila = una ficha de producto)
+
+La tabla usa DataTables con campo de búsqueda:
+  Input: #C_Descripcion (placeholder="Descripción a Buscar")
+
+Flujo de búsqueda por N° de Parte:
+  1. Escribir el part number en #C_Descripcion
+  2. Click en #btnBuscar nuevamente
+  3. Esperar a que la tabla se filtre (puede tardar hasta 3 minutos con estado OBSERVADO)
+  4. Verificar que la fila filtrada aparezca
+
+Cada fila contiene un link "Editar":
+  <a href="#" onclick="location.href='/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto={ID}&C_EstadoNav=OBSERVADO&C_Moneda=USD'">Editar</a>
+
+Selector: a[onclick*='CatalogoProductoEdit']
+
+================================================================================
+4. PÁGINA DE EDICIÓN (CatalogoProductoEdit)
+================================================================================
+URL: https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto={ID}&C_EstadoNav=OBSERVADO&C_Moneda=USD
+
+4.1 SUBIR PDF
+------------------
+Input file: #AdjFile (accept=".pdf")
+  <input type="file" accept=".pdf" class="inputImagenOculto" id="AdjFile" name="AdjFile">
+
+PDF path: D:\SISTEMAS 02\Downloads\COMPUTADORAS\COMPUTADORAS\{PARTE}.pdf
+
+4.2 GUARDAR PDF
+------------------
+Botón: #btnGuardar (type="submit", value="Guardar")
+  <button type="submit" name="btnGuardar" value="Guardar" id="btnGuardar">
+      Guardar
+  </button>
+
+Al hacer click:
+  - NO navega a otra URL (postback al mismo URL)
+  - Aparece un MODAL de confirmación: #MensajeModal
+    <div role="dialog" id="MensajeModal" class="modal fade in">
+      <div class="modal-dialog">
+        <div id="modalContent" class="modal-content">
+          <div class="modal-header">
+            Catálogos Electrónicos - Mensaje de Notificación
+            <button class="close" data-dismiss="modal">×</button>
+          </div>
+          <div class="modal-body">Actualización satisfactoria!</div>
+          <div class="modal-footer">
+            <button id="btnSalir" data-dismiss="modal">Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+Para cerrar: click en #btnSalir, o button.close[data-dismiss='modal'], o Escape.
+
+4.3 AÑADIR CERTIFICACIONES (ISO 9001 + ISO 14001)
+------------------
+Botón: #btn_caracteristicaNueva
+  <button id="btn_caracteristicaNueva" title="Nueva Característica">
+      Añadir Características
+  </button>
+
+Al hacer click, se abre un BOOTBOX modal con un formulario:
+  <div id="modalBody" class="modal-body">
+    <div class="form-horizontal">
+      <input type="hidden" id="C_EstadoNav" name="C_EstadoNav" value="OBSERVADO">
+      <select id="N_Caracteristica" name="N_Caracteristica">
+        <option value="0">Seleccione Característica</option>
+        <option value="26229">CERTIFICACION</option>
+      </select>
+      <select id="N_ValCaracteristica" name="N_ValCaracteristica">
+        <option value="1597409">ISO 9001</option>
+        <option value="1661118">ISO 9001</option>
+        <option value="1661123">ISO 14001</option>
+        ... (más opciones)
+      </select>
+      <input type="hidden" id="N_CatalogoProducto" value="{ID}">
+    </div>
+  </div>
+
+El footer del modal tiene botones:
+  - Guardar → button:has-text('Guardar') en .modal-footer
+  - Cancelar → data-dismiss="modal"
+
+Proceso para cada ISO:
+  1. Seleccionar "CERTIFICACION" (value=26229) en #N_Caracteristica
+  2. Esperar que cargue #N_ValCaracteristica
+  3. Buscar el ISO en las opciones (por texto "ISO 9001" o value 1597409/1661118)
+  4. Si NO está en las opciones → ya fue agregado anteriormente → SALTAR
+  5. Seleccionar el value del ISO en #N_ValCaracteristica
+  6. Click en Guardar del modal
+  7. Aparece MODAL de confirmación: "Se registro satisfactoriamente!"
+  8. Cerrar modal con #btnSalir
+  9. Repetir desde paso 1 para el siguiente ISO
+
+ISOs a agregar: ISO 9001, ISO 14001
+
+4.4 RETORNAR A LA LISTA
+------------------
+Botón: #btnRegresarIndex
+  <button id="btnRegresarIndex" value="Retornar">
+      Retornar
+  </button>
+
+Al hacer click, navega de vuelta a t_CatalogoProductoMarca con los filtros activos.
+
+================================================================================
+5. POSIBLES ENDPOINTS HTTP PARA BULK PROCESSING
+================================================================================
+
+Para hacer esto en masa sin navegador, se necesita descubrir los endpoints POST.
+Con Playwright se puede interceptar las requests usando page.route() o
+page.on('request') para capturar:
+
+5.1 Guardar PDF (endpoint probable)
+------------------
+POST /t_CatalogoProductoMarca/CatalogoProductoEdit
+Content-Type: multipart/form-data
+Campos:
+  - __RequestVerificationToken
+  - AdjFile (archivo PDF)
+  - btnGuardar = Guardar
+  - ID_CatalogoProducto
+  - C_EstadoNav
+  - otros campos del formulario
+
+5.2 Guardar Característica (endpoint probable)
+------------------
+POST /t_CatalogoProductoMarca/CatalogoProductoEdit (mismo URL, diferente acción)
+Content-Type: application/x-www-form-urlencoded
+Campos:
+  - __RequestVerificationToken
+  - N_Caracteristica = 26229 (CERTIFICACION)
+  - N_ValCaracteristica = {value del ISO}
+  - N_CatalogoProducto = {ID del producto}
+  - C_EstadoNav
+  - btn_caracteristicaNueva o similar
+
+5.3 Búsqueda de productos (endpoint probable)
+------------------
+POST /t_CatalogoProductoMarca
+Content-Type: application/x-www-form-urlencoded
+Campos:
+  - ajaxAcuerdo
+  - ajaxCatalogo
+  - ajaxCategoria
+  - ajaxEstado
+  - C_Descripcion (part number)
+  - btnBuscar
+
+La respuesta es HTML que contiene la tabla #TablaProductos.
+Se puede parsear con BeautifulSoup para extraer:
+  - ID_CatalogoProducto del onclick del botón Editar
+  - Estado actual del producto
+
+================================================================================
+6. COOKIES Y TOKENS NECESARIOS
+================================================================================
+  - ASP.NET_SessionId  → sesión del servidor
+  - .ASPXAUTH          → autenticación
+  - __RequestVerificationToken → anti-CSRF (se extrae del HTML de cada página)
+  - TS{xxxx} (opcional) → puede ser necesario para ciertas requests
+
+El RequestVerificationToken cambia en cada página/formulario.
+Se debe extraer del HTML: <input name="__RequestVerificationToken" type="hidden" value="...">
+
+================================================================================
+7. ESTRATEGIA PARA BULK PROCESSING
+================================================================================
+
+OPCIÓN A: HTTP directo con requests/httpx
+  1. Login vía POST
+  2. Extraer __RequestVerificationToken de cada página
+  3. GET /t_CatalogoProductoMarca con los filtros → parsear tabla → extraer IDs
+  4. Por cada producto:
+     a. GET /CatalogoProductoEdit?ID_CatalogoProducto={ID}
+     b. Extraer RequestVerificationToken de la página de edición
+     c. POST multipart con PDF
+     d. Cerrar modal (posiblemente no necesario vía HTTP)
+     e. POST características (ISO 9001, luego ISO 14001)
+  5. Manejar rate limiting y timeouts
+
+OPCIÓN B: Múltiples Playwright en paralelo
+  1. Abrir 5-10 navegadores en paralelo
+  2. Cada uno procesa un rango del Excel
+  3. Misma lógica de navegación pero con concurrencia
+
+================================================================================
+8. ARCHIVOS DE ENTRADA
+================================================================================
+Excel: CONSOLIDADO_FICHAS OBSERVADAS_SIST. REP. MARCA_JUNIO 26.xlsx
+Estructura:
+  - Fila 1: Header "N° de Parte"
+  - Filas 2+: Números de parte (ej: GMC9M6S034V4, ESC7M6V020, ESU5M6S005)
+
+PDFs: D:\SISTEMAS 02\Downloads\COMPUTADORAS\COMPUTADORAS\{PARTE}.pdf
+  - Cada PDF debe llamarse EXACTAMENTE como el N° de Parte
+
+================================================================================
+9. COMPORTAMIENTO ESPERADO
+================================================================================
+  - Completado (OK):         PDF + ISO 9001 + ISO 14001 subidos → Amarillo en Excel
+  - Ya tenía certificados:   PDF subido, ISOs ya existían → Azul en Excel
+  - No encontrado:           Part number no encontrado en la tabla → Rojo en Excel
+  - Error:                   Falló en algún paso → Rojo en Excel

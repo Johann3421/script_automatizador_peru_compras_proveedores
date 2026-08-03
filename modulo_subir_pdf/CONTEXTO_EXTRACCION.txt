@@ -1,0 +1,186 @@
+CONTEXTO COMPLETO — Extracción de JSON/Reportes desde PeruCompras
+====================================================================
+
+OBJETIVO
+--------
+Extraer masivamente los datos JSON de la página de Reportes de PeruCompras
+(https://www.catalogos.perucompras.gob.pe/Reportes/ProductoOfertadoIndex)
+para todas las combinaciones de Acuerdo Marco × Catálogo × Categoría,
+y guardar cada resultado como archivo JSON en disco.
+
+COMPONENTES INVOLUCRADOS
+------------------------
+1. Botón "📊 Extraer Reportes" en main_subir_pdf.py (función _execute_extract)
+2. Botón "🔍 Comparar Fichas" en main_subir_pdf.py (función _execute_compare)
+3. Endpoint real descubierto: /Reportes/_detProductoOfertadoIndex
+4. utils_mod/excel_writer_mod.py (colorea el Excel: verde/amarillo/rojo)
+
+HALLAZGOS CLAVE (CRÍTICOS)
+---------------------------
+
+A) LA TABLA DE REPORTES USA DATATABLES CLIENT-SIDE (NO SERVER-SIDE)
+   - NO existe un endpoint JSON que devuelva filas de la tabla.
+   - La función JS `ListarProductosOfertados()` en la página hace:
+     $.ajax({ type: "GET", url: "/Reportes/_detProductoOfertadoIndex",
+              data: { N_Acuerdo, N_Catalogo, N_Categoria, C_Descripcion } })
+   - El servidor devuelve HTML con TODAS las filas ya renderizadas (<tr> dentro de
+     <tbody id="rOferta">), NO JSON.
+   - La DataTable se inicializa con $('#TablaOfertas').DataTable({ responsive: true })
+     SIN ajax ni serverSide → 100% client-side.
+
+B) ESTRUCTURA DE PARÁMETROS DEL ENDPOINT
+   - URL: https://www.catalogos.perucompras.gob.pe/Reportes/_detProductoOfertadoIndex
+   - Query string: N_Acuerdo=X & N_Catalogo=Y & N_Categoria=Z & C_Descripcion=
+   - NO usa "_" timestamp en este endpoint (diferente al endpoint de
+     _CatalogoProductoIndex que sí usa _=<timestamp>)
+   - Devuelve text/html
+
+C) ESTRUCTURA DEL HTML DEVUELTO
+   - Empieza con: <form action="..."> <br/> <div class="panel panel-default">
+   - Dentro hay: <div id="TablaOfertas_wrapper" class="dataTables_wrapper...">
+   - <table id="TablaOfertas" class="table table-bordered table-hover dataTable no-footer dtr-inline">
+   - <tbody id="rOferta"> contiene TODAS las filas
+   - Cada <tr class="gradeA odd/even"> tiene 13 <td>:
+       [0] imagen  (con <input name="ID_ProductoOfertado" value="XXX">)
+       [1] descripción completa del producto
+       [2] PDF link
+       [3] Moneda (USD/PEN)
+       [4] Precio
+       [5] Fecha registro
+       [6] Estado Ficha-producto
+       [7] Estado Oferta
+       [8] Fecha Adjudicación
+       [9] Fecha Publicación
+       [10] Motivo
+       [11] Justificación
+       [12] Puntaje
+   - ID_ProductoOfertado está en un <input type="hidden" value="XXX"> dentro de la primera <td>
+
+D) CÓMO SE HACE LA EXTRACCIÓN (FUNCIONA ACTUALMENTE)
+   - En _execute_extract, después de login:
+     1. page.goto(REPORTES_URL) para tener cookies de sesión
+     2. page.evaluate("async (url) => { return await (await fetch(url, ...)).text() }", url)
+        con url = ".../Reportes/_detProductoOfertadoIndex?N_Acuerdo=249&N_Catalogo=252&N_Categoria=11735&C_Descripcion="
+     3. Parsear el HTML con regex:
+        - re.search(r'<tbody\s+id="rOferta"[^>]*>(.*?)</tbody>', html, DOTALL)
+        - re.findall(r'<tr\b[^>]*>(.*?)</tr>', tbody, DOTALL)
+        - Para cada fila: regex para extraer ID_ProductoOfertado y limpiar <td> con re.sub(r'<[^>]+>', ' ', td)
+   - Guardar como JSON en output_extract/{acuerdo}/{catalogo}/{categoria}.json
+   - Probar con 33,982 registros (COMPUTADORA DE ESCRITORIO) → archivo grande pero funciona
+
+E) ERRORES HISTÓRICOS RESUELTOS
+   - page.request.post() NO funciona: no incluye cookies de sesión
+   - URL incorrecta "ProductoOfertadoData" → NO existe
+   - POST con DataTables params (draw, start, length) → devuelve HTML de la página, no JSON
+   - GET con DataTables params → mismo problema, devuelve HTML
+   - SOLUCIÓN: GET simple con N_Acuerdo/N_Catalogo/N_Categoria/C_Descripcion
+     devuelve HTML, parsearlo con regex (NO buscar endpoint JSON porque no existe)
+
+F) ENDPOINT PARA "Comparar Fichas" (DIFERENTE al de Reportes)
+   - URL objetivo: https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca
+                   ?N_Acuerdo=249&N_Catalogo=252&N_Categoria=11735&C_EstadoNav=OBSERVADO
+   - El endpoint JSON de esta página ES DIFERENTE:
+     https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CatalogoProductoIndex
+     ?N_Catalogo=252&N_Categoria=11735&C_Descripcion=&C_EstadoNav=OBSERVADO&_=<timestamp>
+   - Es GET (no POST), devuelve text/html con un <form> y una tabla
+   - Tiene <input name="ID_CatalogoProducto" value="XXX"> dentro de cada <tr>
+   - Para extracción masiva: usar el endpoint anterior con length=99999 no aplica
+     porque este endpoint devuelve HTML, no JSON. Pero la tabla de la página
+     es CLIENT-SIDE también: solo 10 filas por página se cargan en el DOM.
+   - WORKAROUND usado en _execute_compare:
+     page.goto(url) → la página carga solo 10 filas en el DOM
+     page.evaluate para extraer <tr> del DOM → solo 10 fichas
+     AHORA: navegar a /_CatalogoProductoIndex (el endpoint que devuelve HTML
+     con todas las filas) y parsearlo con regex
+
+G) COLORES DEL EXCEL (write_colored_results en utils_mod/excel_writer_mod.py)
+   - Verde (ok)        : 100% match, sin diferencias
+   - Amarillo (differ) : 1+ caracteres difieren
+   - Rojo (not_found)  : ficha no existe
+   - Azul (certs_already_exist) : legacy, ya tenía ISOs
+
+H) BUG ARREGLADO EN comparar_caracteristicas
+   - El Excel tiene valores con prefijo: "PROCESADOR: INTEL CORE ULTRA 5 225"
+   - La página también tiene el prefijo: "PROCESADOR: INTEL CORE ULTRA 5 225"
+   - ANTES: solo se quitaba el prefijo del valor de la página, no del Excel
+   - AHORA: se quita el prefijo de AMBOS valores antes de comparar
+   - Diff en navigacion_productos.py líneas ~1058-1078
+
+ESTRUCTURA DE ARCHIVOS MODIFICADOS
+-----------------------------------
+modulo_subir_pdf/main_subir_pdf.py:
+  - Botones en fila 1: ▶ Iniciar Procesamiento, 🔬 Test (1 ficha), ■ Detener
+  - Botones en fila 2: 🏷️ Solo N° de Parte, 🏅 Solo Certificaciones, 📊 Extraer Reportes, 🔍 Comparar Fichas
+  - _execute_extract (línea ~805): extrae JSON de Reportes
+  - _execute_compare (línea ~1180): compara fichas con Excel
+  - _on_compare, _on_extract, _on_nro_parte, _on_certs_only, _on_test, _on_launch, _on_stop
+  - _reset_after_stop
+modulo_subir_pdf/automation_mod/navegacion_productos.py:
+  - comparar_caracteristicas (fix prefijo)
+  - corregir_caracteristica (soporte text input)
+  - eliminar_caracteristica, agregar_caracteristica_texto
+  - agregar_caracteristicas (ISOs)
+modulo_subir_pdf/utils_mod/excel_writer_mod.py:
+  - write_colored_results: verde/amarillo/rojo/azul
+  - find_data_start
+
+WORKFLOWS QUE FUNCIONAN
+------------------------
+1. 📊 Extraer Reportes:
+   Login → fetch HTML de /_detProductoOfertadoIndex por cada combinación →
+   parsea <tr> del <tbody id="rOferta"> → guarda JSON.
+   RESULTADO: extrae 33,982 registros de COMPUTADORA DE ESCRITORIO en 1-2 seg.
+
+2. 🏷️ Solo N° de Parte: navega a edit_url por ficha → elimina NRO_PARTE
+   (link Eliminar → modal ._wModal "Si") → agrega NRO_PARTE con valor del Excel
+   (modal Añadir Característica → #N_Caracteristica=NRO_PARTE → escribir
+   en #N_ValCaracteristicaTXT → Guardar) → modal de éxito → cerrar
+
+3. 🏅 Solo Certificaciones: lee certs de la página → si falta ISO 9001/14001
+   abre modal #wm_caracteristicaNueva → selecciona CERTIFICACION → busca ISO
+   en #N_ValCaracteristica CBO → Guardar → cierra #MensajeModal
+
+PROBLEMAS PENDIENTES / A INVESTIGAR
+-----------------------------------
+- El botón "Comparar Fichas" actualmente navega ficha por ficha para comparar
+  características (906 navegaciones → ~10 min). Funciona pero es lento.
+- _execute_compare usa page.evaluate + fetch para obtener la lista inicial
+  de 1052 fichas (más rápido que navegar 906 veces para solo contar existencia).
+  Para la comparación completa navega ficha por ficha.
+- Si el Excel tiene un char que NO está en la página (como IMAGEN, CERTIFICACIONES),
+  se IGNORA en la comparación (no cuenta como diferencia).
+  Lógica: si n_diferentes == 0 → verde. Si n_diferentes > 0 → amarillo.
+  La página no tener todos los chars no afecta el resultado.
+
+CREDENCIALES
+------------
+URL: https://www.catalogos.perucompras.gob.pe/AccesoGeneral
+Usuario: almerco.03
+Password: 4lm3rKenYa@#
+OCR: pytesseract con whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
+Login automático con hasta 5 reintentos si falla el CAPTCHA.
+
+DIRECCIÓN DE PDFs
+-----------------
+D:\SISTEMAS 02\Downloads\COMPUTADORAS\COMPUTADORAS\{NRO_PARTE}.pdf
+Donde {NRO_PARTE} viene de la columna "FICHA TECNICA (PDF)" del Excel.
+
+ESTADO ACTUAL DE BOTONES
+------------------------
+✅ ▶ Iniciar Procesamiento     → flujo masivo completo (PDF+imagen+precio+chars+ISO+NRO_PARTE)
+✅ 🔬 Test (1 ficha)            → 1 ficha con todos los pasos
+✅ ■ Detener                    → stop_event
+✅ 🏷️ Solo N° de Parte          → solo elimina+agrega NRO_PARTE
+✅ 🏅 Solo Certificaciones      → solo agrega ISO 9001/14001
+✅ 📊 Extraer Reportes          → extracción masiva JSON
+✅ 🔍 Comparar Fichas            → compara con Excel (verde/amarillo/rojo)
+
+PARA EMPEZAR DESDE CERO (otra IA)
+---------------------------------
+1. Leer este archivo completo
+2. Leer modulo_subir_pdf/main_subir_pdf.py para entender la UI
+3. El endpoint JSON de Reportes NO EXISTE — hay que parsear HTML
+4. El endpoint de comparativa SÍ existe pero devuelve HTML también
+5. El OCR del CAPTCHA a veces falla — el login tiene 5 reintentos
+6. _execute_compare tiene la lógica de colores que funciona
+7. _execute_extract tiene la lógica de parseo HTML que funciona

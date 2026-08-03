@@ -1,0 +1,616 @@
+{
+  "captured_at": "2026-06-11T18:21:45.313552",
+  "current_url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca?N_Acuerdo=249&N_Catalogo=252&N_Categoria=11735&C_EstadoNav=OBSERVADO",
+  "summary": {
+    "total_requests": 315,
+    "post_requests": 11
+  },
+  "POST_REQUESTS": [
+    {
+      "timestamp": "2026-06-11T18:19:38.036377",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/AccesoGeneral",
+      "headers": {
+        "content-type": "application/x-www-form-urlencoded",
+        "origin": "https://www.catalogos.perucompras.gob.pe",
+        "referer": "https://www.catalogos.perucompras.gob.pe/AccesoGeneral",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "post_data_raw": "__RequestVerificationToken=H94gmI80i16PU9Pmxv1mwr1ZOIlKJga-vSyqMmK6yhV6nj2vd37Srvi7yfcmQhz4WID1hKfQ8aCQeOb5kL8qg_J3R01_-9q_zQcazGUPMu01&ID_Usuario=almerco.03&Contrasena=4lm3rKenYa%40%23&CodigoCaptcha=5708GP&btnLogin=",
+      "post_data_parsed": {
+        "__RequestVerificationToken": "H94gmI80i16PU9Pmxv1mwr1ZOIlKJga-vSyqMmK6yhV6nj2vd37Srvi7yfcmQhz4WID1hKfQ8aCQeOb5kL8qg_J3R01_-9q_zQcazGUPMu01",
+        "ID_Usuario": "almerco.03",
+        "Contrasena": "4lm3rKenYa@#",
+        "CodigoCaptcha": "5708GP"
+      },
+      "post_data_format": "form-encoded",
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:19:45.314535",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/Home/validarEncuestas",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "application/json, text/javascript, */*; q=0.01",
+        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+      },
+      "post_data_raw": "usuario=almerco.03&ruc=20601687977",
+      "post_data_parsed": {
+        "usuario": "almerco.03",
+        "ruc": "20601687977"
+      },
+      "post_data_format": "form-encoded",
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:19:52.695092",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/Home/validarEncuestas",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/Home",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "application/json, text/javascript, */*; q=0.01",
+        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+      },
+      "post_data_raw": "usuario=almerco.03&ruc=20601687977",
+      "post_data_parsed": {
+        "usuario": "almerco.03",
+        "ruc": "20601687977"
+      },
+      "post_data_format": "form-encoded",
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:20:04.090056",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/General/ListaJ_CatalogoAcuerdo",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "content-type": "application/json"
+      },
+      "post_data_raw": "{\"N_Acuerdo\":\"249\",\"C_Estado\":\"ACTIVO¬IMPLEMENTACION\"}",
+      "post_data_parsed": {
+        "N_Acuerdo": "249",
+        "C_Estado": "ACTIVO¬IMPLEMENTACION"
+      },
+      "post_data_format": "json",
+      "category": "BUSQUEDA_TABLA"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:08.114707",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/General/ListaJ_CategoriaCatalogo",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "content-type": "application/json"
+      },
+      "post_data_raw": "{\"N_Catalogo\":\"252\",\"N_CategoriaParent\":0,\"C_Estado\":\"ACTIVO^IMPLEMENTACION\",\"N_Nivel\":\"1\"}",
+      "post_data_parsed": {
+        "N_Catalogo": "252",
+        "N_CategoriaParent": 0,
+        "C_Estado": "ACTIVO^IMPLEMENTACION",
+        "N_Nivel": "1"
+      },
+      "post_data_format": "json",
+      "category": "BUSQUEDA_TABLA"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:54.674769",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/ListarValoresCaracteristica",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+      },
+      "post_data_raw": "N_CatalogoProducto=2378815&N_Caracteristica=26229",
+      "post_data_parsed": {
+        "N_CatalogoProducto": "2378815",
+        "N_Caracteristica": "26229"
+      },
+      "post_data_format": "form-encoded",
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:57.255264",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CaracteristicaCreate",
+      "headers": {
+        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryAifR5cRu4A6tOq1U",
+        "origin": "https://www.catalogos.perucompras.gob.pe",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "post_data_raw": "------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"__RequestVerificationToken\"\r\n\r\nJbVeVgLCl1F_aFvqD8YJv6OtUuJ9ZozXrQjEurDRtbipwhTpZ5vmdoE0d8X9rZOXddQjQh-wpjiX6N7sAp9HLCIV49z1DfNlT-Lc0MROGBo1\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"C_EstadoNav\"\r\n\r\nOBSERVADO\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_Caracteristica\"\r\n\r\n26229\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_ValCaracteristica\"\r\n\r\n1597409\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_ValCaracteristicaTXT\"\r\n\r\n\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_ValCaracteristicaNUM\"\r\n\r\n\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"D_ValCaracteristicaFecha\"\r\n\r\n\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_CatalogoProducto\"\r\n\r\n2378815\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U--\r\n",
+      "post_data_parsed": {
+        "------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name": "\"__RequestVerificationToken\"\r\n\r\nJbVeVgLCl1F_aFvqD8YJv6OtUuJ9ZozXrQjEurDRtbipwhTpZ5vmdoE0d8X9rZOXddQjQh-wpjiX6N7sAp9HLCIV49z1DfNlT-Lc0MROGBo1\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"C_EstadoNav\"\r\n\r\nOBSERVADO\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_Caracteristica\"\r\n\r\n26229\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_ValCaracteristica\"\r\n\r\n1597409\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_ValCaracteristicaTXT\"\r\n\r\n\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_ValCaracteristicaNUM\"\r\n\r\n\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"D_ValCaracteristicaFecha\"\r\n\r\n\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U\r\nContent-Disposition: form-data; name=\"N_CatalogoProducto\"\r\n\r\n2378815\r\n------WebKitFormBoundaryAifR5cRu4A6tOq1U--\r\n"
+      },
+      "post_data_format": "form-encoded",
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:02.891015",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/ListarValoresCaracteristica",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+      },
+      "post_data_raw": "N_CatalogoProducto=2378815&N_Caracteristica=26229",
+      "post_data_parsed": {
+        "N_CatalogoProducto": "2378815",
+        "N_Caracteristica": "26229"
+      },
+      "post_data_format": "form-encoded",
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:05.473451",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CaracteristicaCreate",
+      "headers": {
+        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryMng1M5pFdpsFWxxG",
+        "origin": "https://www.catalogos.perucompras.gob.pe",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "post_data_raw": "------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"__RequestVerificationToken\"\r\n\r\nC1sFVNfK1BpY1KsIWaBRm697AIHQEgXq9f01xy-rDcVyvNMlKZIizkp5p2UYxQ6PDVKlM1AatGZ6SrIFjdBpECYIDrNkDwDGlRnYR-pjP5U1\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"C_EstadoNav\"\r\n\r\nOBSERVADO\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_Caracteristica\"\r\n\r\n26229\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_ValCaracteristica\"\r\n\r\n1661123\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_ValCaracteristicaTXT\"\r\n\r\n\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_ValCaracteristicaNUM\"\r\n\r\n\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"D_ValCaracteristicaFecha\"\r\n\r\n\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_CatalogoProducto\"\r\n\r\n2378815\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG--\r\n",
+      "post_data_parsed": {
+        "------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name": "\"__RequestVerificationToken\"\r\n\r\nC1sFVNfK1BpY1KsIWaBRm697AIHQEgXq9f01xy-rDcVyvNMlKZIizkp5p2UYxQ6PDVKlM1AatGZ6SrIFjdBpECYIDrNkDwDGlRnYR-pjP5U1\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"C_EstadoNav\"\r\n\r\nOBSERVADO\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_Caracteristica\"\r\n\r\n26229\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_ValCaracteristica\"\r\n\r\n1661123\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_ValCaracteristicaTXT\"\r\n\r\n\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_ValCaracteristicaNUM\"\r\n\r\n\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"D_ValCaracteristicaFecha\"\r\n\r\n\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG\r\nContent-Disposition: form-data; name=\"N_CatalogoProducto\"\r\n\r\n2378815\r\n------WebKitFormBoundaryMng1M5pFdpsFWxxG--\r\n"
+      },
+      "post_data_format": "form-encoded",
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:10.794904",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/General/ListaJ_CatalogoAcuerdo",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca?N_Acuerdo=249&N_Catalogo=252&N_Categoria=11735&C_EstadoNav=OBSERVADO",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "content-type": "application/json"
+      },
+      "post_data_raw": "{\"N_Acuerdo\":\"249\",\"C_Estado\":\"ACTIVO¬IMPLEMENTACION\"}",
+      "post_data_parsed": {
+        "N_Acuerdo": "249",
+        "C_Estado": "ACTIVO¬IMPLEMENTACION"
+      },
+      "post_data_format": "json",
+      "category": "BUSQUEDA_TABLA"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:10.956602",
+      "method": "POST",
+      "url": "https://www.catalogos.perucompras.gob.pe/General/ListaJ_CategoriaCatalogo",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca?N_Acuerdo=249&N_Catalogo=252&N_Categoria=11735&C_EstadoNav=OBSERVADO",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "content-type": "application/json"
+      },
+      "post_data_raw": "{\"N_Catalogo\":\"252\",\"N_CategoriaParent\":0,\"C_Estado\":\"ACTIVO^IMPLEMENTACION\",\"N_Nivel\":\"1\"}",
+      "post_data_parsed": {
+        "N_Catalogo": "252",
+        "N_CategoriaParent": 0,
+        "C_Estado": "ACTIVO^IMPLEMENTACION",
+        "N_Nivel": "1"
+      },
+      "post_data_format": "json",
+      "category": "BUSQUEDA_TABLA"
+    }
+  ],
+  "GET_REQUESTS": [
+    {
+      "timestamp": "2026-06-11T18:19:59.513054",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca",
+      "headers": {
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:20:20.191366",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CatalogoProductoIndex?N_Catalogo=252&N_Categoria=11735&C_Descripcion=&C_EstadoNav=OBSERVADO&_=1781220000013",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:20:34.209833",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CatalogoProductoIndex?N_Catalogo=252&N_Categoria=11735&C_Descripcion=GMC9M6S034V4&C_EstadoNav=OBSERVADO&_=1781220000014",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:20:39.298223",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO&C_Moneda=USD",
+      "headers": {
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:20:43.630035",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CaracteristicaIndex?N_CatalogoProducto=2378815&N_Categoria=11735&C_Estado=ACTIVO&C_EstadoNav=OBSERVADO&_=1781220041978",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO&C_Moneda=USD",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:43.630323",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CaracteristicaOtraIndex?N_CatalogoProducto=2378815&N_Categoria=11735&C_Estado=ACTIVO&C_EstadoNav=OBSERVADO&_=1781220041979",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO&C_Moneda=USD",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:51.049307",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CaracteristicaIndex?N_CatalogoProducto=2378815&N_Categoria=11735&C_Estado=ACTIVO&C_EstadoNav=OBSERVADO&_=1781220050847",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:51.049645",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CaracteristicaOtraIndex?N_CatalogoProducto=2378815&N_Categoria=11735&C_Estado=ACTIVO&C_EstadoNav=OBSERVADO&_=1781220050848",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:52.647887",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CaracteristicaCreate?N_CatalogoProducto=2378815&N_Categoria=11735&C_EstadoNav=OBSERVADO",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "text/html, */*; q=0.01",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:52.648174",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CaracteristicaCreate?N_Categoria=11735&N_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "text/html, */*; q=0.01",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:57.479665",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+      "headers": {
+        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryAifR5cRu4A6tOq1U",
+        "origin": "https://www.catalogos.perucompras.gob.pe",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:20:58.288617",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CaracteristicaIndex?N_CatalogoProducto=2378815&N_Categoria=11735&C_Estado=ACTIVO&C_EstadoNav=OBSERVADO&_=1781220057956",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:20:58.289137",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CaracteristicaOtraIndex?N_CatalogoProducto=2378815&N_Categoria=11735&C_Estado=ACTIVO&C_EstadoNav=OBSERVADO&_=1781220057957",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:00.844773",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CaracteristicaCreate?N_CatalogoProducto=2378815&N_Categoria=11735&C_EstadoNav=OBSERVADO",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "text/html, */*; q=0.01",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:00.844963",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CaracteristicaCreate?N_Categoria=11735&N_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "text/html, */*; q=0.01",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:05.888049",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+      "headers": {
+        "content-type": "multipart/form-data; boundary=----WebKitFormBoundaryMng1M5pFdpsFWxxG",
+        "origin": "https://www.catalogos.perucompras.gob.pe",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:21:07.290730",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CaracteristicaIndex?N_CatalogoProducto=2378815&N_Categoria=11735&C_Estado=ACTIVO&C_EstadoNav=OBSERVADO&_=1781220066795",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:07.290969",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CaracteristicaOtraIndex?N_CatalogoProducto=2378815&N_Categoria=11735&C_Estado=ACTIVO&C_EstadoNav=OBSERVADO&_=1781220066796",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": "CERTIFICACIONES"
+    },
+    {
+      "timestamp": "2026-06-11T18:21:09.914563",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca?N_Acuerdo=249&N_Catalogo=252&N_Categoria=11735&C_EstadoNav=OBSERVADO",
+      "headers": {
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/CatalogoProductoEdit?ID_CatalogoProducto=2378815&C_EstadoNav=OBSERVADO",
+        "upgrade-insecure-requests": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\""
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": null
+    },
+    {
+      "timestamp": "2026-06-11T18:21:11.181602",
+      "method": "GET",
+      "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca/_CatalogoProductoIndex?N_Catalogo=252&N_Categoria=11735&C_Descripcion=&C_EstadoNav=OBSERVADO&_=1781220070526",
+      "headers": {
+        "sec-ch-ua-platform": "\"Windows\"",
+        "referer": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca?N_Acuerdo=249&N_Catalogo=252&N_Categoria=11735&C_EstadoNav=OBSERVADO",
+        "x-requested-with": "XMLHttpRequest",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",
+        "accept": "*/*",
+        "sec-ch-ua": "\"Chromium\";v=\"145\", \"Not:A-Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0"
+      },
+      "post_data_raw": null,
+      "post_data_parsed": null,
+      "post_data_format": null,
+      "category": null
+    }
+  ]
+}

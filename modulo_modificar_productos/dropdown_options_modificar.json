@@ -1,0 +1,236 @@
+{
+  "url": "https://www.catalogos.perucompras.gob.pe/t_CatalogoProductoMarca",
+  "select_ids_order": [
+    "ajaxAcuerdo",
+    "ajaxCatalogo",
+    "ajaxCategoria",
+    "ajaxEstado"
+  ],
+  "levels": {
+    "ajaxAcuerdo": {
+      "id": "ajaxAcuerdo",
+      "label": "",
+      "options": [
+        {
+          "value": "201",
+          "text": "EXT-CE-2021-5"
+        },
+        {
+          "value": "197",
+          "text": "EXT-CE-2021-6 IMPRESORAS, CONSUMIBLES, REPUESTOS Y ACCESORIOS DE OFICINA"
+        },
+        {
+          "value": "194",
+          "text": "EXT-CE-2021-7 ÚTILES DE ESCRITORIO, PAPELES Y CARTONES"
+        },
+        {
+          "value": "249",
+          "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+        },
+        {
+          "value": "321",
+          "text": "EXT-CE-2024-1 BATERÍAS, PILAS Y ACCESORIOS"
+        },
+        {
+          "value": "322",
+          "text": "EXT-CE-2024-2 EQUIPOS MULTIMEDIA Y ACCESORIOS"
+        },
+        {
+          "value": "324",
+          "text": "EXT-CE-2024-3 MATERIALES E INSUMOS DE LIMPIEZA, PAPELES PARA ASEO Y LIMPIEZA"
+        },
+        {
+          "value": "392",
+          "text": "EXT-CE-2024-6 IMPRESORAS, ESCANERES, CONSUMIBLES, REPUESTOS Y ACCESORIOS DE OFICINA"
+        },
+        {
+          "value": "393",
+          "text": "EXT-CE-2024-7 ÚTILES DE ESCRITORIO,PAPELES Y CARTONES"
+        },
+        {
+          "value": "328",
+          "text": "EXT-CE-2024-10 LLANTAS, NEUMÁTICOS Y ACCESORIOS"
+        },
+        {
+          "value": "352",
+          "text": "EXT-CE-2024-12 TUBERIAS, PINTURAS, CERÁMICOS, SANITARIOS, ACCESORIOS, Y COMPLEMENTOS EN GENERAL"
+        },
+        {
+          "value": "350",
+          "text": "EXT-CE-2024-13 EQUIPOS DE AIRE ACONDICIONADO, SIMILARES Y ACCESORIOS"
+        },
+        {
+          "value": "363",
+          "text": "EXT-CE-2024-14 LUMINARIAS, MATERIALES ELÉCTRICOS, Y CABLES ELÉCTRICOS"
+        },
+        {
+          "value": "357",
+          "text": "EXT-CE-2024-16 ACCESORIOS DOMÉSTICOS Y BIENES PARA USOS DIVERSOS"
+        },
+        {
+          "value": "370",
+          "text": "EXT-CE-2024-17 BEBIDAS NO ALCOHÓLICAS"
+        },
+        {
+          "value": "372",
+          "text": "EXT-CE-2024-18 CEREALES, ACEITE, AZUCARES Y MENESTRAS"
+        },
+        {
+          "value": "376",
+          "text": "EXT-CE-2024-26 MAQUINAS, EQUIPOS Y HERRAMIENTAS PARA JARDINERIA, SILVICULTURA Y AGRICULTURA"
+        },
+        {
+          "value": "394",
+          "text": "EXT-CE-2025-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES, EQUIPOS Y DISPOSITIVOS PERIFÉRICOS"
+        },
+        {
+          "value": "409",
+          "text": "EXT-CE-2025-6 IMPRESORAS; CONSUMIBLES; ESCÁNERES Y; REPUESTOS Y ACCESORIOS DE OFICINA"
+        },
+        {
+          "value": "414",
+          "text": "EXT-CE-2025-11 MOBILIARIO EN GENERAL"
+        },
+        {
+          "value": "404",
+          "text": "EXT-CE-2025-27 PRODUCTOS DE MADERA ASERRADA"
+        },
+        {
+          "value": "61",
+          "text": "IM-CE-2018- VALES DE CONSUMO"
+        },
+        {
+          "value": "131",
+          "text": "IM-CE-2020- ROPA HOSPITALARIA DESCARTABLE"
+        },
+        {
+          "value": "151",
+          "text": "IM-CE-2020-15 EMISIÓN DE BOLETOS AÉREOS"
+        },
+        {
+          "value": "174",
+          "text": "IM-CE-2021-X CAJAS PORTAMEDIDOR"
+        },
+        {
+          "value": "190",
+          "text": "IM-CE-2021-X VESTUARIO, ACCESORIOS Y MATERIALES TEXTILES"
+        },
+        {
+          "value": "236",
+          "text": "IM-CE-2022-X material DE vidrio para LABORATORIO"
+        },
+        {
+          "value": "243",
+          "text": "IM-CE-2022-XX EQUIPOS DE AUDIO Y VIDEO"
+        },
+        {
+          "value": "246",
+          "text": "IM-CE-2022-XX RUBRO MADERA 2"
+        },
+        {
+          "value": "238",
+          "text": "IM-CE-2022-XX EQUIPOS DE COMUNICACION"
+        },
+        {
+          "value": "180",
+          "text": "IM-CE-2023-29 EQUIPOS BIOMÉTRICOS"
+        },
+        {
+          "value": "257",
+          "text": "IM-CE-2023-29 VENTANAS Y PUERTAS"
+        },
+        {
+          "value": "259",
+          "text": "IM-CE-2023-31 EXTINTORES Y ACCESORIOS"
+        },
+        {
+          "value": "383",
+          "text": "IM-CE-2024-29 BIENES PARA ABRIGO, TECHO, ACOPIO, HERRAMIENTAS MANUALES Y MENAJERIA PARA USOS DIVERSOS"
+        },
+        {
+          "value": "311",
+          "text": "IM-CE-2024-31 SERVICIO DE MANTENIMIENTO, RECARGA Y PRUEBA HIDROSTÁTICA DE EXTINTORES"
+        },
+        {
+          "value": "334",
+          "text": "IM-CE-2024-XX EQUIPOS Y ACCESORIOS DE TELECOMUNICACIONES EQUIPOS Y ACCESORIOS DE TELECOMUNICACIONES"
+        },
+        {
+          "value": "347",
+          "text": "IM-CE-2024-XXXX SOFTWARE Y LICENCIAS"
+        }
+      ],
+      "children": {
+        "id": "ajaxCatalogo",
+        "label": "",
+        "options": [
+          {
+            "value": "198",
+            "text": "CONSUMIBLES"
+          },
+          {
+            "value": "199",
+            "text": "IMPRESORAS"
+          },
+          {
+            "value": "200",
+            "text": "REPUESTOS Y ACCESORIOS DE OFICINA"
+          }
+        ],
+        "children": {
+          "id": "ajaxCategoria",
+          "label": "",
+          "options": [
+            {
+              "value": "11452",
+              "text": "TINTA"
+            },
+            {
+              "value": "11453",
+              "text": "TONER"
+            },
+            {
+              "value": "11451",
+              "text": "REVELADOR"
+            },
+            {
+              "value": "11450",
+              "text": "CINTA"
+            }
+          ],
+          "children": {
+            "id": "ajaxEstado",
+            "label": "Estado:",
+            "options": [
+              {
+                "value": "ACTIVO",
+                "text": "ACTIVO"
+              },
+              {
+                "value": "PENDIENTE",
+                "text": "PENDIENTE"
+              },
+              {
+                "value": "OBSERVADO",
+                "text": "OBSERVADO"
+              },
+              {
+                "value": "SUBSANADO",
+                "text": "SUBSANADO"
+              },
+              {
+                "value": "APROBADA",
+                "text": "APROBADA"
+              },
+              {
+                "value": "TODOS",
+                "text": "TODOS"
+              }
+            ],
+            "children": {}
+          }
+        }
+      }
+    }
+  }
+}

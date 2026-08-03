@@ -1,8 +1,10 @@
-import sys, os, queue, threading, csv, time, json
+import sys, os, queue, threading, csv, time, json, glob
 from io import BytesIO
 from tkinter import filedialog
 from PIL import Image
 import customtkinter as ctk
+
+VERSION = "11.8"
 
 # ── Paths ────────────────────────────────────────────────────────
 if getattr(sys, "frozen", False):
@@ -11,6 +13,10 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
+
+# ── Chromium path setup is handled by automation/browser.py ─
+#    The browser module will resolve and validate the correct Playwright
+#    installation path, including the expected Chromium revision.
 
 from automation.browser import init_browser, close_browser
 from automation.login import do_login
@@ -30,9 +36,14 @@ class CaptchaBridge:
         self.event = threading.Event()
         self.image_bytes = None
         self.user_code = ""
+        self.stop_event = None
     def request(self, img):
         with self.lock: self.image_bytes = img; self.user_code = ""; self.event.clear()
-        self.event.wait()
+        while True:
+            if self.stop_event and self.stop_event.is_set():
+                self.event.set(); return ""
+            if self.event.wait(timeout=0.5):
+                break
         with self.lock: return self.user_code
     def respond(self, code):
         with self.lock: self.user_code = code; self.image_bytes = None
@@ -43,9 +54,14 @@ class CatalogBridge:
         self.lock = threading.Lock()
         self.event = threading.Event()
         self.step = ""; self.options = []; self.selection = ""
+        self.stop_event = None
     def request_step(self, step, opts):
         with self.lock: self.step = step; self.options = opts; self.selection = ""; self.event.clear()
-        self.event.wait()
+        while True:
+            if self.stop_event and self.stop_event.is_set():
+                self.event.set(); return ""
+            if self.event.wait(timeout=0.5):
+                break
         with self.lock: return self.selection
     def respond_step(self, val):
         with self.lock: self.selection = val; self.options = []
@@ -59,7 +75,7 @@ class CatalogBridge:
 class PeruComprasApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Peru Compras Bot")
+        self.title(f"Peru Compras Bot v{VERSION}")
         self.geometry("960x760")
         self.minsize(820, 640)
         ctk.set_appearance_mode("dark")
@@ -87,7 +103,7 @@ class PeruComprasApp(ctk.CTk):
         # ── HEADER ──
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.grid(row=0, column=0, padx=20, pady=(16, 4), sticky="ew")
-        ctk.CTkLabel(header, text="Peru Compras Bot",
+        ctk.CTkLabel(header, text=f"Peru Compras Bot v{VERSION}",
                      font=ctk.CTkFont(size=22, weight="bold")).pack(side="left")
         ctk.CTkLabel(header, text="Automatización de ofertas",
                      font=ctk.CTkFont(size=12), text_color="gray60").pack(side="left", padx=12)
@@ -502,6 +518,10 @@ class PeruComprasApp(ctk.CTk):
         self._log_lines.clear()
         self.stop_event.clear()
 
+        # Conectar stop_event a los bridges para que puedan desbloquearse
+        self.captcha_bridge.stop_event = self.stop_event
+        self.catalog_bridge.stop_event = self.stop_event
+
         self.log_box.configure(state="normal")
         self.log_box.delete("1.0", "end")
         self.log_box.configure(state="disabled")
@@ -541,18 +561,21 @@ class PeruComprasApp(ctk.CTk):
         log = LogWriter(self.log_queue)
         stop = self.stop_event
         pw = browser = None
+        done_sent = False
         try:
             log.info("Iniciando navegador...")
+            if stop.is_set(): return
             pw, browser, page = init_browser(headless=creds["headless"])
             log.info("Navegador listo")
 
+            if stop.is_set(): return
             ok = do_login(page, creds["usuario"], creds["password"],
                           creds["captcha_key"], log, stop, self.captcha_bridge)
             if not ok or stop.is_set():
                 if not ok: log.error("Login fallido.")
                 return
 
-            # Configurar catalogo con valores pre-seleccionados (sin bridge)
+            if stop.is_set(): return
             result = setup_catalog_search(page, log, self.catalog_bridge,
                                           pre_selected=pre_selected)
             if not result or stop.is_set():
@@ -566,8 +589,8 @@ class PeruComprasApp(ctk.CTk):
                            creds["usuario"], creds["password"],
                            self.captcha_bridge, self.catalog_bridge,
                            pre_selected=pre_selected)
+            done_sent = True  # run_offer_loop ya envió done internamente
 
-            # Escribir Excel coloreado
             if results and data.get("path") and data.get("sheet"):
                 try:
                     out = write_results(data["path"], data["sheet"], results)
@@ -581,6 +604,8 @@ class PeruComprasApp(ctk.CTk):
             if browser and pw:
                 try: close_browser(pw, browser); log.info("Navegador cerrado")
                 except: pass
+            if not done_sent:
+                log.done(self._ok, self._errors)
 
     def _on_stop(self):
         self.stop_event.set()

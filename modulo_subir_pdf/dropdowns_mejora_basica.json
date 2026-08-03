@@ -1,0 +1,237 @@
+{
+  "url": "https://www.catalogos.perucompras.gob.pe/MejoraBasica",
+  "extracted_at": "2026-06-22T18:02:01.789321",
+  "total_combinaciones": 14,
+  "acuerdos": [
+    {
+      "value": "249",
+      "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+    }
+  ],
+  "combinaciones": [
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "251",
+        "text": "ESCÁNERES"
+      },
+      "categoria": {
+        "value": "11737",
+        "text": "ESCANER DE PLANOS"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "251",
+        "text": "ESCÁNERES"
+      },
+      "categoria": {
+        "value": "11738",
+        "text": "ESCANER DE DOCUMENTOS"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "251",
+        "text": "ESCÁNERES"
+      },
+      "categoria": {
+        "value": "11739",
+        "text": "ESCANER DE LIBROS"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "252",
+        "text": "COMPUTADORAS DE ESCRITORIO"
+      },
+      "categoria": {
+        "value": "11751",
+        "text": "DISPOSITIVOS DE ALMACENAMIENTO INTERNO"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "252",
+        "text": "COMPUTADORAS DE ESCRITORIO"
+      },
+      "categoria": {
+        "value": "11735",
+        "text": "COMPUTADORA DE ESCRITORIO"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "252",
+        "text": "COMPUTADORAS DE ESCRITORIO"
+      },
+      "categoria": {
+        "value": "11736",
+        "text": "COMPUTADORA TODO EN UNO"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "252",
+        "text": "COMPUTADORAS DE ESCRITORIO"
+      },
+      "categoria": {
+        "value": "11740",
+        "text": "ESTACION DE TRABAJO"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "252",
+        "text": "COMPUTADORAS DE ESCRITORIO"
+      },
+      "categoria": {
+        "value": "11741",
+        "text": "MONITOR"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "252",
+        "text": "COMPUTADORAS DE ESCRITORIO"
+      },
+      "categoria": {
+        "value": "11742",
+        "text": "PANTALLA PUBLICITARIA"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "252",
+        "text": "COMPUTADORAS DE ESCRITORIO"
+      },
+      "categoria": {
+        "value": "11747",
+        "text": "DISPOSITIVOS DE ALMACENAMIENTO EXTERNO"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "252",
+        "text": "COMPUTADORAS DE ESCRITORIO"
+      },
+      "categoria": {
+        "value": "11749",
+        "text": "PANTALLA INTERACTIVA"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "250",
+        "text": "COMPUTADORAS PORTÁTILES"
+      },
+      "categoria": {
+        "value": "11744",
+        "text": "ESTACION DE TRABAJO PORTATIL"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "250",
+        "text": "COMPUTADORAS PORTÁTILES"
+      },
+      "categoria": {
+        "value": "11743",
+        "text": "COMPUTADORA PORTATIL"
+      },
+      "regiones": [],
+      "provincias": []
+    },
+    {
+      "acuerdo": {
+        "value": "249",
+        "text": "EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES Y ESCÁNERES"
+      },
+      "catalogo": {
+        "value": "250",
+        "text": "COMPUTADORAS PORTÁTILES"
+      },
+      "categoria": {
+        "value": "11745",
+        "text": "TABLETA"
+      },
+      "regiones": [],
+      "provincias": []
+    }
+  ]
+}

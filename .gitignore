@@ -9,6 +9,7 @@ venv/
 
 # Build / distribucion (instaladores, comprimidos)
 build/
+build_installer/
 dist/
 Output/
 *.tar.gz
@@ -17,10 +18,14 @@ Output/
 *.msi
 *.spec
 installer.iss
+installer/setup_config.iss
 install_perucombras.py
 create_installer.py
 build_installer.py
 hook-runtime.py
+
+# VS Code (excluido para no imponer config a otros devs, opcional)
+# .vscode/
 
 # Archivos de prueba temporales
 _test_*
@@ -30,5 +35,26 @@ _test_*
 *.xlsx
 *.xls
 
-# Playwright browsers (se descargan automaticamente)
-__pycache__/
+# Skill sub-repo externa y runtime cache
+.agents/skills/ponytail_repo/
+.ponytail/
+
+
+
+# Playwright browsers (descargados automáticamente)
+browsers/
+
+# OCR binaries locales pesados
+tesseract/
+
+
+# Installer temporal y binarios finales
+installer_tmp/
+installer/
+
+# Dumps masivos JSON de extracción
+modulo_subir_pdf/output_extract/
+modulo_subir_pdf/discovery_output/
+modulo_subir_pdf/discovery_v2_output/
+*precios_fichas_*.json
+

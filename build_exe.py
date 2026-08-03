@@ -21,17 +21,14 @@ def run(cmd, **kwargs):
 
 
 def find_playwright_browsers():
-    """Encuentra la carpeta de navegadores de Playwright."""
-    import playwright
-    pw_dir = os.path.dirname(playwright.__file__)
-    # Buscar ms-playwright en AppData
+    """Encuentra la carpeta de navegadores de Playwright sin importar el módulo."""
     local = os.environ.get("LOCALAPPDATA", "")
-    paths = [
-        os.path.join(local, "ms-playwright"),
-    ]
-    for p in paths:
-        if os.path.isdir(p):
-            return p
+    pw_dir = os.path.join(local, "ms-playwright")
+    if os.path.isdir(pw_dir):
+        return pw_dir
+    repo_dir = os.path.join(PROJECT_DIR, "browsers")
+    if os.path.isdir(repo_dir):
+        return repo_dir
     return None
 
 
