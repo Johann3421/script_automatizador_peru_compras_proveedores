@@ -2,135 +2,124 @@ import customtkinter as ctk
 
 def build_instructions_tab(parent):
     """
-    Construye la pestaña de Instrucciones y Señalización de Uso para personal de oficina.
+    Construye la vista de Guía e Instrucciones para personal de oficina con paleta corporativa sobria.
     """
     parent.grid_columnconfigure(0, weight=1)
     parent.grid_rowconfigure(0, weight=1)
 
     container = ctk.CTkScrollableFrame(parent, fg_color="transparent")
-    container.grid(row=0, column=0, padx=16, pady=16, sticky="nsew")
+    container.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
     container.grid_columnconfigure(0, weight=1)
 
-    # ── TÍTULO Y PRESENTACIÓN ──
-    title_frame = ctk.CTkFrame(container, fg_color="#252538", corner_radius=8)
-    title_frame.pack(fill="x", pady=(0, 12), ipadx=12, ipady=10)
+    # ── ENCABEZADO DE GUÍA ──
+    head_box = ctk.CTkFrame(container, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
+    head_box.pack(fill="x", pady=(0, 14), ipadx=14, ipady=12)
 
     ctk.CTkLabel(
-        title_frame,
-        text="Guía de Uso Rápido — Perú Compras Bot",
+        head_box,
+        text="Manual de Operación — Perú Compras Bot",
         font=ctk.CTkFont(size=18, weight="bold"),
-        text_color="#f8fafc",
-    ).pack(anchor="w", padx=12, pady=(4, 2))
+        text_color="#f9fafb",
+    ).pack(anchor="w", padx=12, pady=(2, 2))
 
     ctk.CTkLabel(
-        title_frame,
-        text="Manual de operación para automatización de carga de ofertas y fichas técnicas.",
+        head_box,
+        text="Guía paso a paso para la automatización de ofertas, carga de fichas técnicas en PDF y validación de stock.",
         font=ctk.CTkFont(size=12),
-        text_color="#94a3b8",
-    ).pack(anchor="w", padx=12, pady=(0, 4))
+        text_color="#9ca3af",
+    ).pack(anchor="w", padx=12, pady=(0, 2))
 
-    # ── SECCIÓN 1: PASOS DE OPERACIÓN ──
-    steps_frame = ctk.CTkFrame(container, fg_color="#252538", corner_radius=8)
-    steps_frame.pack(fill="x", pady=6, ipadx=12, ipady=10)
+    # ── PASOS DE OPERACIÓN ──
+    steps_box = ctk.CTkFrame(container, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
+    steps_box.pack(fill="x", pady=8, ipadx=14, ipady=12)
 
     ctk.CTkLabel(
-        steps_frame,
-        text="Flujo de Trabajo (3 Pasos)",
+        steps_box,
+        text="Flujo de Trabajo Simplificado",
         font=ctk.CTkFont(size=14, weight="bold"),
         text_color="#2563eb",
-    ).pack(anchor="w", padx=12, pady=(4, 6))
+    ).pack(anchor="w", padx=12, pady=(2, 8))
 
-    steps = [
-        ("1. Credenciales y Archivo Excel", "Ingresar usuario/clave de Perú Compras y seleccionar el archivo .xlsx. El sistema autodetectará las columnas."),
-        ("2. Selección de Catálogo", "Elegir el Acuerdo Marco, Catálogo Electrónico y Categoría correspondientes a los productos del Excel."),
-        ("3. Iniciar Procesamiento", "Hacer clic en 'Iniciar Procesamiento' en la parte inferior. El bot resolverá el CAPTCHA e iterará las filas."),
+    steps_data = [
+        ("Paso 1: Credenciales y Excel", "Complete el usuario y contraseña de Perú Compras, y seleccione el archivo .xlsx. El sistema detectará las columnas automáticamente."),
+        ("Paso 2: Selección de Catálogo", "Indique el Acuerdo Marco, Catálogo y Categoría en los desplegables en cascada."),
+        ("Paso 3: Ejecución", "Haga clic en 'Iniciar Procesamiento' en la barra inferior. El bot gestionará el inicio de sesión y la carga de datos."),
     ]
 
-    for title, desc in steps:
-        step_box = ctk.CTkFrame(steps_frame, fg_color="#1e1e2e", corner_radius=6)
-        step_box.pack(fill="x", padx=12, pady=4, ipadx=8, ipady=6)
+    for title, desc in steps_data:
+        card = ctk.CTkFrame(steps_box, fg_color="#111827", corner_radius=6)
+        card.pack(fill="x", padx=12, pady=4, ipadx=10, ipady=8)
+
         ctk.CTkLabel(
-            step_box,
+            card,
             text=title,
             font=ctk.CTkFont(size=12, weight="bold"),
-            text_color="#f8fafc",
+            text_color="#f9fafb",
         ).pack(anchor="w", padx=8, pady=(2, 0))
+
         ctk.CTkLabel(
-            step_box,
+            card,
             text=desc,
             font=ctk.CTkFont(size=11),
-            text_color="#94a3b8",
-            wraplength=700,
+            text_color="#9ca3af",
+            wraplength=680,
             justify="left",
         ).pack(anchor="w", padx=8, pady=(0, 2))
 
-    # ── SECCIÓN 2: FORMATO DEL EXCEL ──
-    excel_frame = ctk.CTkFrame(container, fg_color="#252538", corner_radius=8)
-    excel_frame.pack(fill="x", pady=6, ipadx=12, ipady=10)
+    # ── ESTRUCTURA EXCEL ──
+    fmt_box = ctk.CTkFrame(container, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
+    fmt_box.pack(fill="x", pady=8, ipadx=14, ipady=12)
 
     ctk.CTkLabel(
-        excel_frame,
-        text="Estructura Requerida del Archivo Excel",
+        fmt_box,
+        text="Requisitos del Archivo Excel (.xlsx)",
         font=ctk.CTkFont(size=14, weight="bold"),
         text_color="#2563eb",
-    ).pack(anchor="w", padx=12, pady=(4, 6))
+    ).pack(anchor="w", padx=12, pady=(2, 6))
 
-    ctk.CTkLabel(
-        excel_frame,
-        text="El archivo .xlsx debe incluir al menos las siguientes dos columnas con cualquier nombre descriptivo:",
-        font=ctk.CTkFont(size=11),
-        text_color="#94a3b8",
-    ).pack(anchor="w", padx=12, pady=(0, 6))
-
-    table_box = ctk.CTkFrame(excel_frame, fg_color="#1e1e2e", corner_radius=6)
-    table_box.pack(fill="x", padx=12, pady=4, ipadx=8, ipady=6)
-
-    headers = [("Columna", "Ejemplo de Encabezado", "Descripción")]
-    data = [
-        ("N° de Parte / Código", "Part Number, N° PARTE, CODIGO", "Código único del producto del fabricante"),
-        ("Precio / PDF", "PRECIO, RUTA_PDF, FICHA", "Precio de lista ofertado o ruta local al archivo PDF"),
+    cols_info = [
+        ("N° de Parte / Código", "Part Number, N° PARTE, CODIGO, MPN", "Identificador único de producto"),
+        ("Precio Ofertado", "PRECIO, PRECIO LISTA, OFERTA", "Monto numérico a ofertar"),
+        ("Ficha Técnica PDF", "RUTA_PDF, PDF, FICHA", "Ruta local completa al archivo PDF a subir"),
     ]
 
-    for col, ex, desc in data:
-        row_str = f"• {col}: Encabezado típico '{ex}' — {desc}"
+    table_frame = ctk.CTkFrame(fmt_box, fg_color="#111827", corner_radius=6)
+    table_frame.pack(fill="x", padx=12, pady=4, ipadx=8, ipady=6)
+
+    for col, typ, dsc in cols_info:
+        item_text = f"• {col}: Nombre en Excel '{typ}' ({dsc})"
         ctk.CTkLabel(
-            table_box,
-            text=row_str,
+            table_frame,
+            text=item_text,
             font=ctk.CTkFont(size=11),
-            text_color="#f8fafc",
-            anchor="w",
+            text_color="#f9fafb",
+        ).pack(anchor="w", padx=8, pady=3)
+
+    # ── CÓDIGO DE COLORES ──
+    color_box = ctk.CTkFrame(container, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
+    color_box.pack(fill="x", pady=8, ipadx=14, ipady=12)
+
+    ctk.CTkLabel(
+        color_box,
+        text="Leyenda de Resultados en Excel",
+        font=ctk.CTkFont(size=14, weight="bold"),
+        text_color="#2563eb",
+    ).pack(anchor="w", padx=12, pady=(2, 6))
+
+    legend = [
+        ("Verde", "Éxito", "Operación completada en Perú Compras."),
+        ("Amarillo", "No Ubicado", "El código de producto no existe en el catálogo."),
+        ("Rojo", "Límite Máximo", "El precio superó el tope permitido."),
+        ("Azul", "Límite Mínimo", "El precio estuvo por debajo del mínimo."),
+    ]
+
+    for color_name, status, detail in legend:
+        row_c = ctk.CTkFrame(color_box, fg_color="#111827", corner_radius=6)
+        row_c.pack(fill="x", padx=12, pady=3, ipadx=8, ipady=4)
+
+        ctk.CTkLabel(
+            row_c,
+            text=f"[{color_name}] — {status}: {detail}",
+            font=ctk.CTkFont(size=11),
+            text_color="#f9fafb",
         ).pack(anchor="w", padx=8, pady=2)
-
-    # ── SECCIÓN 3: LEYENDA DE COLORES EN RESULTADOS ──
-    legend_frame = ctk.CTkFrame(container, fg_color="#252538", corner_radius=8)
-    legend_frame.pack(fill="x", pady=6, ipadx=12, ipady=10)
-
-    ctk.CTkLabel(
-        legend_frame,
-        text="Significado de Colores en Excel Procesado",
-        font=ctk.CTkFont(size=14, weight="bold"),
-        text_color="#2563eb",
-    ).pack(anchor="w", padx=12, pady=(4, 6))
-
-    colors_info = [
-        ("🟢 Verde", "Cargado Correctamente", "El precio o PDF se registró con éxito en Perú Compras."),
-        ("🟡 Amarillo", "No Encontrado", "El N° de parte no fue ubicado en la categoría seleccionada."),
-        ("🔴 Rojo", "Excede Límite Máximo", "El precio ofertado supera el tope máximo permitido por Perú Compras."),
-        ("🔵 Azul", "Por debajo de Mínimo", "El precio ofertado está por debajo del límite mínimo permitido."),
-    ]
-
-    for tag, title, desc in colors_info:
-        c_box = ctk.CTkFrame(legend_frame, fg_color="#1e1e2e", corner_radius=6)
-        c_box.pack(fill="x", padx=12, pady=3, ipadx=8, ipady=4)
-        ctk.CTkLabel(
-            c_box,
-            text=f"{tag} — {title}",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="#f8fafc",
-        ).pack(anchor="w", padx=8, pady=(2, 0))
-        ctk.CTkLabel(
-            c_box,
-            text=desc,
-            font=ctk.CTkFont(size=11),
-            text_color="#94a3b8",
-        ).pack(anchor="w", padx=8, pady=(0, 2))

@@ -135,121 +135,144 @@ class SubirPdfApp(ctk.CTk):
         except Exception:
             pass
 
-    # ── Build UI ──────────────────────────────────────────────────
+    # ── Build UI (Sidebar Layout & Enterprise Architecture) ────────
 
     def _build_ui(self):
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=0)
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=0)
+        self.configure(fg_color="#111827")
+        self.grid_columnconfigure(0, weight=0, minsize=220) # Sidebar
+        self.grid_columnconfigure(1, weight=1)              # Main Content
+        self.grid_rowconfigure(0, weight=1)                 # Workspace
+        self.grid_rowconfigure(1, weight=0)                 # Footer
 
-        # ── HEADER CORPORATIVO ──
-        header = ctk.CTkFrame(self, fg_color="transparent")
-        header.grid(row=0, column=0, padx=20, pady=(14, 4), sticky="ew")
+        # ═══════════════════════════════════════════════════════════
+        # 1. SIDEBAR IZQUIERDO (#1f2937)
+        # ═══════════════════════════════════════════════════════════
+        sidebar = ctk.CTkFrame(self, fg_color="#1f2937", corner_radius=0, border_width=1, border_color="#374151")
+        sidebar.grid(row=0, column=0, rowspan=2, sticky="nsew")
+        sidebar.grid_rowconfigure(6, weight=1)
 
+        # Header Badge Sidebar
+        badge_box = ctk.CTkFrame(sidebar, fg_color="#111827", corner_radius=8, border_width=1, border_color="#374151")
+        badge_box.grid(row=0, column=0, padx=14, pady=16, sticky="ew")
+        
         ctk.CTkLabel(
-            header,
-            text=f"Perú Compras Automation",
-            font=ctk.CTkFont(size=20, weight="bold"),
-            text_color="#f8fafc",
-        ).pack(side="left")
-
+            badge_box, text="PERÚ COMPRAS", font=ctk.CTkFont(size=14, weight="bold"), text_color="#38bdf8"
+        ).pack(anchor="w", padx=10, pady=(8, 0))
         ctk.CTkLabel(
-            header,
-            text=f"v{VERSION} — Gestión de Productos, Fichas y Stock",
-            font=ctk.CTkFont(size=12),
-            text_color="#94a3b8",
-        ).pack(side="left", padx=12)
+            badge_box, text=f"Automation Suite v{VERSION}", font=ctk.CTkFont(size=10), text_color="#9ca3af"
+        ).pack(anchor="w", padx=10, pady=(0, 8))
 
-        # ── BADGE ESTADO CORPORATIVO ──
-        self.badge_status = ctk.CTkLabel(
-            header,
-            text=" SISTEMA LISTO ",
-            font=ctk.CTkFont(size=10, weight="bold"),
-            fg_color="#1e293b",
-            text_color="#38bdf8",
-            corner_radius=6,
-            padx=10,
-            pady=4,
-        )
-        self.badge_status.pack(side="right")
+        # Botones de Navegación Lateral
+        self._nav_buttons = {}
+        nav_items = [
+            ("pdf", "Carga de PDFs"),
+            ("stock", "Análisis de Stock"),
+            ("json", "Precios JSON"),
+            ("guide", "Guía e Instrucciones"),
+            ("tools", "Herramientas Avanzadas"),
+        ]
 
-        # ── TABS (Pestañas Organizadas) ──
-        self.tabs = ctk.CTkTabview(self, width=900, height=620)
-        self.tabs.grid(row=1, column=0, padx=20, pady=(0, 8), sticky="nsew")
+        for idx, (view_id, label) in enumerate(nav_items, start=1):
+            btn = ctk.CTkButton(
+                sidebar,
+                text=label,
+                height=38,
+                corner_radius=6,
+                anchor="w",
+                font=ctk.CTkFont(size=12, weight="bold"),
+                fg_color="transparent",
+                text_color="#9ca3af",
+                hover_color="#374151",
+                command=lambda v=view_id: self._switch_view(v),
+            )
+            btn.grid(row=idx, column=0, padx=12, pady=3, sticky="ew")
+            self._nav_buttons[view_id] = btn
 
-        self.tabs.add("Carga de PDFs")
-        self.tabs.add("Análisis de Stock")
-        self.tabs.add("Precios JSON")
-        self.tabs.add("Guía e Instrucciones")
-        self.tabs.add("Herramientas Avanzadas")
+        # Footer Sidebar (Estado del Sistema)
+        sys_status_box = ctk.CTkFrame(sidebar, fg_color="#111827", corner_radius=6)
+        sys_status_box.grid(row=7, column=0, padx=12, pady=14, sticky="ew")
+        ctk.CTkLabel(
+            sys_status_box, text="Estado: Operativo", font=ctk.CTkFont(size=10, weight="bold"), text_color="#10b981"
+        ).pack(padx=8, pady=6)
 
-        # ── Pestaña 1: Carga de PDFs ──
-        tab1 = self.tabs.tab("Carga de PDFs")
-        tab1.grid_columnconfigure(0, weight=1, minsize=340)
-        tab1.grid_columnconfigure(1, weight=1, minsize=340)
-        tab1.grid_rowconfigure(0, weight=1)
+        # ═══════════════════════════════════════════════════════════
+        # 2. MAIN CONTENT AREA (#111827)
+        # ═══════════════════════════════════════════════════════════
+        self.main_container = ctk.CTkFrame(self, fg_color="#111827", corner_radius=0)
+        self.main_container.grid(row=0, column=1, padx=16, pady=(16, 8), sticky="nsew")
+        self.main_container.grid_columnconfigure(0, weight=1)
+        self.main_container.grid_rowconfigure(0, weight=1)
 
-        left = ctk.CTkScrollableFrame(tab1, fg_color="transparent")
-        left.grid(row=0, column=0, padx=(0, 6), sticky="nsew")
-        left.grid_columnconfigure(0, weight=1)
-        self._build_credentials_section(left)
-        self._build_excel_section(left)
-        self._build_catalog_section(left)
-        self._build_opciones_section(left)
+        self._views = {}
 
-        right = ctk.CTkFrame(tab1, fg_color="#252538")
-        right.grid(row=0, column=1, padx=(6, 0), sticky="nsew")
-        right.grid_columnconfigure(0, weight=1)
-        right.grid_rowconfigure(0, weight=1)
-        self._build_execution_section(right)
+        # ── Vista 1: Carga de PDFs ──
+        view_pdf = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        view_pdf.grid_columnconfigure(0, weight=1, minsize=360)
+        view_pdf.grid_columnconfigure(1, weight=1, minsize=360)
+        view_pdf.grid_rowconfigure(0, weight=1)
 
-        # ── Pestaña 2: Análisis de Stock ──
-        tab2 = self.tabs.tab("Análisis de Stock")
-        tab2.grid_columnconfigure(0, weight=1, minsize=340)
-        tab2.grid_columnconfigure(1, weight=1, minsize=340)
-        tab2.grid_rowconfigure(0, weight=1)
-        self._build_stock_tab(left_col=None, right_col=None, parent=tab2)
+        left_col = ctk.CTkScrollableFrame(view_pdf, fg_color="transparent")
+        left_col.grid(row=0, column=0, padx=(0, 8), sticky="nsew")
+        left_col.grid_columnconfigure(0, weight=1)
 
-        # ── Pestaña 3: Precios JSON ──
-        tab3 = self.tabs.tab("Precios JSON")
-        tab3.grid_columnconfigure(0, weight=1, minsize=340)
-        tab3.grid_columnconfigure(1, weight=1, minsize=340)
-        tab3.grid_rowconfigure(0, weight=1)
+        self._build_credentials_section(left_col)
+        self._build_excel_section(left_col)
+        self._build_catalog_section(left_col)
+        self._build_opciones_section(left_col)
+
+        right_col = ctk.CTkFrame(view_pdf, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
+        right_col.grid(row=0, column=1, padx=(8, 0), sticky="nsew")
+        right_col.grid_columnconfigure(0, weight=1)
+        right_col.grid_rowconfigure(0, weight=1)
+        self._build_execution_section(right_col)
+
+        self._views["pdf"] = view_pdf
+
+        # ── Vista 2: Análisis de Stock ──
+        view_stock = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        view_stock.grid_columnconfigure(0, weight=1, minsize=360)
+        view_stock.grid_columnconfigure(1, weight=1, minsize=360)
+        view_stock.grid_rowconfigure(0, weight=1)
+        self._build_stock_tab(left_col=None, right_col=None, parent=view_stock)
+        self._views["stock"] = view_stock
+
+        # ── Vista 3: Precios JSON ──
+        view_json = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        view_json.grid_columnconfigure(0, weight=1)
+        view_json.grid_rowconfigure(0, weight=1)
         import tab_precios_json
-        tab_precios_json.build_precios_json_tab(self, parent=tab3)
+        tab_precios_json.build_precios_json_tab(self, parent=view_json)
+        self._views["json"] = view_json
 
-        # ── Pestaña 4: Guía e Instrucciones ──
-        tab4 = self.tabs.tab("Guía e Instrucciones")
+        # ── Vista 4: Guía e Instrucciones ──
+        view_guide = ctk.CTkFrame(self.main_container, fg_color="transparent")
         import gui_instructions_tab
-        gui_instructions_tab.build_instructions_tab(tab4)
+        gui_instructions_tab.build_instructions_tab(view_guide)
+        self._views["guide"] = view_guide
 
-        # ── Pestaña 5: Herramientas Avanzadas ──
-        tab5 = self.tabs.tab("Herramientas Avanzadas")
-        self._build_advanced_tools_tab(tab5)
+        # ── Vista 5: Herramientas Avanzadas ──
+        view_tools = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        self._build_advanced_tools_tab(view_tools)
+        self._views["tools"] = view_tools
 
-        # ── FOOTER LIMPIO (2 Botones Principales según Ley de Tesler) ──
-        footer = ctk.CTkFrame(self, fg_color="#181825", corner_radius=8)
-        footer.grid(row=2, column=0, padx=20, pady=(4, 12), sticky="ew")
-        footer.grid_columnconfigure(0, weight=1)
+        # ═══════════════════════════════════════════════════════════
+        # 3. FOOTER CORPORATIVO (#1f2937)
+        # ═══════════════════════════════════════════════════════════
+        footer = ctk.CTkFrame(self, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
+        footer.grid(row=1, column=1, padx=16, pady=(0, 14), sticky="ew")
 
         f_layout = ctk.CTkFrame(footer, fg_color="transparent")
-        f_layout.pack(fill="x", padx=12, pady=8)
+        f_layout.pack(fill="x", padx=14, pady=8)
 
-        # Estado corto en texto
         self.lbl_footer_status = ctk.CTkLabel(
-            f_layout,
-            text="Listo para iniciar.",
-            font=ctk.CTkFont(size=12),
-            text_color="#94a3b8",
+            f_layout, text="Listo para iniciar procesamiento.", font=ctk.CTkFont(size=12), text_color="#9ca3af"
         )
         self.lbl_footer_status.pack(side="left", padx=4)
 
-        # Botón Detener (Derecha)
         self.btn_stop = ctk.CTkButton(
             f_layout,
             text="Detener",
-            width=120,
+            width=110,
             height=38,
             fg_color="#dc2626",
             hover_color="#b91c1c",
@@ -257,9 +280,8 @@ class SubirPdfApp(ctk.CTk):
             font=ctk.CTkFont(size=13, weight="bold"),
             command=self._on_stop,
         )
-        self.btn_stop.pack(side="right", padx=(6, 0))
+        self.btn_stop.pack(side="right", padx=(8, 0))
 
-        # Botón Principal Iniciar Procesamiento (Derecha)
         self.btn_launch = ctk.CTkButton(
             f_layout,
             text="Iniciar Procesamiento",
@@ -270,10 +292,27 @@ class SubirPdfApp(ctk.CTk):
             font=ctk.CTkFont(size=14, weight="bold"),
             command=self._on_launch,
         )
-        self.btn_launch.pack(side="right", padx=6)
+        self.btn_launch.pack(side="right", padx=4)
+
+        # Mostrar Vista Inicial ("pdf")
+        self._switch_view("pdf")
+
+    def _switch_view(self, view_id):
+        """Cambia de vista activa en el main_container y actualiza botones laterales."""
+        for v_name, frame in self._views.items():
+            if v_name == view_id:
+                frame.grid(row=0, column=0, sticky="nsew")
+            else:
+                frame.grid_forget()
+
+        for v_name, btn in self._nav_buttons.items():
+            if v_name == view_id:
+                btn.configure(fg_color="#2563eb", text_color="#f9fafb")
+            else:
+                btn.configure(fg_color="transparent", text_color="#9ca3af")
 
     def _build_advanced_tools_tab(self, parent):
-        """Construye la pestaña de Herramientas Avanzadas para desarrollo/pruebas."""
+        """Construye la vista de Herramientas Avanzadas para desarrollo/pruebas."""
         parent.grid_columnconfigure(0, weight=1)
         parent.grid_rowconfigure(0, weight=1)
 
@@ -282,46 +321,28 @@ class SubirPdfApp(ctk.CTk):
         box.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
-            box,
-            text="Herramientas de Diagnóstico y Pruebas",
-            font=ctk.CTkFont(size=16, weight="bold"),
-            text_color="#f8fafc",
-        ).pack(anchor="w", pady=(0, 8))
+            box, text="Herramientas Avanzadas de Diagnóstico", font=ctk.CTkFont(size=16, weight="bold"), text_color="#f9fafb"
+        ).pack(anchor="w", pady=(0, 6))
 
         ctk.CTkLabel(
-            box,
-            text="Acceso a scripts de extracción, pruebas unitarias y descubrimiento de endpoints.",
-            font=ctk.CTkFont(size=11),
-            text_color="#94a3b8",
+            box, text="Pruebas aisladas, scrapers y descubrimiento de endpoints del portal.", font=ctk.CTkFont(size=11), text_color="#9ca3af"
         ).pack(anchor="w", pady=(0, 16))
 
         # Grupo 1: Pruebas Cortas
-        g1 = ctk.CTkFrame(box, fg_color="#252538", corner_radius=8)
-        g1.pack(fill="x", pady=6, ipadx=12, ipady=10)
+        g1 = ctk.CTkFrame(box, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
+        g1.pack(fill="x", pady=6, ipadx=14, ipady=12)
         ctk.CTkLabel(g1, text="Pruebas Directas", font=ctk.CTkFont(size=13, weight="bold"), text_color="#2563eb").pack(anchor="w", padx=12, pady=4)
 
         b_row1 = ctk.CTkFrame(g1, fg_color="transparent")
         b_row1.pack(fill="x", padx=12, pady=4)
 
-        self.btn_test = ctk.CTkButton(
-            b_row1, text="Test (1 Ficha)", width=160, height=34,
-            fg_color="#334155", hover_color="#475569",
-            command=self._on_test,
-        )
+        self.btn_test = ctk.CTkButton(b_row1, text="Test (1 Ficha)", width=150, height=34, fg_color="#374151", hover_color="#4b5563", command=self._on_test)
         self.btn_test.pack(side="left", padx=(0, 8))
 
-        self.btn_nro = ctk.CTkButton(
-            b_row1, text="Solo N° de Parte", width=160, height=34,
-            fg_color="#334155", hover_color="#475569",
-            command=self._on_nro_parte,
-        )
+        self.btn_nro = ctk.CTkButton(b_row1, text="Solo N° de Parte", width=150, height=34, fg_color="#374151", hover_color="#4b5563", command=self._on_nro_parte)
         self.btn_nro.pack(side="left", padx=8)
 
-        self.btn_certs = ctk.CTkButton(
-            b_row1, text="Solo Certificaciones", width=170, height=34,
-            fg_color="#334155", hover_color="#475569",
-            command=self._on_certs_only,
-        )
+        self.btn_certs = ctk.CTkButton(b_row1, text="Solo Certificaciones", width=160, height=34, fg_color="#374151", hover_color="#4b5563", command=self._on_certs_only)
         self.btn_certs.pack(side="left", padx=8)
 
         # Grupo 2: Extracción y Discovery
