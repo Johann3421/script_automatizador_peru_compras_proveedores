@@ -69,16 +69,24 @@ def _trigger_materialize_validation(page: Page, input_id: str):
 
 
 def _ocr_captcha(image_bytes: bytes) -> str:
-    """OCR del CAPTCHA."""
-    from PIL import Image
+    """OCR del CAPTCHA con preprocesamiento mejorado."""
+    from PIL import Image, ImageOps, ImageEnhance
     from io import BytesIO
     import re
 
-    img = Image.open(BytesIO(image_bytes)).convert("L")
-    config = "--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     try:
+        img = Image.open(BytesIO(image_bytes)).convert("L")
+        # Escalar x2 para mejorar la definición del texto
+        w, h = img.size
+        img = img.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
+        # Binarización por umbral
+        threshold = 140
+        img = img.point(lambda p: 255 if p > threshold else 0)
+
+        config = "--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         text = pytesseract.image_to_string(img, config=config)
-        return re.sub(r"[^A-Z0-9]", "", text)[:6]
+        res = re.sub(r"[^A-Z0-9]", "", text)
+        return res[:6]
     except Exception:
         return ""
 
@@ -113,10 +121,10 @@ def _solve_captcha(page: Page, log: LogWriter, stop_event: threading.Event, capt
         code = _ocr_captcha(img_bytes)
         log.info(f"OCR intento {attempt}: detectado '{code}' ({len(code)} chars)")
 
-        if len(code) >= 4:
+        if len(code) == 6:
             return code
 
-        log.error(f"OCR dio pocos caracteres ({len(code)}), refrescando CAPTCHA...")
+        log.error(f"OCR no detectó exactamente 6 caracteres ({len(code)}), refrescando CAPTCHA...")
         try:
             page.locator("#spnActualizarCaptcha").first.click(force=True)
             time.sleep(2)

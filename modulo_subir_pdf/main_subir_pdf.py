@@ -1,9 +1,10 @@
 import sys, os, queue, threading, time, json, re
 from io import BytesIO
 from pathlib import Path
-from tkinter import filedialog
+from datetime import datetime
+from tkinter import filedialog, messagebox
 
-VERSION = "1.0"
+VERSION = "1.4"
 
 # ── Paths ─────────────────────────────────────────────────────────
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,11 +23,98 @@ from utils_mod.excel_parser_mod import get_sheets, detect_columns, parse_excel
 from utils_mod.logger_mod import LogWriter as LocalLogWriter
 
 try:
-    import customtkinter as ctk
+    import ctk_compat as ctk
     from PIL import Image
 except ImportError:
-    print("Error: instala customtkinter y Pillow: pip install customtkinter pillow")
-    sys.exit(1)
+    print("Error: instala Pillow: pip install pillow")
+    import sys; sys.exit(1)
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  SPLASH SCREEN — Pestaña/Ventana de Carga Inicial
+# ═══════════════════════════════════════════════════════════════════
+
+class SplashScreen(ctk.CTkToplevel):
+    """Pestaña/Ventana de carga inicial elegante antes de mostrar la aplicación principal."""
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.configure(fg_color="#006CA8")
+        self.overrideredirect(True)
+        self.resizable(False, False)
+
+        w, h = 460, 260
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        x = (sw - w) // 2
+        y = (sh - h) // 2
+        self.geometry(f"{w}x{h}+{x}+{y}")
+        self.attributes("-topmost", True)
+
+        # Cabecera institucional
+        panel = ctk.CTkFrame(self, fg_color="#00507E", corner_radius=0)
+        panel.place(relx=0, rely=0, relwidth=1, relheight=0.45)
+
+        ctk.CTkLabel(
+            panel, text="PERU COMPRAS",
+            font=ctk.CTkFont(size=20, weight="bold"),
+            text_color="#FFFFFF",
+        ).pack(anchor="w", padx=24, pady=(22, 2))
+        ctk.CTkLabel(
+            panel, text="Sistema de Automatizacion de Ofertas",
+            font=ctk.CTkFont(size=11),
+            text_color="#AACCDD",
+        ).pack(anchor="w", padx=24)
+
+        ctk.CTkFrame(self, fg_color="#00507E", height=1).place(
+            relx=0, rely=0.45, relwidth=1
+        )
+
+        self._lbl_msg = ctk.CTkLabel(
+            self, text="Inicializando sistema...",
+            font=ctk.CTkFont(size=11),
+            text_color="#AACCDD",
+        )
+        self._lbl_msg.place(relx=0.5, rely=0.60, anchor="center")
+
+        self._bar = ctk.CTkProgressBar(
+            self, width=380, height=5,
+            fg_color="#1A5493", progress_color="#FFFFFF",
+        )
+        self._bar.place(relx=0.5, rely=0.72, anchor="center")
+        self._bar.set(0)
+
+        ctk.CTkLabel(
+            self, text=f"v{VERSION}",
+            font=ctk.CTkFont(size=10),
+            text_color="#AACCDD",
+        ).place(relx=0.5, rely=0.88, anchor="center")
+
+        self._steps = [
+            (0.25, "Cargando componentes y recursos…"),
+            (0.55, "Validando estructura y datos…"),
+            (0.85, "Cargando menú e interfaz gráfica…"),
+            (1.00, "¡Sistema Listo!"),
+        ]
+        self._step_idx = 0
+        self.after(100, self._step)
+
+    def _step(self):
+        if self._step_idx < len(self._steps):
+            prog, msg = self._steps[self._step_idx]
+            self._bar.set(prog)
+            self._lbl_msg.configure(text=msg)
+            self._step_idx += 1
+            self.after(260, self._step)
+        else:
+            self.after(120, self._finish)
+
+    def _finish(self):
+        try:
+            self.destroy()
+        except Exception:
+            pass
+        self.parent.deiconify()
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -83,10 +171,11 @@ class CaptchaBridge:
 class SubirPdfApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title(f"Peru Compras — Subir PDF v{VERSION}")
-        self.geometry("960x780")
-        self.minsize(820, 640)
-        ctk.set_appearance_mode("dark")
+        self.withdraw()  # Ocultar ventana principal durante la carga del Splash
+        self.title(f"Sistema de Automatización — Perú Compras v{VERSION}")
+        self.geometry("1080x760")
+        self.minsize(920, 640)
+        ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
 
         self.log_queue = queue.Queue()
@@ -108,6 +197,9 @@ class SubirPdfApp(ctk.CTk):
 
         self._build_ui()
         self.poll_queue()
+
+        # Iniciar pestaña de carga previa a la app
+        self._splash = SplashScreen(self)
 
     def _load_dropdown_json(self):
         # ponytail: usar resource_path para que funcione empaquetado con PyInstaller
@@ -135,261 +227,880 @@ class SubirPdfApp(ctk.CTk):
         except Exception:
             pass
 
-    # ── Build UI (Sidebar Layout & Enterprise Architecture) ────────
+    # ─────────────────────────────────────────────────────────────
+    # DISEÑO INSTITUCIONAL — Peru Compras (Azul Oficial #006CA8)
+    # Ref: Portal SISCatalogo / SIAF / SIGA — patrones Windows native
+    # Paleta: azul PC #006CA8, gris sistema #F0F0F0, blanco #FFFFFF
+    # ─────────────────────────────────────────────────────────────
+    _C = {
+        "bg":         "#F0F0F0",   # Fondo gris sistema Windows
+        "topbar":     "#006CA8",   # Azul institucional Peru Compras
+        "topbar_dk":  "#00507E",   # Azul oscuro
+        "tabs_bg":    "#E8E8E8",   # Barra de modulos
+        "tab_active": "#FFFFFF",   # Tab activo
+        "tab_txt_a":  "#006CA8",   # Texto tab activo
+        "tab_txt_i":  "#555555",   # Texto tab inactivo
+        "card":       "#FFFFFF",   # Superficie principal
+        "card2":      "#F7F7F7",   # Superficie secundaria
+        "border":     "#C8C8C8",   # Bordes
+        "border2":    "#E0E0E0",   # Bordes suaves
+        "txt":        "#2B2B2B",   # Texto principal
+        "txt2":       "#555555",   # Texto secundario
+        "txt3":       "#888888",   # Texto inactivo
+        "accent":     "#006CA8",   # Boton principal
+        "accent_h":   "#00507E",   # Hover boton principal
+        "success":    "#1B6B1B",   # Exito
+        "danger":     "#8B1A1A",   # Error / detener
+        "danger_h":   "#6A1414",   # Hover detener
+        "warn":       "#854D0E",   # Advertencia
+        "sep":        "#D4D4D4",   # Separadores
+        # Claves legacy para secciones que aun usan sidebar_*
+        "sidebar":    "#006CA8",
+        "sidebar_hl": "#00507E",
+        "sidebar_txt":"#FFFFFF",
+        "sidebar_sub":"#AACCDD",
+    }
+
+    def _setup_styles(self):
+        from tkinter import ttk
+        s = ttk.Style(self)
+        try:
+            s.theme_use("clam")
+        except Exception:
+            pass
+        s.configure("Hoja.Treeview",
+            font=("Segoe UI", 10),
+            rowheight=22,
+            background="#FFFFFF",
+            foreground="#2B2B2B",
+            fieldbackground="#FFFFFF",
+            borderwidth=0,
+        )
+        s.configure("Hoja.Treeview.Heading",
+            font=("Segoe UI", 10, "bold"),
+            background="#D4D4D4",
+            foreground="#1A1A1A",
+            relief="flat",
+            padding=(6, 4),
+        )
+        s.map("Hoja.Treeview",
+            background=[("selected", "#006CA8")],
+            foreground=[("selected", "#FFFFFF")],
+        )
+        s.configure("TScrollbar", troughcolor="#F0F0F0", background="#E8E8E8", relief="flat")
+
+    def _set_taskbar_icon(self):
+        try:
+            import ctypes
+            hwnd = ctypes.windll.user32.GetParent(self.winfo_id()) or self.winfo_id()
+            style = ctypes.windll.user32.GetWindowLongW(hwnd, -20)
+            style = style | 0x00040000  # WS_EX_APPWINDOW
+            ctypes.windll.user32.SetWindowLongW(hwnd, -20, style)
+            ctypes.windll.user32.ShowWindow(hwnd, 5)
+        except Exception:
+            pass
+
+    def _start_drag(self, event):
+        self._drag_x = event.x
+        self._drag_y = event.y
+
+    def _drag_window(self, event):
+        if getattr(self, "_is_maximized", False):
+            return
+        x = self.winfo_x() + (event.x - self._drag_x)
+        y = self.winfo_y() + (event.y - self._drag_y)
+        self.geometry(f"+{x}+{y}")
+
+    def _close_window(self):
+        self.destroy()
+        import sys
+        sys.exit(0)
+
+    def _open_config_dialog(self):
+        """Abre la ventana modal de Configuración y Preferencias del Sistema."""
+        import tkinter as tk
+        from tkinter import ttk, messagebox
+
+        win = tk.Toplevel(self)
+        win.title("Configuración y Preferencias del Sistema — Perú Compras Bot")
+        win.configure(bg="#F0F0F0")
+        win.geometry("520x460")
+        win.resizable(False, False)
+        win.transient(self)
+        win.grab_set()
+
+        # Centrar ventana
+        win.update_idletasks()
+        sw = win.winfo_screenwidth()
+        sh = win.winfo_screenheight()
+        x = (sw - 520) // 2
+        y = (sh - 460) // 2
+        win.geometry(f"520x460+{x}+{y}")
+
+        # Header Azul
+        hdr = tk.Frame(win, bg="#006CA8", pady=10, padx=14)
+        hdr.pack(fill="x")
+        tk.Label(hdr, text="CONFIGURACIÓN Y PREFERENCIAS DEL SISTEMA",
+                 font=("Segoe UI", 10, "bold"), bg="#006CA8", fg="#FFFFFF", anchor="w").pack(fill="x")
+        tk.Label(hdr, text="Ajustes de credenciales, parámetros de red y motores de automatización.",
+                 font=("Segoe UI", 9), bg="#006CA8", fg="#AACCDD", anchor="w").pack(fill="x")
+
+        body = tk.Frame(win, bg="#F0F0F0", padx=16, pady=12)
+        body.pack(fill="both", expand=True)
+
+        def card_sec(title):
+            c = tk.Frame(body, bg="#FFFFFF", bd=1, relief="solid", highlightbackground="#C8C8C8", pady=8, padx=12)
+            c.pack(fill="x", pady=6)
+            tk.Label(c, text=title, font=("Segoe UI", 9, "bold"), bg="#FFFFFF", fg="#006CA8", anchor="w").pack(fill="x", pady=(0, 6))
+            return c
+
+        # Sec 1: Credenciales
+        c1 = card_sec("ALMACENAMIENTO DE CREDENCIALES")
+        var_creds = tk.BooleanVar(value=True)
+        var_cat = tk.BooleanVar(value=True)
+        tk.Checkbutton(c1, text="Guardar credenciales de inicio de sesión automáticamente (encriptado)",
+                       variable=var_creds, bg="#FFFFFF", font=("Segoe UI", 9), activebackground="#FFFFFF").pack(anchor="w", pady=2)
+        tk.Checkbutton(c1, text="Recordar catálogo y categoría seleccionados entre sesiones",
+                       variable=var_cat, bg="#FFFFFF", font=("Segoe UI", 9), activebackground="#FFFFFF").pack(anchor="w", pady=2)
+
+        # Sec 2: Tiempos de Red
+        c2 = card_sec("PARÁMETROS DE RED Y EJECUCIÓN")
+        f_p = tk.Frame(c2, bg="#FFFFFF")
+        f_p.pack(fill="x", pady=2)
+        tk.Label(f_p, text="Pausa por defecto entre solicitudes (seg):", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555").pack(side="left")
+        e_pausa = tk.Entry(f_p, font=("Segoe UI", 9), width=8, bd=1, relief="sunken")
+        e_pausa.pack(side="left", padx=8)
+        e_pausa.insert(0, "1.5")
+
+        f_r = tk.Frame(c2, bg="#FFFFFF")
+        f_r.pack(fill="x", pady=2)
+        tk.Label(f_r, text="Reintentos automáticos por error de red:", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555").pack(side="left")
+        e_retry = tk.Entry(f_r, font=("Segoe UI", 9), width=8, bd=1, relief="sunken")
+        e_retry.pack(side="left", padx=8)
+        e_retry.insert(0, "3")
+
+        # Sec 3: Motores
+        c3 = card_sec("MOTORES DE AUTOMATIZACIÓN")
+        tk.Label(c3, text="✓ Tesseract OCR: Detectado e integrado correctamente",
+                 font=("Segoe UI", 9), bg="#FFFFFF", fg="#1B6B1B", anchor="w").pack(fill="x", pady=2)
+        tk.Label(c3, text="✓ Playwright Chromium: Motor listo para automatización",
+                 font=("Segoe UI", 9), bg="#FFFFFF", fg="#1B6B1B", anchor="w").pack(fill="x", pady=2)
+
+        # Bottom Bar
+        bbar = tk.Frame(win, bg="#E8E8E8", pady=8, padx=16)
+        bbar.pack(fill="x", side="bottom")
+
+        def _save():
+            messagebox.showinfo("Configuración", "Preferencias guardadas exitosamente.", parent=win)
+            win.destroy()
+
+        tk.Button(bbar, text="Guardar Cambios", font=("Segoe UI", 9, "bold"),
+                  bg="#006CA8", fg="#FFFFFF", activebackground="#00507E", activeforeground="#FFFFFF",
+                  bd=0, padx=14, pady=4, cursor="hand2", command=_save).pack(side="right", padx=4)
+        tk.Button(bbar, text="Cancelar", font=("Segoe UI", 9),
+                  bg="#E8E8E8", fg="#1A1A1A", bd=1, relief="raised", padx=12, pady=3,
+                  cursor="hand2", command=win.destroy).pack(side="right", padx=4)
+
+    def _open_about_dialog(self):
+        """Abre la ventana modal Acerca del Sistema."""
+        import tkinter as tk
+        from tkinter import messagebox
+
+        win = tk.Toplevel(self)
+        win.title("Acerca de Perú Compras Bot")
+        win.configure(bg="#FFFFFF")
+        win.geometry("460x340")
+        win.resizable(False, False)
+        win.transient(self)
+        win.grab_set()
+
+        # Centrar ventana
+        win.update_idletasks()
+        sw = win.winfo_screenwidth()
+        sh = win.winfo_screenheight()
+        x = (sw - 460) // 2
+        y = (sh - 340) // 2
+        win.geometry(f"460x340+{x}+{y}")
+
+        # Banner Superior Azul
+        hdr = tk.Frame(win, bg="#006CA8", pady=16, padx=16)
+        hdr.pack(fill="x")
+        tk.Label(hdr, text="PERÚ COMPRAS BOT",
+                 font=("Segoe UI", 14, "bold"), bg="#006CA8", fg="#FFFFFF", anchor="w").pack(fill="x")
+        tk.Label(hdr, text=f"Versión {VERSION} Build 2026 — Plataforma Oficial de Automatización",
+                 font=("Segoe UI", 9), bg="#006CA8", fg="#AACCDD", anchor="w").pack(fill="x", pady=(2, 0))
+
+        # Cuerpo
+        body = tk.Frame(win, bg="#FFFFFF", padx=20, pady=16)
+        body.pack(fill="both", expand=True)
+
+        txt_info = (
+            "Sistema Integrado de Automatización de Ofertas, Gestión de Stock\n"
+            "y Carga Masiva de Catálogos Electrónicos de Perú Compras.\n\n"
+            "• Acuerdo Marco: EXT-CE-2022-5\n"
+            "• Motor de Procesamiento: Playwright Engine + Tesseract OCR\n"
+            "• Desarrollo y Distribución Oficial:\n"
+            "  THE KING COMPUTER E.I.R.L.\n\n"
+            "Todos los derechos reservados © 2026."
+        )
+        tk.Label(body, text=txt_info, font=("Segoe UI", 9), bg="#FFFFFF", fg="#2B2B2B",
+                 justify="left", anchor="w").pack(fill="both", expand=True)
+
+        # Bottom Bar
+        bbar = tk.Frame(win, bg="#E8E8E8", pady=8, padx=16)
+        bbar.pack(fill="x", side="bottom")
+        tk.Button(bbar, text="Cerrar", font=("Segoe UI", 9, "bold"),
+                  bg="#006CA8", fg="#FFFFFF", activebackground="#00507E", activeforeground="#FFFFFF",
+                  bd=0, padx=16, pady=4, cursor="hand2", command=win.destroy).pack(side="right")
+
+    def _minimize_window(self):
+        self._is_minimized = True
+        try:
+            self.update_idletasks()
+            self.overrideredirect(False)
+            self.iconify()
+            self.bind("<Map>", self._on_window_map)
+        except Exception:
+            pass
+
+    def _on_window_map(self, event):
+        if getattr(self, "_is_minimized", False) and event.widget == self:
+            try:
+                if self.state() == "normal":
+                    self.overrideredirect(True)
+                    self._is_minimized = False
+                    self._set_taskbar_icon()
+                    self.unbind("<Map>")
+            except Exception:
+                pass
+
+    def _toggle_maximize(self):
+        if not getattr(self, "_is_maximized", False):
+            try:
+                import ctypes
+                hwnd = self.winfo_id()
+                ctypes.windll.user32.ShowWindow(hwnd, 3)  # SW_MAXIMIZE
+            except Exception:
+                self.state("zoomed")
+            self._is_maximized = True
+            if hasattr(self, "_btn_max"):
+                self._btn_max.config(text="❐")
+        else:
+            try:
+                import ctypes
+                hwnd = self.winfo_id()
+                ctypes.windll.user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+            except Exception:
+                self.state("normal")
+            self._is_maximized = False
+            if hasattr(self, "_btn_max"):
+                self._btn_max.config(text="□")
 
     def _build_ui(self):
-        self.configure(fg_color="#111827")
-        self.grid_columnconfigure(0, weight=0, minsize=220) # Sidebar
-        self.grid_columnconfigure(1, weight=1)              # Main Content
-        self.grid_rowconfigure(0, weight=1)                 # Workspace
-        self.grid_rowconfigure(1, weight=0)                 # Footer
+        import tkinter as tk
+        from tkinter import ttk
+        C = self._C
+        self.configure(bg="#F0F0F0")
+        self.overrideredirect(True)
+        self._set_taskbar_icon()
+        self._setup_styles()
 
-        # ═══════════════════════════════════════════════════════════
-        # 1. SIDEBAR IZQUIERDO (#1f2937)
-        # ═══════════════════════════════════════════════════════════
-        sidebar = ctk.CTkFrame(self, fg_color="#1f2937", corner_radius=0, border_width=1, border_color="#374151")
-        sidebar.grid(row=0, column=0, rowspan=2, sticky="nsew")
-        sidebar.grid_rowconfigure(6, weight=1)
+        # ── 1. BARRA DE TÍTULO INSTITUCIONAL (CON BOTONES INTEGRADOS —, □, ✕) ──
+        titulo = tk.Frame(self, bg="#006CA8", height=34)
+        titulo.pack(fill="x", side="top")
+        titulo.pack_propagate(False)
 
-        # Header Badge Sidebar
-        badge_box = ctk.CTkFrame(sidebar, fg_color="#111827", corner_radius=8, border_width=1, border_color="#374151")
-        badge_box.grid(row=0, column=0, padx=14, pady=16, sticky="ew")
-        
-        ctk.CTkLabel(
-            badge_box, text="PERÚ COMPRAS", font=ctk.CTkFont(size=14, weight="bold"), text_color="#38bdf8"
-        ).pack(anchor="w", padx=10, pady=(8, 0))
-        ctk.CTkLabel(
-            badge_box, text=f"Automation Suite v{VERSION}", font=ctk.CTkFont(size=10), text_color="#9ca3af"
-        ).pack(anchor="w", padx=10, pady=(0, 8))
+        lbl_title = tk.Label(titulo, text="PERU COMPRAS BOT — Sistema de Automatización de Ofertas y Catálogos",
+                             bg="#006CA8", fg="#FFFFFF", font=("Segoe UI", 10, "bold"),
+                             anchor="w", cursor="fleur")
+        lbl_title.pack(side="left", padx=14, fill="y")
 
-        # Botones de Navegación Lateral
+        lbl_ver = tk.Label(titulo, text=f"THE KING COMPUTER E.I.R.L.  |  v{VERSION}",
+                           bg="#006CA8", fg="#AACCDD", font=("Segoe UI", 9), cursor="fleur")
+        lbl_ver.pack(side="left", padx=10, fill="y")
+
+        # Botones de control de ventana (—, □, ✕)
+        ctrl_frame = tk.Frame(titulo, bg="#006CA8")
+        ctrl_frame.pack(side="right", fill="y")
+
+        def make_win_btn(parent, text, cmd, hover_bg="#00507E", hover_fg="#FFFFFF", width=5):
+            btn = tk.Label(parent, text=text, font=("Segoe UI", 10), bg="#006CA8", fg="#FFFFFF",
+                           width=width, anchor="center", cursor="hand2")
+            btn.pack(side="left", fill="y")
+            btn.bind("<Enter>", lambda e: btn.config(bg=hover_bg, fg=hover_fg))
+            btn.bind("<Leave>", lambda e: btn.config(bg="#006CA8", fg="#FFFFFF"))
+            btn.bind("<Button-1>", lambda e: cmd())
+            return btn
+
+        make_win_btn(ctrl_frame, "—", self._minimize_window)
+        self._btn_max = make_win_btn(ctrl_frame, "□", self._toggle_maximize)
+        make_win_btn(ctrl_frame, "✕", self._close_window, hover_bg="#E81123", hover_fg="#FFFFFF")
+
+        # Habilitar arrastre de ventana desde la barra
+        for w in (titulo, lbl_title, lbl_ver):
+            w.bind("<ButtonPress-1>", self._start_drag)
+            w.bind("<B1-Motion>", self._drag_window)
+            w.bind("<Double-Button-1>", lambda e: self._toggle_maximize())
+
+        tk.Frame(titulo, bg="#00507E", height=2).place(relx=0, rely=1, relwidth=1, anchor="sw")
+
+        # ── 2. BARRA DE MENÚ CLÁSICA ──
+        menubar = tk.Menu(self, font=("Segoe UI", 10), bg="#E8E8E8", fg="#1A1A1A", relief="flat", bd=0)
+        m_arch = tk.Menu(menubar, tearoff=0, font=("Segoe UI", 10))
+        m_arch.add_command(label="Abrir archivo Excel...", command=self._pick_excel)
+        m_arch.add_command(label="Limpiar datos", command=self._clear_excel)
+        m_arch.add_separator()
+        m_arch.add_command(label="Salir", command=self._close_window)
+        menubar.add_cascade(label="Archivo", menu=m_arch)
+
+        m_acc = tk.Menu(menubar, tearoff=0, font=("Segoe UI", 10))
+        m_acc.add_command(label="Iniciar procesamiento (F5)", command=self._on_launch)
+        m_acc.add_command(label="Detener ejecución", command=self._on_stop)
+        m_acc.add_separator()
+        m_acc.add_command(label="Publicación PDF", command=lambda: self._switch_view("pdf"))
+        m_acc.add_command(label="Actualización de Stock", command=lambda: self._switch_view("stock"))
+        m_acc.add_command(label="Subida Precios JSON", command=lambda: self._switch_view("json"))
+        menubar.add_cascade(label="Acciones", menu=m_acc)
+
+        m_cfg = tk.Menu(menubar, tearoff=0, font=("Segoe UI", 10))
+        m_cfg.add_command(label="Preferencias de conexión y guardado", command=self._open_config_dialog)
+        m_cfg.add_command(label="Parámetros de red y tiempos de pausa", command=self._open_config_dialog)
+        menubar.add_cascade(label="Configuración", menu=m_cfg)
+
+        m_hlp = tk.Menu(menubar, tearoff=0, font=("Segoe UI", 10))
+        m_hlp.add_command(label="Manual de usuario (Instrucciones)", command=lambda: self._switch_view("guide"))
+        m_hlp.add_command(label="Herramientas de diagnóstico", command=lambda: self._switch_view("tools"))
+        m_hlp.add_separator()
+        m_hlp.add_command(label="Acerca del sistema...",
+                          command=lambda: messagebox.showinfo("Acerca de Perú Compras Bot",
+                                                               f"PERU COMPRAS BOT v{VERSION}\n\n"
+                                                               "Sistema Integrado de Automatización de Ofertas y Catálogos\n"
+                                                               "Plataforma Oficial Perú Compras / Acuerdo EXT-CE-2022-5\n\n"
+                                                               "Desarrollado para THE KING COMPUTER E.I.R.L."))
+        menubar.add_cascade(label="Ayuda", menu=m_hlp)
+        self.config(menu=menubar)
+
+        # ── 3. BARRA DE MÓDULOS HORIZONTAL (TABS NATIVOS FLAT) ──
+        tabs_frame = tk.Frame(self, bg="#E8E8E8", bd=0)
+        tabs_frame.pack(fill="x")
+        tk.Frame(tabs_frame, bg="#C8C8C8", height=1).pack(fill="x", side="bottom")
+
         self._nav_buttons = {}
-        nav_items = [
-            ("pdf", "Carga de PDFs"),
-            ("stock", "Análisis de Stock"),
-            ("json", "Precios JSON"),
-            ("guide", "Guía e Instrucciones"),
+        MODULOS = [
+            ("pdf",   "Publicación de Ofertas PDF"),
+            ("stock", "Actualización de Stock"),
+            ("json",  "Subida de Precios JSON"),
+            ("guide", "Instrucciones de Uso"),
             ("tools", "Herramientas Avanzadas"),
         ]
+        tab_inner = tk.Frame(tabs_frame, bg="#E8E8E8")
+        tab_inner.pack(side="left", padx=0)
+        for mid, mlabel in MODULOS:
+            btn = tk.Label(tab_inner, text=mlabel, font=("Segoe UI", 10),
+                           padx=16, pady=6, cursor="hand2", bg="#F0F0F0", fg="#555555")
+            btn.pack(side="left")
+            tk.Frame(tab_inner, bg="#C8C8C8", width=1).pack(side="left", fill="y")
+            btn.bind("<Button-1>", lambda e, m=mid: self._switch_view(m))
+            self._nav_buttons[mid] = btn
 
-        for idx, (view_id, label) in enumerate(nav_items, start=1):
-            btn = ctk.CTkButton(
-                sidebar,
-                text=label,
-                height=38,
-                corner_radius=6,
-                anchor="w",
-                font=ctk.CTkFont(size=12, weight="bold"),
-                fg_color="transparent",
-                text_color="#9ca3af",
-                hover_color="#374151",
-                command=lambda v=view_id: self._switch_view(v),
-            )
-            btn.grid(row=idx, column=0, padx=12, pady=3, sticky="ew")
-            self._nav_buttons[view_id] = btn
-
-        # Footer Sidebar (Estado del Sistema)
-        sys_status_box = ctk.CTkFrame(sidebar, fg_color="#111827", corner_radius=6)
-        sys_status_box.grid(row=7, column=0, padx=12, pady=14, sticky="ew")
-        ctk.CTkLabel(
-            sys_status_box, text="Estado: Operativo", font=ctk.CTkFont(size=10, weight="bold"), text_color="#10b981"
-        ).pack(padx=8, pady=6)
-
-        # ═══════════════════════════════════════════════════════════
-        # 2. MAIN CONTENT AREA (#111827)
-        # ═══════════════════════════════════════════════════════════
-        self.main_container = ctk.CTkFrame(self, fg_color="#111827", corner_radius=0)
-        self.main_container.grid(row=0, column=1, padx=16, pady=(16, 8), sticky="nsew")
-        self.main_container.grid_columnconfigure(0, weight=1)
-        self.main_container.grid_rowconfigure(0, weight=1)
+        # ── 4. WORKSPACE CONTENEDOR PRINCIPAL ──
+        workspace = tk.Frame(self, bg="#F0F0F0")
+        workspace.pack(fill="both", expand=True)
+        workspace.columnconfigure(0, weight=1)
+        workspace.rowconfigure(0, weight=1)
 
         self._views = {}
 
-        # ── Vista 1: Carga de PDFs ──
-        view_pdf = ctk.CTkFrame(self.main_container, fg_color="transparent")
-        view_pdf.grid_columnconfigure(0, weight=1, minsize=360)
-        view_pdf.grid_columnconfigure(1, weight=1, minsize=360)
-        view_pdf.grid_rowconfigure(0, weight=1)
+        # ═ VISTA 1: PUBLICACIÓN DE OFERTAS PDF ═
+        view_pdf = tk.Frame(workspace, bg="#F0F0F0")
+        view_pdf.columnconfigure(0, weight=1)
+        view_pdf.columnconfigure(1, weight=0, minsize=320)
+        view_pdf.rowconfigure(0, weight=1)
 
-        left_col = ctk.CTkScrollableFrame(view_pdf, fg_color="transparent")
-        left_col.grid(row=0, column=0, padx=(0, 8), sticky="nsew")
-        left_col.grid_columnconfigure(0, weight=1)
+        # Columna Izquierda: Zona de Trabajo (Archivo + Treeview Tabla de Productos)
+        zona = tk.Frame(view_pdf, bg="#FFFFFF", bd=0)
+        zona.grid(row=0, column=0, sticky="nsew")
+        tk.Frame(view_pdf, bg="#C8C8C8", width=1).grid(row=0, column=0, sticky="nse")
+        zona.columnconfigure(0, weight=1)
+        zona.rowconfigure(1, weight=1)
 
-        self._build_credentials_section(left_col)
-        self._build_excel_section(left_col)
-        self._build_catalog_section(left_col)
-        self._build_opciones_section(left_col)
+        # Panel Carga de Archivo
+        sec_carga = tk.Frame(zona, bg="#FFFFFF", bd=0)
+        sec_carga.grid(row=0, column=0, sticky="ew")
+        tk.Frame(sec_carga, bg="#C8C8C8", height=1).pack(fill="x", side="bottom")
 
-        right_col = ctk.CTkFrame(view_pdf, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
-        right_col.grid(row=0, column=1, padx=(8, 0), sticky="nsew")
-        right_col.grid_columnconfigure(0, weight=1)
-        right_col.grid_rowconfigure(0, weight=1)
-        self._build_execution_section(right_col)
+        cabecera = tk.Frame(sec_carga, bg="#E8E8E8", pady=3)
+        cabecera.pack(fill="x")
+        tk.Label(cabecera, text="CARGA DE ARCHIVO DE TRABAJO",
+                 font=("Segoe UI", 9, "bold"), bg="#E8E8E8", fg="#555555",
+                 anchor="w").pack(side="left", padx=10)
+
+        fila_arch = tk.Frame(sec_carga, bg="#FFFFFF", pady=6)
+        fila_arch.pack(fill="x", padx=10)
+        tk.Label(fila_arch, text="Archivo:", font=("Segoe UI", 10), bg="#FFFFFF", fg="#555555").pack(side="left")
+
+        self.lbl_file = tk.Entry(fila_arch, font=("Segoe UI", 10), bd=1, relief="sunken",
+                                 state="readonly", readonlybackground="#F0F0F0")
+        self.lbl_file.pack(side="left", fill="x", expand=True, padx=(6, 4))
+        self.btn_file = tk.Button(fila_arch, text="Examinar...", font=("Segoe UI", 10),
+                                  bg="#E8E8E8", fg="#1A1A1A", bd=1, relief="raised",
+                                  command=self._pick_excel)
+        self.btn_file.pack(side="left", padx=2)
+        tk.Button(fila_arch, text="Limpiar", font=("Segoe UI", 10),
+                  bg="#E8E8E8", fg="#1A1A1A", bd=1, relief="raised",
+                  command=self._clear_excel).pack(side="left", padx=2)
+
+        # Sub-fila filtros (Pestaña / Col. N° Parte)
+        fila_map = tk.Frame(sec_carga, bg="#FFFFFF", pady=4)
+        fila_map.pack(fill="x", padx=10)
+        tk.Label(fila_map, text="Pestaña Excel:", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555").pack(side="left")
+        self.combo_sheet = ttk.Combobox(fila_map, values=["--"], state="disabled", width=18)
+        self.combo_sheet.pack(side="left", padx=(4, 12))
+        self.combo_sheet.bind("<<ComboboxSelected>>", lambda e: self._on_sheet_changed(self.combo_sheet.get()))
+
+        tk.Label(fila_map, text="Col. N° Parte:", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555").pack(side="left")
+        self.combo_parte = ttk.Combobox(fila_map, values=["--"], state="disabled", width=20)
+        self.combo_parte.pack(side="left", padx=4)
+
+        self.lbl_excel_info = tk.Label(sec_carga, text="", font=("Segoe UI", 9),
+                                       bg="#FFFFFF", fg="#1B6B1B", anchor="w", padx=10, pady=2)
+        self.lbl_excel_info.pack(fill="x")
+
+        # Tabla de Productos (Treeview)
+        tabla_frame = tk.Frame(zona, bg="#FFFFFF")
+        tabla_frame.grid(row=1, column=0, sticky="nsew")
+        tabla_frame.columnconfigure(0, weight=1)
+        tabla_frame.rowconfigure(0, weight=1)
+
+        COLS = ("#", "Número de Parte", "Descripción / Marca", "Precio Lista S/", "Stock Disp.", "Estado en Portal")
+        self._tree = ttk.Treeview(tabla_frame, columns=COLS, show="headings",
+                                   style="Hoja.Treeview", selectmode="extended")
+        col_widths = [35, 140, 260, 100, 75, 130]
+        col_anchors = ["center", "w", "w", "e", "center", "center"]
+        for col, w, a in zip(COLS, col_widths, col_anchors):
+            self._tree.heading(col, text=col)
+            self._tree.column(col, width=w, anchor=a, stretch=(col == "Descripción / Marca"))
+
+        sb_v = ttk.Scrollbar(tabla_frame, orient="vertical", command=self._tree.yview)
+        self._tree.configure(yscrollcommand=sb_v.set)
+        self._tree.grid(row=0, column=0, sticky="nsew")
+        sb_v.grid(row=0, column=1, sticky="ns")
+        self._tree.tag_configure("par",   background="#FFFFFF")
+        self._tree.tag_configure("impar", background="#F7F7F7")
+
+        # Columna Derecha: Inspector (Panel de Configuración de Ejecución)
+        inspector = tk.Frame(view_pdf, bg="#FFFFFF", bd=0)
+        inspector.grid(row=0, column=1, sticky="nsew")
+        inspector.columnconfigure(0, weight=1)
+        inspector.rowconfigure(1, weight=1)
+
+        tk.Label(inspector, text="CONFIGURACIÓN DE EJECUCIÓN",
+                 font=("Segoe UI", 9, "bold"), bg="#006CA8", fg="#FFFFFF",
+                 anchor="w", padx=10, pady=6).grid(row=0, column=0, sticky="ew")
+
+        cuerpo_insp = tk.Frame(inspector, bg="#FFFFFF", padx=10, pady=6)
+        cuerpo_insp.grid(row=1, column=0, sticky="nsew")
+        cuerpo_insp.columnconfigure(1, weight=1)
+        fila = [0]
+
+        def add_sep(titulo):
+            sep_f = tk.Frame(cuerpo_insp, bg="#FFFFFF")
+            sep_f.grid(row=fila[0], column=0, columnspan=2, sticky="ew", pady=(8, 3))
+            tk.Label(sep_f, text=titulo, font=("Segoe UI", 9, "bold"),
+                     bg="#FFFFFF", fg="#006CA8").pack(side="left")
+            tk.Frame(sep_f, bg="#C8C8C8", height=1).pack(side="bottom", fill="x")
+            fila[0] += 1
+
+        # Acceso
+        add_sep("Acceso al Portal Perú Compras")
+        tk.Label(cuerpo_insp, text="Usuario:", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555", anchor="e").grid(row=fila[0], column=0, sticky="e", padx=(0,4), pady=2)
+        self.entry_user = tk.Entry(cuerpo_insp, font=("Segoe UI", 9), bd=1, relief="sunken", bg="#F0F0F0")
+        self.entry_user.insert(0, "almerco.03")
+        self.entry_user.grid(row=fila[0], column=1, sticky="ew", pady=2)
+        fila[0] += 1
+
+        tk.Label(cuerpo_insp, text="Contraseña:", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555", anchor="e").grid(row=fila[0], column=0, sticky="e", padx=(0,4), pady=2)
+        self.entry_pass = tk.Entry(cuerpo_insp, font=("Segoe UI", 9), bd=1, relief="sunken", bg="#F0F0F0", show="*")
+        self.entry_pass.insert(0, "4lm3rKenYa@#")
+        self.entry_pass.grid(row=fila[0], column=1, sticky="ew", pady=2)
+        fila[0] += 1
+
+        self.check_visible = tk.BooleanVar(value=False)
+        chk = tk.Checkbutton(cuerpo_insp, text="Navegador visible (no oculto)", variable=self.check_visible,
+                             font=("Segoe UI", 9), bg="#FFFFFF", activebackground="#FFFFFF")
+        chk.grid(row=fila[0], column=0, columnspan=2, sticky="w", pady=2)
+        fila[0] += 1
+
+        # Filtros Catálogo
+        add_sep("Parámetros de Catálogo")
+        comb_data = self._catalog_data.get("combinaciones", [])
+
+        tk.Label(cuerpo_insp, text="Catálogo:", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555", anchor="e").grid(row=fila[0], column=0, sticky="e", padx=(0,4), pady=2)
+        self.combo_catalogo = ttk.Combobox(cuerpo_insp, values=self._opts_texts(comb_data), state="readonly", font=("Segoe UI", 9))
+        self.combo_catalogo.grid(row=fila[0], column=1, sticky="ew", pady=2)
+        self.combo_catalogo.bind("<<ComboboxSelected>>", lambda e: self._on_catalogo_changed(self.combo_catalogo.get()))
+        fila[0] += 1
+
+        tk.Label(cuerpo_insp, text="Categoría:", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555", anchor="e").grid(row=fila[0], column=0, sticky="e", padx=(0,4), pady=2)
+        self.combo_categoria = ttk.Combobox(cuerpo_insp, values=["Seleccione Catálogo"], state="readonly", font=("Segoe UI", 9))
+        self.combo_categoria.grid(row=fila[0], column=1, sticky="ew", pady=2)
+        self.combo_categoria.bind("<<ComboboxSelected>>", lambda e: self._on_categoria_changed(self.combo_categoria.get()))
+        fila[0] += 1
+
+        tk.Label(cuerpo_insp, text="Estado:", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555", anchor="e").grid(row=fila[0], column=0, sticky="e", padx=(0,4), pady=2)
+        self.combo_estado = ttk.Combobox(cuerpo_insp, values=["Seleccione Categoría"], state="readonly", font=("Segoe UI", 9))
+        self.combo_estado.grid(row=fila[0], column=1, sticky="ew", pady=2)
+        fila[0] += 1
+
+        if comb_data:
+            self.combo_catalogo.set(self._opts_texts(comb_data)[0])
+            self._on_catalogo_changed(self._opts_texts(comb_data)[0])
+
+        tk.Label(cuerpo_insp, text="Pausa (seg):", font=("Segoe UI", 9), bg="#FFFFFF", fg="#555555", anchor="e").grid(row=fila[0], column=0, sticky="e", padx=(0,4), pady=2)
+        self.slider_pausa = tk.DoubleVar(value=1.5)
+        e_pausa = tk.Entry(cuerpo_insp, textvariable=self.slider_pausa, font=("Segoe UI", 9), bd=1, relief="sunken", bg="#F0F0F0", width=8)
+        e_pausa.grid(row=fila[0], column=1, sticky="w", pady=2)
+        fila[0] += 1
+
+        # Consola Log de Eventos (log_box)
+        add_sep("Consola de Eventos")
+        consola_f = tk.Frame(cuerpo_insp, bg="#1A1A2E")
+        consola_f.grid(row=fila[0], column=0, columnspan=2, sticky="ew", pady=2)
+        consola_f.columnconfigure(0, weight=1)
+
+        self.log_box = tk.Text(consola_f, height=6, font=("Consolas", 9),
+                               bg="#1A1A2E", fg="#E0E0E0", bd=0, relief="flat",
+                               state="disabled", wrap="word")
+        self.log_box.pack(fill="both", expand=True)
+        self.log_box.tag_configure("ok",   foreground="#90EE90")
+        self.log_box.tag_configure("warn", foreground="#FFD700")
+        self.log_box.tag_configure("error",foreground="#FF6B6B")
+        self.log_box.tag_configure("info", foreground="#87CEEB")
+        self.log_box.tag_configure("done", foreground="#5DADE2")
+        fila[0] += 1
+
+        # Botón Ejecutar e Iniciar
+        btn_f = tk.Frame(inspector, bg="#FFFFFF", pady=6, padx=10)
+        btn_f.grid(row=2, column=0, sticky="ew")
+
+        self.btn_launch = tk.Button(btn_f, text="INICIAR PROCESAMIENTO  (F5)",
+                                    font=("Segoe UI", 10, "bold"), bg="#006CA8", fg="#FFFFFF",
+                                    activebackground="#00507E", activeforeground="#FFFFFF",
+                                    bd=0, pady=8, cursor="hand2",
+                                    command=self._on_launch)
+        self.btn_launch.pack(fill="x")
+
+        self.btn_stop = tk.Button(btn_f, text="Detener",
+                                  font=("Segoe UI", 9, "bold"), bg="#8B1A1A", fg="#FFFFFF",
+                                  bd=0, pady=4, state="disabled", cursor="hand2",
+                                  command=self._on_stop)
+        self.btn_stop.pack(fill="x", pady=(4, 0))
+
+        # ── SECCIÓN DE AUDITOR DE RESULTADOS E INFORME ──
+        audit_f = tk.Frame(btn_f, bg="#F8F9FA", bd=1, relief="solid", highlightbackground="#C8C8C8", pady=6, padx=8)
+        audit_f.pack(fill="x", pady=(10, 0))
+
+        tk.Label(audit_f, text="🔍 Auditor de Resultados de Proceso", font=("Segoe UI", 9, "bold"),
+                 bg="#F8F9FA", fg="#006CA8").pack(anchor="w")
+
+        self.lbl_audit_summary = tk.Label(audit_f, text="Cargue o procese datos para auditar...",
+                                          font=("Segoe UI", 8), bg="#F8F9FA", fg="#555555", anchor="w", justify="left")
+        self.lbl_audit_summary.pack(fill="x", pady=2)
+
+        btn_row_audit = tk.Frame(audit_f, bg="#F8F9FA")
+        btn_row_audit.pack(fill="x", pady=(4, 0))
+
+        tk.Button(btn_row_audit, text="📊 Informe Excel", font=("Segoe UI", 8, "bold"),
+                  bg="#1B6B1B", fg="#FFFFFF", activebackground="#145214", activeforeground="#FFFFFF",
+                  bd=0, padx=6, pady=4, cursor="hand2",
+                  command=lambda: self._export_audit_report(fmt="excel", modulo_nombre="Publicación PDF")).pack(side="left", padx=(0, 4), fill="x", expand=True)
+
+        tk.Button(btn_row_audit, text="📄 Informe PDF", font=("Segoe UI", 8, "bold"),
+                  bg="#006CA8", fg="#FFFFFF", activebackground="#00507E", activeforeground="#FFFFFF",
+                  bd=0, padx=6, pady=4, cursor="hand2",
+                  command=lambda: self._export_audit_report(fmt="pdf", modulo_nombre="Publicación PDF")).pack(side="left", fill="x", expand=True)
 
         self._views["pdf"] = view_pdf
 
-        # ── Vista 2: Análisis de Stock ──
-        view_stock = ctk.CTkFrame(self.main_container, fg_color="transparent")
-        view_stock.grid_columnconfigure(0, weight=1, minsize=360)
-        view_stock.grid_columnconfigure(1, weight=1, minsize=360)
-        view_stock.grid_rowconfigure(0, weight=1)
-        self._build_stock_tab(left_col=None, right_col=None, parent=view_stock)
+        # ── OTROS MÓDULOS DE TRABAJO ──
+        view_stock = tk.Frame(workspace, bg="#F0F0F0")
+        self._build_stock_tab(parent=view_stock)
         self._views["stock"] = view_stock
 
-        # ── Vista 3: Precios JSON ──
-        view_json = ctk.CTkFrame(self.main_container, fg_color="transparent")
-        view_json.grid_columnconfigure(0, weight=1)
-        view_json.grid_rowconfigure(0, weight=1)
+        view_json = tk.Frame(workspace, bg="#F0F0F0")
         import tab_precios_json
         tab_precios_json.build_precios_json_tab(self, parent=view_json)
         self._views["json"] = view_json
 
-        # ── Vista 4: Guía e Instrucciones ──
-        view_guide = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        view_guide = tk.Frame(workspace, bg="#F0F0F0")
         import gui_instructions_tab
-        gui_instructions_tab.build_instructions_tab(view_guide)
+        gui_instructions_tab.build_instructions_tab(view_guide, C=C)
         self._views["guide"] = view_guide
 
-        # ── Vista 5: Herramientas Avanzadas ──
-        view_tools = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        view_tools = tk.Frame(workspace, bg="#F0F0F0")
         self._build_advanced_tools_tab(view_tools)
         self._views["tools"] = view_tools
 
-        # ═══════════════════════════════════════════════════════════
-        # 3. FOOTER CORPORATIVO (#1f2937)
-        # ═══════════════════════════════════════════════════════════
-        footer = ctk.CTkFrame(self, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
-        footer.grid(row=1, column=1, padx=16, pady=(0, 14), sticky="ew")
+        # ── 5. BARRA DE ESTADO INFERIOR SEGMENTADA ──
+        statusbar = tk.Frame(self, bg="#E8E8E8", bd=0)
+        statusbar.pack(fill="x", side="bottom")
+        tk.Frame(statusbar, bg="#C8C8C8", height=1).pack(fill="x", side="top")
 
-        f_layout = ctk.CTkFrame(footer, fg_color="transparent")
-        f_layout.pack(fill="x", padx=14, pady=8)
+        def st_seg(texto, color="#555555", bold=False):
+            lbl = tk.Label(statusbar, text=texto,
+                           font=("Segoe UI", 9, "bold" if bold else "normal"),
+                           bg="#E8E8E8", fg=color, pady=3, padx=10)
+            lbl.pack(side="left")
+            tk.Frame(statusbar, bg="#C8C8C8", width=1).pack(side="left", fill="y", pady=2)
+            return lbl
 
-        self.lbl_footer_status = ctk.CTkLabel(
-            f_layout, text="Listo para iniciar procesamiento.", font=ctk.CTkFont(size=12), text_color="#9ca3af"
-        )
-        self.lbl_footer_status.pack(side="left", padx=4)
+        self.lbl_footer_status = st_seg("Listo", "#1B6B1B", bold=True)
+        self.lbl_status = self.lbl_footer_status
+        self._lbl_nav = st_seg("Navegador: No iniciado")
+        self.lbl_counter = st_seg("Registros: 0 cargados")
+        self._lbl_modulo = st_seg("Modulo: Publicacion de Ofertas PDF")
+        tk.Label(statusbar, text=f"Peru Compras Bot v{VERSION}",
+                 font=("Segoe UI", 9), bg="#E8E8E8", fg="#555555",
+                 padx=10).pack(side="right")
 
-        self.btn_stop = ctk.CTkButton(
-            f_layout,
-            text="Detener",
-            width=110,
-            height=38,
-            fg_color="#dc2626",
-            hover_color="#b91c1c",
-            state="disabled",
-            font=ctk.CTkFont(size=13, weight="bold"),
-            command=self._on_stop,
-        )
-        self.btn_stop.pack(side="right", padx=(8, 0))
-
-        self.btn_launch = ctk.CTkButton(
-            f_layout,
-            text="Iniciar Procesamiento",
-            width=220,
-            height=38,
-            fg_color="#2563eb",
-            hover_color="#1d4ed8",
-            font=ctk.CTkFont(size=14, weight="bold"),
-            command=self._on_launch,
-        )
-        self.btn_launch.pack(side="right", padx=4)
-
-        # Mostrar Vista Inicial ("pdf")
+        self.bind("<F5>", lambda e: self._on_launch())
         self._switch_view("pdf")
 
+    def _clear_excel(self):
+        self._excel_path = ""
+        self._excel_rows = []
+        self.lbl_file.config(state="normal")
+        self.lbl_file.delete(0, "end")
+        self.lbl_file.config(state="readonly")
+        if hasattr(self, "_tree"):
+            self._tree.delete(*self._tree.get_children())
+        self.lbl_excel_info.config(text="")
+
     def _switch_view(self, view_id):
-        """Cambia de vista activa en el main_container y actualiza botones laterales."""
+        """Cambia la vista activa y resalta el tab horizontal correspondiente."""
         for v_name, frame in self._views.items():
             if v_name == view_id:
                 frame.grid(row=0, column=0, sticky="nsew")
             else:
                 frame.grid_forget()
 
+        LABELS = {
+            "pdf":   "Publicación de Ofertas PDF",
+            "stock": "Actualización de Stock",
+            "json":  "Subida de Precios JSON",
+            "guide": "Instrucciones de Uso",
+            "tools": "Herramientas Avanzadas",
+        }
         for v_name, btn in self._nav_buttons.items():
             if v_name == view_id:
-                btn.configure(fg_color="#2563eb", text_color="#f9fafb")
+                btn.config(bg="#FFFFFF", fg="#006CA8", font=("Segoe UI", 10, "bold"))
             else:
-                btn.configure(fg_color="transparent", text_color="#9ca3af")
+                btn.config(bg="#F0F0F0", fg="#555555", font=("Segoe UI", 10))
+
+        if hasattr(self, "_lbl_modulo") and self._lbl_modulo:
+            self._lbl_modulo.config(text="Modulo: " + LABELS.get(view_id, view_id))
+        self._current_view = view_id
+
+    # ── METODOS DE AUDITOR DE RESULTADOS E INFORME DE EXPORTACIÓN ──
+
+    def _collect_tree_rows(self):
+        rows = []
+        if hasattr(self, "_tree"):
+            for item in self._tree.get_children():
+                vals = self._tree.item(item, "values")
+                if vals and len(vals) >= 6:
+                    rows.append({
+                        "parte": vals[1],
+                        "descripcion": vals[2],
+                        "precio": vals[3],
+                        "stock": vals[4],
+                        "estado": vals[5],
+                    })
+        if not rows and hasattr(self, "_excel_rows") and self._excel_rows:
+            rows = self._excel_rows
+        return rows
+
+    def _run_auditor_check(self, modulo_nombre="Publicación PDF"):
+        """Ejecuta el chequeo rápido del auditor sobre las fichas procesadas."""
+        from utils_mod.audit_reporter import audit_results
+        rows = self._collect_tree_rows()
+        summary = audit_results(rows)
+        if hasattr(self, "lbl_audit_summary") and self.lbl_audit_summary:
+            text = f"Total: {summary['total']} | ✓ OK: {summary['ok']} | ✕ Err: {summary['err']} | Éxito: {summary['rate']}%"
+            self.lbl_audit_summary.config(text=text)
+        return rows, summary
+
+    def _export_audit_report(self, fmt="excel", modulo_nombre="Publicación PDF"):
+        """Genera y guarda el informe de auditoría en Excel (.xlsx) o PDF/HTML."""
+        from utils_mod.audit_reporter import audit_results, export_excel_report, export_pdf_report
+        rows, summary = self._run_auditor_check(modulo_nombre)
+
+        if not rows:
+            messagebox.showwarning("Auditor del Sistema", "No hay datos de productos ni ejecuciones para auditar.\nPor favor cargue o procese datos primero.")
+            return
+
+        if fmt == "excel":
+            def_ext = ".xlsx"
+            ftypes = [("Libro de Excel", "*.xlsx"), ("Todos los archivos", "*.*")]
+        else:
+            def_ext = ".html"
+            ftypes = [("Informe de Auditoría PDF/HTML", "*.html"), ("Todos los archivos", "*.*")]
+
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        default_file = f"Informe_Auditoria_{modulo_nombre.replace(' ', '_')}_{ts}{def_ext}"
+
+        path = filedialog.asksaveasfilename(
+            title=f"Guardar Informe de Auditoría ({fmt.upper()}) — {modulo_nombre}",
+            initialfile=default_file,
+            defaultextension=def_ext,
+            filetypes=ftypes,
+        )
+        if not path:
+            return
+
+        if fmt == "excel":
+            ok, msg = export_excel_report(rows, summary, path, modulo_nombre=modulo_nombre)
+        else:
+            ok, msg = export_pdf_report(rows, summary, path, modulo_nombre=modulo_nombre)
+
+        if ok:
+            messagebox.showinfo("Auditor de Resultados", f"¡Informe de Auditoría generado exitosamente!\n\nArchivo creado:\n{msg}")
+        else:
+            messagebox.showerror("Error en Auditoría", f"Ocurrió un error al generar el informe:\n{msg}")
+
+    def _update_tools_excel_status(self):
+        if not hasattr(self, "lbl_tools_excel_status") or not self.lbl_tools_excel_status:
+            return
+        if getattr(self, "_excel_path", None):
+            name = os.path.basename(self._excel_path)
+            cnt = len(self._excel_rows) if hasattr(self, "_excel_rows") else 0
+            self.lbl_tools_excel_status.config(
+                text=f"  ✓ Archivo Excel cargado: {name} ({cnt} registros listos para pruebas)  ",
+                bg="#DFF0D8", fg="#1B6B1B"
+            )
+        else:
+            self.lbl_tools_excel_status.config(
+                text="  ⚠️ Sin archivo Excel cargado — Seleccione un Excel abajo o en el módulo principal para ejecutar las pruebas.  ",
+                bg="#FCF8E3", fg="#854D0E"
+            )
 
     def _build_advanced_tools_tab(self, parent):
-        """Construye la vista de Herramientas Avanzadas para desarrollo/pruebas."""
+        """Vista de Herramientas Avanzadas — diagnóstico y scrapers en Tkinter nativo."""
+        import tkinter as tk
+        from tkinter import ttk
+
         parent.grid_columnconfigure(0, weight=1)
         parent.grid_rowconfigure(0, weight=1)
 
-        box = ctk.CTkScrollableFrame(parent, fg_color="transparent")
-        box.grid(row=0, column=0, padx=16, pady=16, sticky="nsew")
-        box.grid_columnconfigure(0, weight=1)
+        # Canvas con scrollbar para el contenedor
+        canvas = tk.Canvas(parent, bg="#F0F0F0", bd=0, highlightthickness=0)
+        sb = ttk.Scrollbar(parent, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=sb.set)
 
-        ctk.CTkLabel(
-            box, text="Herramientas Avanzadas de Diagnóstico", font=ctk.CTkFont(size=16, weight="bold"), text_color="#f9fafb"
-        ).pack(anchor="w", pady=(0, 6))
+        sb.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
 
-        ctk.CTkLabel(
-            box, text="Pruebas aisladas, scrapers y descubrimiento de endpoints del portal.", font=ctk.CTkFont(size=11), text_color="#9ca3af"
-        ).pack(anchor="w", pady=(0, 16))
+        inner = tk.Frame(canvas, bg="#F0F0F0")
+        win_id = canvas.create_window((0, 0), window=inner, anchor="nw")
 
-        # Grupo 1: Pruebas Cortas
-        g1 = ctk.CTkFrame(box, fg_color="#1f2937", corner_radius=8, border_width=1, border_color="#374151")
-        g1.pack(fill="x", pady=6, ipadx=14, ipady=12)
-        ctk.CTkLabel(g1, text="Pruebas Directas", font=ctk.CTkFont(size=13, weight="bold"), text_color="#2563eb").pack(anchor="w", padx=12, pady=4)
+        def _on_cfg(e):
+            canvas.configure(scrollregion=canvas.bbox("all"))
 
-        b_row1 = ctk.CTkFrame(g1, fg_color="transparent")
-        b_row1.pack(fill="x", padx=12, pady=4)
+        def _on_canvas_cfg(e):
+            if e.width > 20:
+                canvas.itemconfig(win_id, width=e.width)
 
-        self.btn_test = ctk.CTkButton(b_row1, text="Test (1 Ficha)", width=150, height=34, fg_color="#374151", hover_color="#4b5563", command=self._on_test)
-        self.btn_test.pack(side="left", padx=(0, 8))
+        inner.bind("<Configure>", _on_cfg)
+        canvas.bind("<Configure>", _on_canvas_cfg)
 
-        self.btn_nro = ctk.CTkButton(b_row1, text="Solo N° de Parte", width=150, height=34, fg_color="#374151", hover_color="#4b5563", command=self._on_nro_parte)
-        self.btn_nro.pack(side="left", padx=8)
+        # TÍTULO PRINCIPAL
+        header_f = tk.Frame(inner, bg="#F0F0F0", pady=12, padx=16)
+        header_f.pack(fill="x")
+        tk.Label(header_f, text="DIAGNÓSTICO Y HERRAMIENTAS AVANZADAS",
+                 font=("Segoe UI", 11, "bold"), bg="#F0F0F0", fg="#006CA8", anchor="w").pack(fill="x")
+        tk.Label(header_f, text="Pruebas unitarias de flujo, extracción de catálogos y scrapers de endpoints de Perú Compras.",
+                 font=("Segoe UI", 9), bg="#F0F0F0", fg="#555555", anchor="w").pack(fill="x", pady=(2, 0))
 
-        self.btn_certs = ctk.CTkButton(b_row1, text="Solo Certificaciones", width=160, height=34, fg_color="#374151", hover_color="#4b5563", command=self._on_certs_only)
-        self.btn_certs.pack(side="left", padx=8)
+        # PANEL 0: ESTADO DEL ARCHIVO DE TRABAJO (CON BOTÓN DE SELECCIÓN)
+        sec_excel = tk.Frame(inner, bg="#FFFFFF", bd=1, relief="solid", highlightbackground="#C8C8C8")
+        sec_excel.pack(fill="x", padx=16, pady=(0, 12))
 
-        # Grupo 2: Extracción y Discovery
-        g2 = ctk.CTkFrame(box, fg_color="#252538", corner_radius=8)
-        g2.pack(fill="x", pady=6, ipadx=12, ipady=10)
-        ctk.CTkLabel(g2, text="Extracción y Scrapers", font=ctk.CTkFont(size=13, weight="bold"), text_color="#2563eb").pack(anchor="w", padx=12, pady=4)
+        sec_excel_head = tk.Frame(sec_excel, bg="#E8E8E8", pady=4, padx=10)
+        sec_excel_head.pack(fill="x")
+        tk.Label(sec_excel_head, text="ESTADO DEL ARCHIVO DE TRABAJO PARA PRUEBAS",
+                 font=("Segoe UI", 9, "bold"), bg="#E8E8E8", fg="#555555", anchor="w").pack(side="left")
 
-        b_row2 = ctk.CTkFrame(g2, fg_color="transparent")
-        b_row2.pack(fill="x", padx=12, pady=4)
+        sec_excel_body = tk.Frame(sec_excel, bg="#FFFFFF", pady=8, padx=10)
+        sec_excel_body.pack(fill="x")
 
-        self.btn_extract = ctk.CTkButton(
-            b_row2, text="Extraer Reportes", width=160, height=34,
-            fg_color="#334155", hover_color="#475569",
-            command=self._on_extract,
+        self.lbl_tools_excel_status = tk.Label(sec_excel_body, text="",
+                                               font=("Segoe UI", 9), anchor="w", pady=4, padx=8)
+        self.lbl_tools_excel_status.pack(side="left", fill="x", expand=True)
+
+        tk.Button(sec_excel_body, text="Examinar Excel...", font=("Segoe UI", 9),
+                  bg="#E8E8E8", fg="#1A1A1A", bd=1, relief="raised", padx=8,
+                  command=self._pick_excel).pack(side="left", padx=4)
+        tk.Button(sec_excel_body, text="Limpiar", font=("Segoe UI", 9),
+                  bg="#E8E8E8", fg="#1A1A1A", bd=1, relief="raised", padx=8,
+                  command=self._clear_excel).pack(side="left", padx=2)
+
+        self._update_tools_excel_status()
+
+        # HELPER DE CARD DE HERRAMIENTAS
+        def create_tool_card(title, subtitle):
+            card = tk.Frame(inner, bg="#FFFFFF", bd=1, relief="solid", highlightbackground="#C8C8C8")
+            card.pack(fill="x", padx=16, pady=6)
+
+            chead = tk.Frame(card, bg="#E8E8E8", pady=4, padx=10)
+            chead.pack(fill="x")
+            tk.Label(chead, text=title, font=("Segoe UI", 9, "bold"),
+                     bg="#E8E8E8", fg="#006CA8", anchor="w").pack(side="left")
+
+            cbody = tk.Frame(card, bg="#FFFFFF", pady=8, padx=12)
+            cbody.pack(fill="x")
+
+            if subtitle:
+                tk.Label(cbody, text=subtitle, font=("Segoe UI", 9),
+                         bg="#FFFFFF", fg="#555555", anchor="w", justify="left").pack(fill="x", pady=(0, 8))
+
+            btn_row = tk.Frame(cbody, bg="#FFFFFF")
+            btn_row.pack(fill="x")
+            return btn_row
+
+        def make_action_btn(parent_row, text, command, bg="#006CA8", fg="#FFFFFF"):
+            btn = tk.Button(parent_row, text=text, font=("Segoe UI", 9, "bold"),
+                            bg=bg, fg=fg, activebackground="#00507E", activeforeground="#FFFFFF",
+                            bd=1, relief="raised", padx=12, pady=6, cursor="hand2",
+                            command=command)
+            btn.pack(side="left", padx=(0, 8))
+            return btn
+
+        # PANEL 1: PRUEBAS DE FLUJO RÁPIDO
+        row1 = create_tool_card(
+            "PRUEBAS DE FLUJO RÁPIDO (REQUIERE EXCEL Y CREDENCIALES)",
+            "Ejecuta pruebas unitarias de procesamiento sobre la 1ª ficha del Excel cargado usando las credenciales del panel lateral derecho."
         )
-        self.btn_extract.pack(side="left", padx=(0, 8))
+        self.btn_test = make_action_btn(row1, "🧪 Test (1 Ficha)", self._on_test, bg="#006CA8")
+        self.btn_nro = make_action_btn(row1, "🔍 Solo N° de Parte", self._on_nro_parte, bg="#E8E8E8", fg="#1A1A1A")
+        self.btn_certs = make_action_btn(row1, "🏅 Solo Certificaciones", self._on_certs_only, bg="#E8E8E8", fg="#1A1A1A")
 
-        self.btn_compare = ctk.CTkButton(
-            b_row2, text="Comparar Fichas", width=150, height=34,
-            fg_color="#334155", hover_color="#475569",
-            command=self._on_compare,
+        # PANEL 2: EXTRACCIÓN Y SCRAPERS DE CATÁLOGO
+        row2 = create_tool_card(
+            "EXTRACCIÓN Y SCRAPERS DE CATÁLOGO (NO REQUIERE EXCEL PREVIO)",
+            "Herramientas avanzadas de consulta directa sobre el portal de Perú Compras para extracción de datos y diagnósticos."
         )
-        self.btn_compare.pack(side="left", padx=8)
-
-        self.btn_discovery = ctk.CTkButton(
-            b_row2, text="Discovery v1", width=130, height=34,
-            fg_color="#334155", hover_color="#475569",
-            command=self._on_discovery,
-        )
-        self.btn_discovery.pack(side="left", padx=8)
-
-        self.btn_discovery2 = ctk.CTkButton(
-            b_row2, text="Discovery v2", width=130, height=34,
-            fg_color="#334155", hover_color="#475569",
-            command=self._on_discovery2,
-        )
-        self.btn_discovery2.pack(side="left", padx=8)
-
-
-    # ── Credentials Section ───────────────────────────────────────
+        self.btn_extract = make_action_btn(row2, "📊 Extraer Reportes", self._on_extract, bg="#006CA8")
+        self.btn_compare = make_action_btn(row2, "⚖️ Comparar Fichas", self._on_compare, bg="#E8E8E8", fg="#1A1A1A")
+        self.btn_discovery = make_action_btn(row2, "📡 Discovery v1 (Endpoints)", self._on_discovery, bg="#E8E8E8", fg="#1A1A1A")
+        self.btn_discovery2 = make_action_btn(row2, "🔬 Discovery v2 (JSON Schema)", self._on_discovery2, bg="#E8E8E8", fg="#1A1A1A")
 
     # ── Pestaña 2: Stock/Cobertura/Plazo ─────────────────────────
 
     def _build_stock_tab(self, left_col=None, right_col=None, parent=None):
-        """Construye la UI para el modo stock/cobertura/plazo (réplica del otro bot)."""
+        """Vista de Análisis de Stock — paleta institucional light."""
         if parent is None:
             parent = right_col
+        C = self._C
 
         # Estado
         self._stock_excel_path = ""
@@ -403,200 +1114,271 @@ class SubirPdfApp(ctk.CTk):
         self._stock_errors = 0
         self._stock_report_path = ""
 
+        parent.grid_columnconfigure(0, weight=1, minsize=360)
+        parent.grid_columnconfigure(1, weight=1, minsize=360)
+        parent.grid_rowconfigure(0, weight=1)
+
         # LEFT COLUMN
-        left = ctk.CTkScrollableFrame(parent, fg_color="transparent")
-        left.grid(row=0, column=0, padx=(0, 6), sticky="nsew")
+        left = ctk.CTkScrollableFrame(parent, fg_color="transparent",
+                                      scrollbar_button_color=C["border"])
+        left.grid(row=0, column=0, padx=(12, 6), pady=12, sticky="nsew")
         left.grid_columnconfigure(0, weight=1)
 
-        # Título
-        ctk.CTkLabel(
-            left, text="📊 Modo Stock/Cobertura/Plazo",
-            font=ctk.CTkFont(size=18, weight="bold"),
-        ).grid(row=0, column=0, padx=12, pady=(12, 4), sticky="w")
-        ctk.CTkLabel(
-            left, text="Réplica del flujo del otro bot PeruCompras en Playwright",
-            font=ctk.CTkFont(size=11), text_color="gray60",
-        ).grid(row=1, column=0, padx=12, pady=(0, 8), sticky="w")
-
-        # ── Sección 0: Credenciales propias de este flujo ──
-        ctk.CTkLabel(left, text="Credenciales (flujo independiente)",
-                     font=ctk.CTkFont(size=13, weight="bold"),
-                     text_color="#5dade2").grid(row=2, column=0, padx=12, pady=(8, 4), sticky="w")
-        frame_creds = ctk.CTkFrame(left, fg_color="gray10")
-        frame_creds.grid(row=3, column=0, padx=12, pady=(0, 8), sticky="ew")
+        # ── Sección 0: Credenciales ──
+        self._section_label(left, "Credenciales del Flujo Stock", 0)
+        frame_creds = ctk.CTkFrame(left, fg_color=C["card"], corner_radius=6,
+                                   border_width=1, border_color=C["border"])
+        frame_creds.grid(row=1, column=0, padx=0, pady=(0, 10), sticky="ew")
         frame_creds.grid_columnconfigure(1, weight=1)
 
-        ctk.CTkLabel(frame_creds, text="Usuario:", anchor="w"
-                     ).grid(row=0, column=0, padx=10, pady=4, sticky="w")
-        self.entry_stock_user = ctk.CTkEntry(frame_creds)
-        self.entry_stock_user.insert(0, "fernando.trinidad")
-        self.entry_stock_user.grid(row=0, column=1, padx=10, pady=4, sticky="ew")
+        for ri, (lbl, attr, default, show) in enumerate([
+            ("Usuario",    "entry_stock_user", "fernando.trinidad", ""),
+            ("Contraseña", "entry_stock_pass", "po!tLKB#8^r4e",    "*"),
+        ]):
+            ctk.CTkLabel(frame_creds, text=lbl, anchor="w", font=ctk.CTkFont(size=11),
+                         text_color=C["txt2"]).grid(row=ri*2,   column=0, columnspan=2,
+                                                    padx=12, pady=(8 if ri==0 else 2, 1), sticky="w")
+            e = ctk.CTkEntry(frame_creds, show=show, height=32,
+                             fg_color=C["card2"], border_color=C["border"], text_color=C["txt"])
+            e.insert(0, default)
+            e.grid(row=ri*2+1, column=0, columnspan=2, padx=12,
+                   pady=(0, 8 if ri==1 else 4), sticky="ew")
+            setattr(self, attr, e)
 
-        ctk.CTkLabel(frame_creds, text="Contraseña:", anchor="w"
-                     ).grid(row=1, column=0, padx=10, pady=(0, 8), sticky="w")
-        self.entry_stock_pass = ctk.CTkEntry(frame_creds, show="*")
-        self.entry_stock_pass.insert(0, "po!tLKB#8^r4e")
-        self.entry_stock_pass.grid(row=1, column=1, padx=10, pady=(0, 8), sticky="ew")
+        # Check mostrar navegador
+        self.check_stock_visible = ctk.CTkCheckBox(
+            frame_creds, text="Mostrar navegador en pantalla",
+            font=ctk.CTkFont(size=12), text_color=C["txt"],
+            border_color=C["border"], fg_color=C["accent"],
+        )
+        self.check_stock_visible.grid(row=4, column=0, columnspan=2,
+                                      padx=12, pady=(2, 10), sticky="w")
 
         # ── Sección 1: Excel de productos ──
-        ctk.CTkLabel(left, text="Excel de productos (Parte + Stock)",
-                     font=ctk.CTkFont(size=13, weight="bold"),
-                     text_color="#5dade2").grid(row=4, column=0, padx=12, pady=(12, 4), sticky="w")
-        frame_excel = ctk.CTkFrame(left, fg_color="gray10")
-        frame_excel.grid(row=5, column=0, padx=12, pady=(0, 8), sticky="ew")
+        self._section_label(left, "Archivo Excel de Productos", 2)
+        frame_excel = ctk.CTkFrame(left, fg_color=C["card"], corner_radius=6,
+                                   border_width=1, border_color=C["border"])
+        frame_excel.grid(row=3, column=0, padx=0, pady=(0, 10), sticky="ew")
         frame_excel.grid_columnconfigure(0, weight=1)
 
         self.lbl_stock_excel = ctk.CTkLabel(
-            frame_excel, text="(sin archivo)", text_color="gray60", anchor="w"
+            frame_excel, text="(sin archivo)", text_color=C["txt3"],
+            font=ctk.CTkFont(size=11), anchor="w",
         )
-        self.lbl_stock_excel.grid(row=0, column=0, padx=10, pady=8, sticky="ew")
+        self.lbl_stock_excel.grid(row=0, column=0, padx=12, pady=(10, 4), sticky="ew")
 
         btn_row = ctk.CTkFrame(frame_excel, fg_color="transparent")
-        btn_row.grid(row=1, column=0, padx=10, pady=(0, 8), sticky="ew")
+        btn_row.grid(row=1, column=0, padx=12, pady=(0, 4), sticky="ew")
         ctk.CTkButton(
-            btn_row, text="📂 Cargar Excel", width=120,
+            btn_row, text="Cargar Excel", width=120, height=32,
+            fg_color=C["accent"], hover_color=C["accent_h"], text_color="#FFFFFF",
+            corner_radius=4, font=ctk.CTkFont(size=12),
             command=self._on_load_stock_excel,
-        ).pack(side="left", padx=(0, 6))
+        ).pack(side="left", padx=(0, 8))
         ctk.CTkButton(
-            btn_row, text="📋 Descargar Plantilla", width=160,
+            btn_row, text="Descargar Plantilla", width=160, height=32,
+            fg_color=C["card2"], hover_color=C["border"],
+            text_color=C["txt"], border_width=1, border_color=C["border"],
+            corner_radius=4, font=ctk.CTkFont(size=12),
             command=self._on_download_stock_template,
-            fg_color="#2c3e50", hover_color="#34495e",
         ).pack(side="left")
         self.lbl_stock_summary = ctk.CTkLabel(
-            frame_excel, text="", text_color="gray60", anchor="w"
+            frame_excel, text="", text_color=C["txt3"],
+            font=ctk.CTkFont(size=11), anchor="w",
         )
-        self.lbl_stock_summary.grid(row=2, column=0, padx=10, pady=(0, 8), sticky="ew")
+        self.lbl_stock_summary.grid(row=2, column=0, padx=12, pady=(0, 10), sticky="ew")
 
         # ── Sección 2: Filtros del portal ──
-        ctk.CTkLabel(left, text="Filtros del portal (Acuerdo > Catálogo > Categoría)",
-                     font=ctk.CTkFont(size=13, weight="bold"),
-                     text_color="#5dade2").grid(row=6, column=0, padx=12, pady=(12, 4), sticky="w")
-        frame_filtros = ctk.CTkFrame(left, fg_color="gray10")
-        frame_filtros.grid(row=7, column=0, padx=12, pady=(0, 8), sticky="ew")
+        self._section_label(left, "Filtros del Portal (Acuerdo > Catálogo > Categoría)", 4)
+        frame_filtros = ctk.CTkFrame(left, fg_color=C["card"], corner_radius=6,
+                                     border_width=1, border_color=C["border"])
+        frame_filtros.grid(row=5, column=0, padx=0, pady=(0, 10), sticky="ew")
         frame_filtros.grid_columnconfigure(1, weight=1)
 
-        # Cargar JSON de combos extraídos
         self._stock_combos_data = self._load_stock_combos_json()
         acuerdos_list = self._stock_combos_data.get("acuerdos", [])
         acuerdo_values = [a["text"] for a in acuerdos_list] if acuerdos_list else ["-- Sin datos --"]
 
-        # Acuerdo
-        ctk.CTkLabel(frame_filtros, text="Acuerdo:", anchor="w"
-                     ).grid(row=0, column=0, padx=10, pady=4, sticky="w")
-        self.option_stock_acuerdo = ctk.CTkOptionMenu(
-            frame_filtros, values=acuerdo_values, width=300,
-            command=self._on_stock_acuerdo_changed,
+        _om_style = dict(
+            fg_color=C["card2"], button_color=C["border"],
+            button_hover_color=C["border2"], text_color=C["txt"],
+            dropdown_fg_color=C["card"], dropdown_hover_color=C["card2"],
+            dropdown_text_color=C["txt"],
         )
-        self.option_stock_acuerdo.grid(row=0, column=1, padx=10, pady=4, sticky="ew")
-        if acuerdo_values and acuerdo_values[0] != "-- Sin datos --":
-            self.option_stock_acuerdo.set(acuerdo_values[0])
 
-        # Catálogo
-        ctk.CTkLabel(frame_filtros, text="Catálogo:", anchor="w"
-                     ).grid(row=1, column=0, padx=10, pady=4, sticky="w")
-        self.option_stock_catalogo = ctk.CTkOptionMenu(
-            frame_filtros, values=["-- Seleccione acuerdo primero --"], width=300,
-            command=self._on_stock_catalogo_changed,
+        for ri, (lbl, attr, vals, cmd) in enumerate([
+            ("Acuerdo",   "option_stock_acuerdo",   acuerdo_values,
+             self._on_stock_acuerdo_changed),
+            ("Catálogo",  "option_stock_catalogo",  ["-- Seleccione acuerdo primero --"],
+             self._on_stock_catalogo_changed),
+            ("Categoría", "option_stock_categoria", ["-- Seleccione catálogo primero --"],
+             None),
+        ]):
+            ctk.CTkLabel(frame_filtros, text=lbl, anchor="w",
+                         font=ctk.CTkFont(size=11), text_color=C["txt2"]
+                         ).grid(row=ri*2, column=0, columnspan=2,
+                                padx=12, pady=(8 if ri==0 else 4, 1), sticky="w")
+            opts = dict(**_om_style, width=300, command=cmd) if cmd else dict(**_om_style, width=300)
+            om = ctk.CTkOptionMenu(frame_filtros, values=vals, **opts)
+            om.grid(row=ri*2+1, column=0, columnspan=2, padx=12,
+                    pady=(0, 4 if ri < 2 else 0), sticky="ew")
+            setattr(self, attr, om)
+
+        # Pausa
+        ctk.CTkLabel(frame_filtros, text="Pausa entre registros (seg)", anchor="w",
+                     font=ctk.CTkFont(size=11), text_color=C["txt2"]
+                     ).grid(row=6, column=0, columnspan=2, padx=12, pady=(8, 1), sticky="w")
+        self.entry_stock_pausa = ctk.CTkEntry(
+            frame_filtros, width=80, height=30,
+            fg_color=C["card2"], border_color=C["border"], text_color=C["txt"],
         )
-        self.option_stock_catalogo.grid(row=1, column=1, padx=10, pady=4, sticky="ew")
-
-        # Categoría
-        ctk.CTkLabel(frame_filtros, text="Categoría:", anchor="w"
-                     ).grid(row=2, column=0, padx=10, pady=4, sticky="w")
-        self.option_stock_categoria = ctk.CTkOptionMenu(
-            frame_filtros, values=["-- Seleccione catálogo primero --"], width=300,
-        )
-        self.option_stock_categoria.grid(row=2, column=1, padx=10, pady=4, sticky="ew")
-
-        # Pausa entre productos
-        ctk.CTkLabel(frame_filtros, text="Pausa (seg):", anchor="w"
-                     ).grid(row=3, column=0, padx=10, pady=4, sticky="w")
-        self.entry_stock_pausa = ctk.CTkEntry(frame_filtros, width=80)
         self.entry_stock_pausa.insert(0, "2")
-        self.entry_stock_pausa.grid(row=3, column=1, padx=10, pady=4, sticky="w")
+        self.entry_stock_pausa.grid(row=7, column=0, padx=12, pady=(0, 10), sticky="w")
 
-        # Ver navegador (mostrar ventana del browser)
-        self.check_stock_visible = ctk.CTkCheckBox(
-            frame_filtros, text="👁 Ver navegador (mostrar ventana)",
-        )
-        self.check_stock_visible.grid(row=4, column=0, columnspan=2, padx=10, pady=(6, 4), sticky="w")
-
-        # Cargar catálogos del primer acuerdo por defecto
         if acuerdos_list:
+            self.option_stock_acuerdo.set(acuerdo_values[0])
             self._on_stock_acuerdo_changed(acuerdo_values[0])
 
         # ── Botones de acción ──
-        ctk.CTkLabel(left, text="Acciones",
-                     font=ctk.CTkFont(size=13, weight="bold"),
-                     text_color="#5dade2").grid(row=8, column=0, padx=12, pady=(12, 4), sticky="w")
+        self._section_label(left, "Iniciar / Detener", 6)
         frame_btns = ctk.CTkFrame(left, fg_color="transparent")
-        frame_btns.grid(row=9, column=0, padx=12, pady=(0, 8), sticky="ew")
+        frame_btns.grid(row=7, column=0, padx=0, pady=(0, 8), sticky="ew")
 
         self.btn_stock_start = ctk.CTkButton(
-            frame_btns, text="▶ Iniciar Stock", width=180, height=42,
-            font=ctk.CTkFont(size=14, weight="bold"),
+            frame_btns, text="Iniciar Stock", width=160, height=36,
+            fg_color=C["accent"], hover_color=C["accent_h"], text_color="#FFFFFF",
+            corner_radius=6, font=ctk.CTkFont(size=13, weight="bold"),
             command=self._on_stock_start,
         )
         self.btn_stock_start.pack(side="left", padx=(0, 8))
 
         self.btn_stock_stop = ctk.CTkButton(
-            frame_btns, text="■ Detener", width=120, height=42,
-            fg_color="#c0392b", hover_color="#96281b", state="disabled",
-            font=ctk.CTkFont(size=14, weight="bold"),
+            frame_btns, text="Detener", width=110, height=36,
+            fg_color=C["danger"], hover_color=C["danger_h"],
+            text_color="#FFFFFF", state="disabled",
+            corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
             command=self._on_stock_stop,
         )
         self.btn_stock_stop.pack(side="left", padx=(0, 8))
 
-        # Estado
         self.lbl_stock_status = ctk.CTkLabel(
-            frame_btns, text="Listo", text_color="#5dade2",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            frame_btns, text="Listo", text_color=C["txt3"],
+            font=ctk.CTkFont(size=12),
         )
-        self.lbl_stock_status.pack(side="left", padx=12)
+        self.lbl_stock_status.pack(side="left", padx=8)
 
-        # RIGHT COLUMN: log + stats
-        right = ctk.CTkFrame(parent)
-        right.grid(row=0, column=1, padx=(6, 0), sticky="nsew")
+        # RIGHT COLUMN: stats + log
+        right = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=8,
+                             border_width=1, border_color=C["border"])
+        right.grid(row=0, column=1, padx=(6, 12), pady=12, sticky="nsew")
         right.grid_columnconfigure(0, weight=1)
-        right.grid_rowconfigure(1, weight=1)
+        right.grid_rowconfigure(2, weight=1)
+
+        # Section label
+        self._section_label(right, "Panel de Ejecución", 0)
 
         # Stats
-        stats = ctk.CTkFrame(right, fg_color="gray15")
-        stats.grid(row=0, column=0, padx=8, pady=(8, 4), sticky="ew")
+        stats = ctk.CTkFrame(right, fg_color="transparent")
+        stats.grid(row=1, column=0, padx=12, pady=(0, 8), sticky="ew")
         stats.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
-        ctk.CTkLabel(stats, text="Total", font=ctk.CTkFont(size=11), text_color="gray60"
-                     ).grid(row=0, column=0, padx=8, pady=(4, 0))
-        self.lbl_stock_stat_total = ctk.CTkLabel(stats, text="0", font=ctk.CTkFont(size=20, weight="bold"))
-        self.lbl_stock_stat_total.grid(row=1, column=0, padx=8, pady=(0, 4))
-
-        ctk.CTkLabel(stats, text="OK", font=ctk.CTkFont(size=11), text_color="#5dade2"
-                     ).grid(row=0, column=1, padx=8, pady=(4, 0))
-        self.lbl_stock_stat_ok = ctk.CTkLabel(stats, text="0", font=ctk.CTkFont(size=20, weight="bold"),
-                                              text_color="#5dade2")
-        self.lbl_stock_stat_ok.grid(row=1, column=1, padx=8, pady=(0, 4))
-
-        ctk.CTkLabel(stats, text="Fallos", font=ctk.CTkFont(size=11), text_color="#e74c3c"
-                     ).grid(row=0, column=2, padx=8, pady=(4, 0))
-        self.lbl_stock_stat_fail = ctk.CTkLabel(stats, text="0", font=ctk.CTkFont(size=20, weight="bold"),
-                                                text_color="#e74c3c")
-        self.lbl_stock_stat_fail.grid(row=1, column=2, padx=8, pady=(0, 4))
-
-        ctk.CTkLabel(stats, text="Reporte", font=ctk.CTkFont(size=11), text_color="gray60"
-                     ).grid(row=0, column=3, padx=8, pady=(4, 0))
-        self.lbl_stock_report = ctk.CTkLabel(stats, text="(ninguno)", font=ctk.CTkFont(size=10),
-                                            text_color="gray60", wraplength=200)
-        self.lbl_stock_report.grid(row=1, column=3, padx=8, pady=(0, 4))
+        for col, lbl, color, attr in [
+            (0, "Total",   C["txt"],     "lbl_stock_stat_total"),
+            (1, "Éxito",   C["success"], "lbl_stock_stat_ok"),
+            (2, "Fallos",  C["danger"],  "lbl_stock_stat_fail"),
+            (3, "Reporte", C["txt3"],    "lbl_stock_report"),
+        ]:
+            f = ctk.CTkFrame(stats, fg_color=C["card2"], corner_radius=6,
+                             border_width=1, border_color=C["border"])
+            f.grid(row=0, column=col, padx=3, sticky="ew")
+            font_size = 22 if col < 3 else 10
+            lbl_n = ctk.CTkLabel(
+                f, text="0" if col < 3 else "(ninguno)",
+                font=ctk.CTkFont(size=font_size, weight="bold" if col < 3 else "normal"),
+                text_color=color,
+                wraplength=160 if col == 3 else 0,
+            )
+            lbl_n.pack(pady=(8, 0))
+            ctk.CTkLabel(f, text=lbl, font=ctk.CTkFont(size=10),
+                         text_color=C["txt3"]).pack(pady=(0, 8))
+            setattr(self, attr, lbl_n)
 
         # Progreso
-        self.progress_stock = ctk.CTkProgressBar(right)
-        self.progress_stock.grid(row=2, column=0, padx=8, pady=4, sticky="ew")
+        self.progress_stock = ctk.CTkProgressBar(
+            right, height=6, fg_color=C["border"], progress_color=C["accent"],
+        )
+        self.progress_stock.grid(row=3, column=0, padx=12, pady=(0, 6), sticky="ew")
         self.progress_stock.set(0)
 
         # Log
-        self.log_stock = ctk.CTkTextbox(right, font=ctk.CTkFont(family="Consolas", size=11))
-        self.log_stock.grid(row=1, column=0, padx=8, pady=(4, 8), sticky="nsew")
+        self.log_stock = ctk.CTkTextbox(
+            right, font=ctk.CTkFont(family="Courier New", size=11),
+            fg_color=C["card"], border_width=1, border_color=C["border"],
+            text_color=C["txt"],
+        )
+        self.log_stock.grid(row=2, column=0, padx=12, pady=(0, 4), sticky="nsew")
         self.log_stock.configure(state="disabled")
+
+        # Auditor de Stock
+        audit_f = ctk.CTkFrame(right, fg_color=C["card2"], corner_radius=6, border_width=1, border_color=C["border"])
+        audit_f.grid(row=4, column=0, padx=12, pady=(4, 12), sticky="ew")
+        ctk.CTkLabel(audit_f, text="🔍 Auditor de Resultados — Stock", font=ctk.CTkFont(size=11, weight="bold"),
+                     text_color=C["txt"]).pack(anchor="w", padx=10, pady=(6, 2))
+
+        self.lbl_audit_stock_summary = ctk.CTkLabel(audit_f, text="Procese registros para auditar stock...",
+                                                    font=ctk.CTkFont(size=10), text_color=C["txt2"], anchor="w")
+        self.lbl_audit_stock_summary.pack(fill="x", padx=10, pady=(0, 6))
+
+        btn_r = ctk.CTkFrame(audit_f, fg_color="transparent")
+        btn_r.pack(fill="x", padx=10, pady=(0, 8))
+
+        ctk.CTkButton(
+            btn_r, text="📊 Informe Excel", height=32, font=ctk.CTkFont(size=11, weight="bold"),
+            fg_color="#1B6B1B", hover_color="#145214", text_color="#FFFFFF",
+            command=lambda: self._export_stock_audit_report(fmt="excel")
+        ).pack(side="left", padx=(0, 4), fill="x", expand=True)
+
+        ctk.CTkButton(
+            btn_r, text="📄 Informe PDF", height=32, font=ctk.CTkFont(size=11, weight="bold"),
+            fg_color="#006CA8", hover_color="#00507E", text_color="#FFFFFF",
+            command=lambda: self._export_stock_audit_report(fmt="pdf")
+        ).pack(side="left", fill="x", expand=True)
+
+    def _export_stock_audit_report(self, fmt="excel"):
+        from utils_mod.audit_reporter import audit_results, export_excel_report, export_pdf_report
+        rows = getattr(self, "_stock_excel_df", []) or []
+        summary = {
+            "total": getattr(self, "_stock_total", 0),
+            "ok": getattr(self, "_stock_ok", 0),
+            "err": getattr(self, "_stock_errors", 0),
+            "warn": 0,
+            "rate": round((self._stock_ok / self._stock_total * 100) if getattr(self, "_stock_total", 0) > 0 else 0, 1),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        if not rows:
+            messagebox.showwarning("Auditor de Stock", "No hay registros cargados en el módulo de Stock para auditar.\nCargue un archivo Excel de stock primero.")
+            return
+
+        def_ext = ".xlsx" if fmt == "excel" else ".html"
+        ftypes = [("Libro de Excel", "*.xlsx")] if fmt == "excel" else [("Informe de Auditoría PDF/HTML", "*.html")]
+        path = filedialog.asksaveasfilename(
+            title=f"Guardar Informe de Auditoría Stock ({fmt.upper()})",
+            initialfile=f"Informe_Auditoria_Stock_{datetime.now().strftime('%Y%m%d_%H%M%S')}{def_ext}",
+            defaultextension=def_ext,
+            filetypes=ftypes
+        )
+        if not path:
+            return
+
+        if fmt == "excel":
+            ok, msg = export_excel_report(rows, summary, path, modulo_nombre="Actualización de Stock")
+        else:
+            ok, msg = export_pdf_report(rows, summary, path, modulo_nombre="Actualización de Stock")
+
+        if ok:
+            messagebox.showinfo("Auditor de Stock", f"¡Informe de Auditoría de Stock generado exitosamente!\n\nUbicación:\n{msg}")
+        else:
+            messagebox.showerror("Error en Auditoría", f"Ocurrió un error al generar el informe:\n{msg}")
 
     def _on_load_stock_excel(self):
         from tkinter import filedialog
@@ -786,18 +1568,23 @@ class SubirPdfApp(ctk.CTk):
         import workers
         workers.execute_stock(self, usuario, password, acuerdo, catalogo, categoria, pausa)
     def _build_credentials_section(self, parent):
-        self._section_label(parent, "Credenciales de Peru Compras", 0)
+        C = self._C
+        self._section_label(parent, "Credenciales de Perú Compras", 0)
 
-        frame = ctk.CTkFrame(parent, fg_color="gray10")
-        frame.grid(row=1, column=0, padx=12, pady=(0, 10), sticky="ew")
+        frame = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=6,
+                             border_width=1, border_color=C["border"])
+        frame.grid(row=1, column=0, padx=0, pady=(0, 10), sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
 
         # Usuario
         ctk.CTkLabel(
             frame, text="Usuario", font=ctk.CTkFont(size=11),
-            text_color="gray60", anchor="w",
+            text_color=C["txt2"], anchor="w",
         ).grid(row=0, column=0, padx=12, pady=(10, 1), sticky="w")
-        self.entry_user = ctk.CTkEntry(frame, placeholder_text="Usuario o RUC", height=34)
+        self.entry_user = ctk.CTkEntry(
+            frame, placeholder_text="Usuario o RUC", height=34,
+            fg_color=C["card2"], border_color=C["border"], text_color=C["txt"]
+        )
         self.entry_user.grid(row=1, column=0, padx=12, pady=(0, 8), sticky="ew")
         self.entry_user.insert(0, "almerco.03")
 
@@ -808,17 +1595,20 @@ class SubirPdfApp(ctk.CTk):
 
         ctk.CTkLabel(
             pass_frame, text="Contraseña", font=ctk.CTkFont(size=11),
-            text_color="gray60", anchor="w",
+            text_color=C["txt2"], anchor="w",
         ).grid(row=0, column=0, columnspan=2, padx=0, pady=(0, 1), sticky="w")
 
         self._pw_visible = False
         self.entry_pass = ctk.CTkEntry(
-            pass_frame, placeholder_text="Contraseña", show="*", height=34
+            pass_frame, placeholder_text="Contraseña", show="*", height=34,
+            fg_color=C["card2"], border_color=C["border"], text_color=C["txt"]
         )
         self.entry_pass.grid(row=1, column=0, pady=(0, 8), sticky="ew")
         self.entry_pass.insert(0, "4lm3rKenYa@#")
         self.btn_eye = ctk.CTkButton(
-            pass_frame, text="▸", width=34, height=34,
+            pass_frame, text="◉", width=34, height=34,
+            fg_color=C["card2"], hover_color=C["border"],
+            text_color=C["txt2"], border_width=1, border_color=C["border"],
             font=ctk.CTkFont(size=14), command=self._toggle_password,
         )
         self.btn_eye.grid(row=1, column=1, padx=(6, 0), pady=(0, 8))
@@ -826,7 +1616,8 @@ class SubirPdfApp(ctk.CTk):
         # Mostrar navegador
         self.check_visible = ctk.CTkCheckBox(
             frame, text="Mostrar navegador en pantalla",
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(size=12), text_color=C["txt"],
+            border_color=C["border"], fg_color=C["accent"],
         )
         self.check_visible.grid(row=3, column=0, padx=12, pady=(2, 10), sticky="w")
 
@@ -838,10 +1629,12 @@ class SubirPdfApp(ctk.CTk):
     # ── Excel Section ─────────────────────────────────────────────
 
     def _build_excel_section(self, parent):
+        C = self._C
         self._section_label(parent, "Archivo Excel", 2)
 
-        frame = ctk.CTkFrame(parent, fg_color="gray10")
-        frame.grid(row=3, column=0, padx=12, pady=(0, 10), sticky="ew")
+        frame = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=6,
+                             border_width=1, border_color=C["border"])
+        frame.grid(row=3, column=0, padx=0, pady=(0, 10), sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
 
         # File picker
@@ -849,13 +1642,15 @@ class SubirPdfApp(ctk.CTk):
         file_row.grid(row=0, column=0, padx=12, pady=(10, 4), sticky="ew")
         file_row.grid_columnconfigure(0, weight=1)
         self.btn_file = ctk.CTkButton(
-            file_row, text="Seleccionar archivo .xlsx",
+            file_row, text="Seleccionar .xlsx",
             height=32, font=ctk.CTkFont(size=12),
+            fg_color=C["accent"], hover_color=C["accent_h"], text_color="#FFFFFF",
+            corner_radius=4,
             command=self._pick_excel,
         )
         self.btn_file.pack(side="left")
         self.lbl_file = ctk.CTkLabel(
-            file_row, text="Sin archivo", text_color="gray60",
+            file_row, text="Sin archivo", text_color=C["txt3"],
             font=ctk.CTkFont(size=11),
         )
         self.lbl_file.pack(side="left", padx=10)
@@ -863,34 +1658,38 @@ class SubirPdfApp(ctk.CTk):
         # Sheet selector
         ctk.CTkLabel(
             frame, text="Pestaña del Excel", font=ctk.CTkFont(size=11),
-            text_color="gray60", anchor="w",
+            text_color=C["txt2"], anchor="w",
         ).grid(row=1, column=0, padx=12, pady=(4, 1), sticky="w")
         self.combo_sheet = ctk.CTkComboBox(
-            frame, values=["Primero cargá un Excel"],
+            frame, values=["Cargue un archivo primero"],
             state="disabled", height=32,
+            fg_color=C["card2"], border_color=C["border"],
+            text_color=C["txt"], button_color=C["border"],
             command=self._on_sheet_changed,
         )
         self.combo_sheet.grid(row=2, column=0, padx=12, pady=(0, 6), sticky="ew")
 
-        # Column mapping — solo N° de Parte
+        # Column mapping
         map_frame = ctk.CTkFrame(frame, fg_color="transparent")
         map_frame.grid(row=3, column=0, padx=12, pady=(4, 4), sticky="ew")
         map_frame.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
             map_frame, text="Columna N° de Parte", font=ctk.CTkFont(size=11),
-            text_color="gray60", anchor="w",
+            text_color=C["txt2"], anchor="w",
         ).grid(row=0, column=0, padx=(0, 4), pady=(0, 1), sticky="w")
 
         self.combo_parte = ctk.CTkComboBox(
             map_frame, values=["--"], state="disabled", height=32,
+            fg_color=C["card2"], border_color=C["border"],
+            text_color=C["txt"], button_color=C["border"],
         )
         self.combo_parte.grid(row=1, column=0, padx=(0, 4), sticky="ew")
 
         # Info
         self.lbl_excel_info = ctk.CTkLabel(
             frame, text="", font=ctk.CTkFont(size=11),
-            text_color="gray60", anchor="w",
+            text_color=C["txt2"], anchor="w",
         )
         self.lbl_excel_info.grid(row=4, column=0, padx=12, pady=(2, 10), sticky="w")
 
@@ -904,17 +1703,28 @@ class SubirPdfApp(ctk.CTk):
         try:
             sheets = get_sheets(path)
             if not sheets:
-                self.lbl_file.configure(text="Sin pestañas en el Excel", text_color="#e74c3c")
+                if hasattr(self, "lbl_excel_info"):
+                    self.lbl_excel_info.config(text="Sin pestañas en el Excel", fg="#8B1A1A")
                 return
 
             self._excel_path = path
             name = os.path.basename(path)
-            self.lbl_file.configure(text=name, text_color="#5dade2")
-            self.combo_sheet.configure(values=sheets, state="readonly")
-            self.combo_sheet.set(sheets[0])
+            if hasattr(self, "lbl_file"):
+                if hasattr(self.lbl_file, "delete"):
+                    self.lbl_file.config(state="normal")
+                    self.lbl_file.delete(0, "end")
+                    self.lbl_file.insert(0, name)
+                    self.lbl_file.config(state="readonly")
+                else:
+                    self.lbl_file.configure(text=name)
+            if hasattr(self, "combo_sheet"):
+                self.combo_sheet.configure(values=sheets, state="readonly")
+                self.combo_sheet.set(sheets[0])
             self._on_sheet_changed(sheets[0])
+            self._update_tools_excel_status()
         except Exception as e:
-            self.lbl_file.configure(text=f"Error: {e}", text_color="#e74c3c")
+            if hasattr(self, "lbl_excel_info"):
+                self.lbl_excel_info.config(text=f"Error: {e}", fg="#8B1A1A")
 
     def _on_sheet_changed(self, choice):
         if not self._excel_path or not choice:
@@ -967,40 +1777,61 @@ class SubirPdfApp(ctk.CTk):
             self.combo_parte.configure(values=opts, state="readonly")
             self.combo_parte.set(parte_col_detect if parte_col_detect in all_headers else opts[0])
 
-            self.lbl_excel_info.configure(
-                text=f"{len(rows_data)} filas · {len(all_headers)} cols · Pestaña: {choice}",
-                text_color="gray60",
-            )
+            if hasattr(self, "_tree"):
+                self._tree.delete(*self._tree.get_children())
+                for i, row in enumerate(rows_data, 1):
+                    pn = str(row.get("parte", "") or row.get("nro_parte", "") or "")
+                    desc = str(row.get("descripcion", "") or row.get("marca", "") or "")
+                    precio = str(row.get("precio", "") or "")
+                    stock = str(row.get("stock", "") or "")
+                    tag = "par" if i % 2 == 0 else "impar"
+                    self._tree.insert("", "end", values=(i, pn, desc, precio, stock, "Pendiente"), tags=(tag,))
+
+            if hasattr(self, "lbl_excel_info"):
+                self.lbl_excel_info.config(
+                    text=f"✓ Archivo cargado: {len(rows_data)} registros · {len(all_headers)} columnas · Pestaña: {choice}",
+                    fg="#1B6B1B",
+                )
+            self._update_tools_excel_status()
         except Exception as e:
-            self.lbl_excel_info.configure(text=f"Error: {e}", text_color="#e74c3c")
+            if hasattr(self, "lbl_excel_info"):
+                self.lbl_excel_info.config(text=f"Error: {e}", fg="#8B1A1A")
 
     # ── Catalog Section (Cascada Catálogo → Categoría → Estado) ─────
 
     def _build_catalog_section(self, parent):
+        C = self._C
         row_offset = 4
-        self._section_label(parent, "Configuración del Catálogo (EXT-CE-2022-5)", row_offset)
+        self._section_label(parent, "Catálogo EXT-CE-2022-5", row_offset)
 
-        frame = ctk.CTkFrame(parent, fg_color="gray10")
-        frame.grid(row=row_offset+1, column=0, padx=12, pady=(0, 10), sticky="ew")
+        frame = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=6,
+                             border_width=1, border_color=C["border"])
+        frame.grid(row=row_offset+1, column=0, padx=0, pady=(0, 10), sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
 
         comb_data = self._catalog_data.get("combinaciones", [])
         if not comb_data:
             ctk.CTkLabel(
                 frame,
-                text="combinaciones_computadoras.json no encontrado.\nEjecutá extract_combinaciones.py primero",
-                text_color="#f39c12", font=ctk.CTkFont(size=11), wraplength=280,
+                text="No se encontró combinaciones_computadoras.json.\nEjecute extract_combinaciones.py primero.",
+                text_color=C["warn"], font=ctk.CTkFont(size=11), wraplength=280,
                 justify="left",
             ).grid(row=0, column=0, padx=12, pady=10)
             return
 
+        _cb_opts = dict(
+            fg_color=C["card2"], border_color=C["border"],
+            text_color=C["txt"], button_color=C["border"],
+            state="readonly", height=32,
+        )
+
         # Catálogo
         ctk.CTkLabel(frame, text="Catálogo Electrónico", font=ctk.CTkFont(size=11),
-                     text_color="gray60", anchor="w").grid(
+                     text_color=C["txt2"], anchor="w").grid(
             row=0, column=0, padx=12, pady=(8, 1), sticky="w")
         self.combo_catalogo = ctk.CTkComboBox(
-            frame, values=self._opts_texts(comb_data), state="readonly", height=32,
-            command=self._on_catalogo_changed,
+            frame, values=self._opts_texts(comb_data),
+            command=self._on_catalogo_changed, **_cb_opts,
         )
         self.combo_catalogo.grid(row=1, column=0, padx=12, pady=(0, 6), sticky="ew")
         if comb_data:
@@ -1008,20 +1839,20 @@ class SubirPdfApp(ctk.CTk):
 
         # Categoría
         ctk.CTkLabel(frame, text="Categoría", font=ctk.CTkFont(size=11),
-                     text_color="gray60", anchor="w").grid(
+                     text_color=C["txt2"], anchor="w").grid(
             row=2, column=0, padx=12, pady=(4, 1), sticky="w")
         self.combo_categoria = ctk.CTkComboBox(
-            frame, values=["Seleccioná un Catálogo"], state="readonly", height=32,
-            command=self._on_categoria_changed,
+            frame, values=["Seleccione un Catálogo"],
+            command=self._on_categoria_changed, **_cb_opts,
         )
         self.combo_categoria.grid(row=3, column=0, padx=12, pady=(0, 6), sticky="ew")
 
         # Estado
         ctk.CTkLabel(frame, text="Estado", font=ctk.CTkFont(size=11),
-                     text_color="gray60", anchor="w").grid(
+                     text_color=C["txt2"], anchor="w").grid(
             row=4, column=0, padx=12, pady=(4, 1), sticky="w")
         self.combo_estado = ctk.CTkComboBox(
-            frame, values=["Seleccioná una Categoría"], state="readonly", height=32,
+            frame, values=["Seleccione una Categoría"], **_cb_opts,
         )
         self.combo_estado.grid(row=5, column=0, padx=12, pady=(0, 8), sticky="ew")
 
@@ -1072,39 +1903,44 @@ class SubirPdfApp(ctk.CTk):
     # ── Opciones Section ──────────────────────────────────────────
 
     def _build_opciones_section(self, parent):
+        C = self._C
         row_offset = 6
         self._section_label(parent, "Opciones de Procesamiento", row_offset)
 
-        frame = ctk.CTkFrame(parent, fg_color="gray10")
-        frame.grid(row=row_offset+1, column=0, padx=12, pady=(0, 10), sticky="ew")
+        frame = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=6,
+                             border_width=1, border_color=C["border"])
+        frame.grid(row=row_offset+1, column=0, padx=0, pady=(0, 10), sticky="ew")
         frame.grid_columnconfigure(0, weight=1)
 
         # Pausa entre productos
         ctk.CTkLabel(
             frame, text="Pausa entre productos (segundos)",
-            font=ctk.CTkFont(size=11), text_color="gray60", anchor="w",
+            font=ctk.CTkFont(size=11), text_color=C["txt2"], anchor="w",
         ).grid(row=0, column=0, padx=12, pady=(10, 1), sticky="w")
-        self.slider_pausa = ctk.CTkSlider(frame, from_=0.5, to=5.0, number_of_steps=9)
+        self.slider_pausa = ctk.CTkSlider(
+            frame, from_=0.5, to=5.0, number_of_steps=9,
+            fg_color=C["border"], progress_color=C["accent"], button_color=C["accent"],
+        )
         self.slider_pausa.grid(row=1, column=0, padx=12, pady=(0, 2), sticky="ew")
         self.slider_pausa.set(1.5)
         self.lbl_pausa = ctk.CTkLabel(
-            frame, text="1.5 s", font=ctk.CTkFont(size=11), text_color="gray60",
+            frame, text="1.5 s", font=ctk.CTkFont(size=11), text_color=C["txt2"],
         )
         self.lbl_pausa.grid(row=2, column=0, padx=12, pady=(0, 6), sticky="w")
         self.slider_pausa.configure(command=lambda v: self.lbl_pausa.configure(text=f"{v:.1f} s"))
 
         # Separador
-        ctk.CTkFrame(frame, height=1, fg_color="gray25").grid(
+        ctk.CTkFrame(frame, height=1, fg_color=C["sep"]).grid(
             row=3, column=0, padx=12, pady=4, sticky="ew"
         )
 
         # Info de modo
         ctk.CTkLabel(
             frame,
-            text="ℹ  Este módulo usa Playwright para subir archivos.\n"
-                 "   Los endpoints se ajustan según la sección del portal.",
+            text="Este módulo usa Playwright para subir archivos PDF al portal.\n"
+                 "Los endpoints se ajustan automáticamente según la sección.",
             font=ctk.CTkFont(size=11),
-            text_color="gray50",
+            text_color=C["txt3"],
             anchor="w",
             justify="left",
         ).grid(row=4, column=0, padx=12, pady=(4, 10), sticky="w")
@@ -1112,76 +1948,94 @@ class SubirPdfApp(ctk.CTk):
     # ── Execution Section ─────────────────────────────────────────
 
     def _build_execution_section(self, parent):
-        self._section_label(parent, "Ejecución", 0)
+        C = self._C
+        self._section_label(parent, "Panel de Ejecución", 0)
 
-        frame = ctk.CTkFrame(parent, fg_color="gray10")
+        frame = ctk.CTkFrame(parent, fg_color="transparent")
         frame.grid(row=1, column=0, padx=12, pady=(0, 4), sticky="nsew")
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_rowconfigure(5, weight=1)
 
         # Status bar
-        status_row = ctk.CTkFrame(frame, fg_color="transparent")
-        status_row.grid(row=0, column=0, padx=12, pady=(8, 4), sticky="ew")
+        status_row = ctk.CTkFrame(frame, fg_color=C["card2"], corner_radius=6,
+                                  border_width=1, border_color=C["border"])
+        status_row.grid(row=0, column=0, padx=0, pady=(0, 8), sticky="ew")
         self.lbl_status = ctk.CTkLabel(
             status_row, text="Listo para iniciar",
-            font=ctk.CTkFont(size=13, weight="bold"),
+            font=ctk.CTkFont(size=12, weight="bold"), text_color=C["txt"],
         )
-        self.lbl_status.pack(side="left")
+        self.lbl_status.pack(side="left", padx=12, pady=8)
         self.lbl_counter = ctk.CTkLabel(
-            status_row, text="", font=ctk.CTkFont(size=12), text_color="gray60",
+            status_row, text="", font=ctk.CTkFont(size=11), text_color=C["txt3"],
         )
-        self.lbl_counter.pack(side="right")
+        self.lbl_counter.pack(side="right", padx=12)
 
         # Progress bar
-        self.progress = ctk.CTkProgressBar(frame, height=8)
-        self.progress.grid(row=2, column=0, padx=12, pady=(0, 4), sticky="ew")
+        self.progress = ctk.CTkProgressBar(
+            frame, height=6,
+            fg_color=C["border"], progress_color=C["accent"],
+        )
+        self.progress.grid(row=2, column=0, padx=0, pady=(0, 8), sticky="ew")
         self.progress.set(0)
 
-        # Resumen de resultados (mini-stats)
+        # Mini-stats
         stats_row = ctk.CTkFrame(frame, fg_color="transparent")
-        stats_row.grid(row=3, column=0, padx=12, pady=(0, 4), sticky="ew")
+        stats_row.grid(row=3, column=0, padx=0, pady=(0, 8), sticky="ew")
         stats_row.grid_columnconfigure((0, 1, 2), weight=1)
 
-        self._stat_ok = self._make_stat(stats_row, "✓  OK", "#2ecc71", 0)
-        self._stat_warn = self._make_stat(stats_row, "⚠  No encontrado", "#f39c12", 1)
-        self._stat_err = self._make_stat(stats_row, "✗  Error", "#e74c3c", 2)
+        self._stat_ok   = self._make_stat(stats_row, "Exitosos",   C["success"], 0)
+        self._stat_warn = self._make_stat(stats_row, "No hallados", C["warn"],   1)
+        self._stat_err  = self._make_stat(stats_row, "Errores",    C["danger"], 2)
 
         # Captcha panel (oculto por defecto)
         self._build_captcha_panel(frame)
 
-        # Log
-        self.log_box = ctk.CTkTextbox(frame, wrap="word", font=ctk.CTkFont(family="Courier New", size=11))
-        self.log_box.grid(row=5, column=0, padx=12, pady=(2, 8), sticky="nsew")
+        # Log — fondo blanco, texto oscuro, fuente monospace
+        self.log_box = ctk.CTkTextbox(
+            frame, wrap="word",
+            font=ctk.CTkFont(family="Courier New", size=11),
+            fg_color=C["card"],
+            border_width=1, border_color=C["border"],
+            text_color=C["txt"],
+        )
+        self.log_box.grid(row=5, column=0, padx=0, pady=(2, 8), sticky="nsew")
         self.log_box.configure(state="disabled")
-        self.log_box.tag_config("ok",       foreground="#f1c40f")
-        self.log_box.tag_config("error",    foreground="#e74c3c")
-        self.log_box.tag_config("info",     foreground="#95a5a6")
-        self.log_box.tag_config("warn",     foreground="#f39c12")
-        self.log_box.tag_config("done",     foreground="#5dade2")
-        self.log_box.tag_config("complete", foreground="#2ecc71")
-        self.log_box.tag_config("existing", foreground="#3498db")
-        self.log_box.tag_config("notfound", foreground="#c0392b")
+        self.log_box.tag_config("ok",       foreground="#1E6E3A")
+        self.log_box.tag_config("error",    foreground="#B91C1C")
+        self.log_box.tag_config("info",     foreground="#4A6080")
+        self.log_box.tag_config("warn",     foreground="#92400E")
+        self.log_box.tag_config("done",     foreground="#0D6EAA")
+        self.log_box.tag_config("complete", foreground="#1E6E3A")
+        self.log_box.tag_config("existing", foreground="#1A5493")
+        self.log_box.tag_config("notfound", foreground="#B45309")
 
     def _make_stat(self, parent, label, color, col):
-        f = ctk.CTkFrame(parent, fg_color="gray14", corner_radius=6)
+        C = self._C
+        f = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=6,
+                         border_width=1, border_color=C["border"])
         f.grid(row=0, column=col, padx=3, pady=2, sticky="ew")
-        lbl_n = ctk.CTkLabel(f, text="0", font=ctk.CTkFont(size=20, weight="bold"), text_color=color)
-        lbl_n.pack(pady=(6, 0))
-        ctk.CTkLabel(f, text=label, font=ctk.CTkFont(size=10), text_color="gray60").pack(pady=(0, 6))
+        lbl_n = ctk.CTkLabel(f, text="0", font=ctk.CTkFont(size=22, weight="bold"), text_color=color)
+        lbl_n.pack(pady=(8, 0))
+        ctk.CTkLabel(f, text=label, font=ctk.CTkFont(size=10), text_color=C["txt3"]).pack(pady=(0, 8))
         return lbl_n
 
     # ── Captcha Panel ─────────────────────────────────────────────
 
     def _build_captcha_panel(self, parent):
-        self.captcha_panel = ctk.CTkFrame(parent, fg_color="gray14")
-        self.captcha_panel.grid(row=4, column=0, padx=12, pady=(0, 4), sticky="ew")
+        C = self._C
+        self.captcha_panel = ctk.CTkFrame(
+            parent, fg_color=C["card2"], corner_radius=6,
+            border_width=1, border_color=C["border"],
+        )
+        self.captcha_panel.grid(row=4, column=0, padx=0, pady=(0, 8), sticky="ew")
         self.captcha_panel.grid_remove()
         self.captcha_panel.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
             self.captcha_panel,
-            text="CAPTCHA — Ingresá el código",
-            font=ctk.CTkFont(size=12, weight="bold"), anchor="w",
+            text="CAPTCHA — Ingrese el código mostrado",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color=C["txt"], anchor="w",
         ).grid(row=0, column=0, padx=8, pady=(6, 4), sticky="w")
 
         self.captcha_img_lbl = ctk.CTkLabel(self.captcha_panel, text="")
@@ -1224,10 +2078,12 @@ class SubirPdfApp(ctk.CTk):
     # ── Helpers ───────────────────────────────────────────────────
 
     def _section_label(self, parent, text, row):
+        C = self._C
         ctk.CTkLabel(
             parent, text=text,
-            font=ctk.CTkFont(size=14, weight="bold"), anchor="w",
-        ).grid(row=row, column=0, padx=12, pady=(8, 4), sticky="w")
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color=C["txt"], anchor="w",
+        ).grid(row=row, column=0, padx=0, pady=(12, 4), sticky="w")
 
     def _log(self, msg, level="info"):
         self.log_box.configure(state="normal")

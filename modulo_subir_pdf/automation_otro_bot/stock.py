@@ -705,6 +705,52 @@ def _browser_cerrado(mensaje: str) -> bool:
     ])
 
 
+def _find_exact_matching_row(page, parte: str):
+    """
+    Busca en la tabla de productos la fila que contenga EXACTAMENTE el número de parte.
+    Evita seleccionar por error 'PARTE-1' cuando se busca 'PARTE'.
+    """
+    target = str(parte).strip().upper()
+    target_clean = " ".join(target.split())
+    if not target_clean:
+        return None
+
+    rows = page.locator("#TablaProductos tbody tr, table tbody tr").all()
+    if not rows:
+        return None
+
+    # Paso 1: Coincidencia EXACTA celda por celda (td.text == target)
+    for r in rows:
+        try:
+            cells = r.locator("td").all()
+            for c in cells:
+                c_text = " ".join(c.inner_text(timeout=300).strip().upper().split())
+                if c_text == target_clean:
+                    return r
+        except Exception:
+            continue
+
+    # Paso 2: Coincidencia por delimitador de palabra estricto (evita prefijos/sufijos como -1, _v2, etc.)
+    pattern = re.compile(r'(?<![A-Z0-9#\-_/])' + re.escape(target_clean) + r'(?![A-Z0-9#\-_/])')
+    for r in rows:
+        try:
+            r_text = " ".join(r.inner_text(timeout=300).strip().upper().split())
+            if pattern.search(r_text):
+                return r
+        except Exception:
+            continue
+
+    # Paso 3: Fallback a tr:has-text de Playwright
+    try:
+        exact_tr = page.locator(f"tr:has-text('{parte}')")
+        if exact_tr.count() > 0:
+            return exact_tr.first
+    except Exception:
+        pass
+
+    return None
+
+
 def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_event=None) -> tuple[bool, str]:
     """Actualiza el stock de un producto. Retorna (éxito, mensaje_error)."""
     try:
@@ -746,7 +792,6 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
                 pass
 
             # 1. SIEMPRE limpiar el filtro principal para no arrastrar búsquedas anteriores
-            #    (las fichas siguientes usan el buscador dinámico de la tabla, no este).
             try:
                 search_input = page.locator("#C_Descripcion, input[name='C_Descripcion']").first
                 if search_input.count() > 0:
@@ -755,10 +800,7 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
                 pass
 
             # 2. FICHAS SIGUIENTES: esperar a que cargue la tabla y aparezca el buscador dinámico
-            #    Tras guardar, el portal recarga la página (spinner) y puede perder el acuerdo.
-            #    El portal demora hasta 5-8 min en cargar resultados; aumentamos timeouts.
             try:
-                # Esperar a que desaparezca el spinner de carga (hasta 60s)
                 page.wait_for_selector(
                     ".loading, .spinner, .fa-spinner, .progress, .ajax-loading",
                     state="detached",
@@ -781,16 +823,19 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
 
             if has_dynamic:
                 try:
+                    dynamic_search.click(force=True)
                     dynamic_search.fill("")
-                    dynamic_search.fill(parte)
-                    time.sleep(5)  # esperar filtrado client-side de DataTables (portal lento)
+                    dynamic_search.fill(str(parte))
+                    dynamic_search.press("Enter")
+                    dynamic_search.dispatch_event("input")
+                    time.sleep(1.5)
                 except Exception as e:
                     return False, f"No se pudo escribir en buscador dinámico: {e}"
             else:
                 # Primer producto: filtro principal del portal
                 try:
                     if search_input.count() > 0:
-                        search_input.fill(parte)
+                        search_input.fill(str(parte))
                         time.sleep(1)
                 except Exception as e:
                     return False, f"No se pudo escribir en campo de búsqueda: {e}"
@@ -806,13 +851,11 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
                     return False, f"No se pudo clickear Buscar: {e}"
 
                 # Esperar a que la tabla se actualice (resultado de búsqueda)
-                time.sleep(5)
+                time.sleep(2)
 
             # 4. Verificar que la fila encontrada contiene EXACTAMENTE la parte buscada
-            # ponytail: tr:has-text('WE15I9F146-2') también matchearía 'WE15I9F146-2-EXTRA'
-            # usamos celda-específica o substring exacto
-            row = page.locator(f"tr:has-text('{parte}')").first
-            if row.count() == 0:
+            row = _find_exact_matching_row(page, parte)
+            if not row or row.count() == 0:
                 return False, f"No se encontraron resultados para {parte}"
 
             # Verificar que la fila realmente contiene la parte buscada.

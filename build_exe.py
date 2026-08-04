@@ -67,7 +67,7 @@ def build():
     for d in [DIST_DIR, BUILD_DIR]:
         if os.path.isdir(d):
             print(f"Limpiando {d}...")
-            shutil.rmtree(d)
+            shutil.rmtree(d, ignore_errors=True)
 
     # Detectar rutas de recursos
     tess_dir = find_tesseract_files()

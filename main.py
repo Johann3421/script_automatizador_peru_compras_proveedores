@@ -4,7 +4,7 @@ from tkinter import filedialog
 from PIL import Image
 import customtkinter as ctk
 
-VERSION = "11.8"
+VERSION = "1.4"
 
 # ── Paths ────────────────────────────────────────────────────────
 if getattr(sys, "frozen", False):
@@ -653,5 +653,19 @@ class PeruComprasApp(ctk.CTk):
 # ═══════════════════════════════════════════════════════════════════
 
 if __name__ == "__main__":
-    app = PeruComprasApp()
-    app.mainloop()
+    try:
+        from modulo_subir_pdf.main_subir_pdf import SubirPdfApp
+        ctk.set_appearance_mode("light")
+        ctk.set_default_color_theme("blue")
+        
+        app = SubirPdfApp()
+        app.mainloop()
+    except Exception as e:
+        import traceback
+        err_msg = f"Error al iniciar Perú Compras Bot:\n\n{e}\n\n{traceback.format_exc()}"
+        try:
+            import tkinter.messagebox
+            tkinter.messagebox.showerror("Error de Inicio — Perú Compras Bot", err_msg)
+        except Exception:
+            print(err_msg)
+        sys.exit(1)

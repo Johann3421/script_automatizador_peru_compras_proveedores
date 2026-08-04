@@ -5,7 +5,14 @@ from utils.logger import LogWriter
 from automation.browser import init_browser, close_browser
 from automation.login import do_login
 
-# Este archivo fue generado por la auditoria ponytail para separar la logica
+def _make_stock_log(append_fn):
+    class _StockLog:
+        def info(self, msg): append_fn(str(msg))
+        def warning(self, msg): append_fn(f"⚠ {msg}")
+        def error(self, msg): append_fn(f"❌ {msg}")
+        def success(self, msg): append_fn(f"✅ {msg}")
+        def ok(self, msg): append_fn(f"✅ {msg}")
+    return _StockLog()
 
 def execute_stock(app, usuario, password, acuerdo, catalogo, categoria, pausa):
     from automation.browser import init_browser, close_browser

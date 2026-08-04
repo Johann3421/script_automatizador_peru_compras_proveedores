@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peru Compras Bot — Sistema de Automatización de Ofertas v1.4</title>
+  <style>
+    /* === VARIABLES DE SISTEMA — Paleta Institucional Peru Compras === */
+    :root {
+      --azul-pc:     #006CA8;   /* Azul oficial Peru Compras */
+      --azul-oscuro: #00507E;
+      --gris-bg:     #F0F0F0;   /* Fondo Windows estándar */
+      --gris-panel:  #E8E8E8;
+      --gris-linea:  #C8C8C8;
+      --gris-th:     #D4D4D4;
+      --blanco:      #FFFFFF;
+      --negro:       #1A1A1A;
+      --texto:       #2B2B2B;
+      --texto-sec:   #555555;
+      --verde-ok:    #1B6B1B;
+      --verde-bg:    #DFF0D8;
+      --rojo-err:    #8B1A1A;
+      --rojo-bg:     #F2DEDE;
+      --amarillo-bg: #FCF8E3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
+      font-size: 13px;
+      background: var(--gris-bg);
+      color: var(--texto);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── BARRA DE TÍTULO (Institucional) ─────────────────────────── */
+    .barra-titulo {
+      background: var(--azul-pc);
+      color: #fff;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--azul-oscuro);
+      user-select: none;
+    }
+    .barra-titulo .sistema-nombre {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .barra-titulo .version-tag {
+      font-size: 11px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.75);
+      border-left: 1px solid rgba(255,255,255,0.3);
+      padding-left: 10px;
+    }
+
+    /* ─── BARRA DE MENÚ CLÁSICA ────────────────────────────────────── */
+    .menubar {
+      background: var(--gris-panel);
+      border-bottom: 1px solid var(--gris-linea);
+      display: flex;
+      align-items: stretch;
+      height: 28px;
+      padding: 0 4px;
+    }
+    .menubar-item {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--texto);
+      border: 1px solid transparent;
+      position: relative;
+    }
+    .menubar-item:hover {
+      background: var(--azul-pc);
+      color: #fff;
+      border-color: var(--azul-oscuro);
+    }
+    .menubar-sep {
+      width: 1px;
+      background: var(--gris-linea);
+      margin: 5px 2px;
+    }
+
+    /* ─── BARRA DE MÓDULOS (Tabs de Trabajo) ──────────────────────── */
+    .modulos-bar {
+      background: var(--gris-panel);
+      border-bottom: 1px solid var(--gris-linea);
+      display: flex;
+      padding: 0;
+    }
+    .mod-tab {
+      padding: 7px 18px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--texto-sec);
+      border-right: 1px solid var(--gris-linea);
+      border-bottom: 3px solid transparent;
+      background: var(--gris-bg);
+    }
+    .mod-tab:hover {
+      background: var(--blanco);
+      color: var(--negro);
+    }
+    .mod-tab.activo {
+      background: var(--blanco);
+      color: var(--azul-pc);
+      font-weight: 600;
+      border-bottom: 3px solid var(--azul-pc);
+    }
+
+    /* ─── CUERPO PRINCIPAL ─────────────────────────────────────────── */
+    .cuerpo {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      overflow: hidden;
+    }
+
+    /* Columna izquierda: Zona de trabajo */
+    .zona-trabajo {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--gris-linea);
+      overflow: hidden;
+    }
+
+    /* Sección de carga de archivo */
+    .seccion-carga {
+      background: var(--blanco);
+      border-bottom: 1px solid var(--gris-linea);
+      padding: 10px 14px;
+    }
+    .sec-titulo {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--texto-sec);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--gris-linea);
+    }
+    .carga-fila {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .input-archivo {
+      flex: 1;
+      padding: 4px 8px;
+      border: 1px solid var(--gris-linea);
+      background: var(--gris-bg);
+      font-size: 13px;
+      color: var(--texto);
+    }
+    .btn {
+      padding: 4px 14px;
+      background: var(--azul-pc);
+      color: #fff;
+      border: 1px solid var(--azul-oscuro);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--azul-oscuro); }
+    .btn-sec {
+      background: var(--gris-panel);
+      color: var(--texto);
+      border: 1px solid var(--gris-linea);
+    }
+    .btn-sec:hover { background: var(--gris-linea); }
+
+    .deteccion-info {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--verde-ok);
+      background: var(--verde-bg);
+      border: 1px solid #B2D9B2;
+      padding: 3px 8px;
+      display: inline-block;
+    }
+
+    /* Tabla de datos */
+    .tabla-wrapper {
+      flex: 1;
+      overflow: auto;
+      background: var(--blanco);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    thead tr {
+      background: var(--gris-th);
+      border-bottom: 2px solid var(--azul-pc);
+    }
+    th {
+      text-align: left;
+      padding: 6px 10px;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--texto);
+      white-space: nowrap;
+      border-right: 1px solid var(--gris-linea);
+    }
+    td {
+      padding: 5px 10px;
+      border-right: 1px solid #EBEBEB;
+      border-bottom: 1px solid #F0F0F0;
+    }
+    tr:nth-child(even) { background: #F7F7F7; }
+    tr:hover { background: #E8F2F8; }
+
+    .estado {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .est-espera { background: var(--amarillo-bg); color: #8A6D3B; border-color: #FAEBCC; }
+    .est-ok     { background: var(--verde-bg); color: var(--verde-ok); border-color: #B2D9B2; }
+    .est-error  { background: var(--rojo-bg); color: var(--rojo-err); border-color: #EBCCD1; }
+
+    /* Columna derecha: Inspector de parámetros */
+    .inspector {
+      background: var(--blanco);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .inspector-titulo {
+      background: var(--azul-pc);
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .inspector-body {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Grupo de campos de formulario */
+    .grupo {
+      margin-bottom: 12px;
+    }
+    .grupo-titulo {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--azul-pc);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 4px 0;
+      border-bottom: 1px solid var(--gris-linea);
+      margin-bottom: 8px;
+    }
+    .campo-fila {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+    }
+    .campo-label {
+      font-size: 12px;
+      color: var(--texto-sec);
+      text-align: right;
+    }
+    .campo-input, .campo-select {
+      padding: 4px 7px;
+      border: 1px solid var(--gris-linea);
+      background: var(--gris-bg);
+      font-size: 12px;
+      color: var(--texto);
+      width: 100%;
+    }
+    .campo-input:focus, .campo-select:focus {
+      outline: 2px solid var(--azul-pc);
+      outline-offset: 0;
+      background: var(--blanco);
+    }
+
+    /* Consola de eventos */
+    .consola {
+      background: #1A1A2E;
+      color: #E0E0E0;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11px;
+      height: 120px;
+      overflow-y: auto;
+      padding: 8px;
+      border-top: 2px solid var(--azul-pc);
+      line-height: 1.5;
+    }
+    .log-ok   { color: #90EE90; }
+    .log-warn { color: #FFD700; }
+    .log-err  { color: #FF6B6B; }
+    .log-info { color: #87CEEB; }
+
+    /* Botón de ejecución principal */
+    .btn-ejecutar {
+      background: var(--azul-pc);
+      color: #fff;
+      border: none;
+      border-top: 1px solid var(--azul-oscuro);
+      padding: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      letter-spacing: 0.3px;
+    }
+    .btn-ejecutar:hover { background: var(--azul-oscuro); }
+
+    /* ─── BARRA DE ESTADO INFERIOR ────────────────────────────────── */
+    .statusbar {
+      background: var(--gris-panel);
+      border-top: 1px solid var(--gris-linea);
+      height: 22px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 0;
+    }
+    .st-segmento {
+      font-size: 11px;
+      color: var(--texto-sec);
+      padding: 0 10px;
+      border-right: 1px solid var(--gris-linea);
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .st-segmento:first-child { padding-left: 0; }
+    .st-ok { color: var(--verde-ok); font-weight: 600; }
+    .st-spacer { flex: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE TÍTULO INSTITUCIONAL -->
+  <div class="barra-titulo">
+    <div class="sistema-nombre">
+      <span>PERU COMPRAS BOT — Sistema de Automatización de Ofertas y Catalogos</span>
+      <span class="version-tag">v1.4 DEMO</span>
+    </div>
+    <span style="font-size:11px;color:rgba(255,255,255,0.7)">THE KING COMPUTER E.I.R.L.</span>
+  </div>
+
+  <!-- BARRA DE MENÚ CLÁSICA -->
+  <div class="menubar">
+    <div class="menubar-item">Archivo</div>
+    <div class="menubar-sep"></div>
+    <div class="menubar-item" onclick="logConsola('Iniciando procesamiento...', 'log-info')">Acciones</div>
+    <div class="menubar-sep"></div>
+    <div class="menubar-item">Configuracion</div>
+    <div class="menubar-sep"></div>
+    <div class="menubar-item">Herramientas</div>
+    <div class="menubar-sep"></div>
+    <div class="menubar-item">Ayuda</div>
+  </div>
+
+  <!-- BARRA DE MÓDULOS (Tabs de Trabajo) -->
+  <div class="modulos-bar">
+    <div class="mod-tab activo" onclick="cambiarModulo(this, 'Publicacion de Ofertas PDF')">Publicacion de Ofertas PDF</div>
+    <div class="mod-tab" onclick="cambiarModulo(this, 'Actualizacion de Stock')">Actualizacion de Stock</div>
+    <div class="mod-tab" onclick="cambiarModulo(this, 'Subida de Precios JSON')">Subida de Precios JSON</div>
+    <div class="mod-tab" onclick="cambiarModulo(this, 'Instrucciones de Uso')">Instrucciones de Uso</div>
+  </div>
+
+  <!-- CUERPO PRINCIPAL: Zona de Trabajo + Inspector -->
+  <div class="cuerpo">
+
+    <!-- ZONA DE TRABAJO (Izquierda) -->
+    <div class="zona-trabajo">
+
+      <!-- Sección: Carga de Archivo -->
+      <div class="seccion-carga">
+        <div class="sec-titulo">Carga de Archivo de Trabajo</div>
+        <div class="carga-fila">
+          <input type="text" class="input-archivo" id="archivoPath"
+            placeholder="Seleccione un archivo Excel (.xlsx) o JSON de datos..." readonly>
+          <button class="btn" onclick="seleccionarArchivo()">Examinar...</button>
+          <input type="file" id="fileInputOculto" style="display:none" accept=".xlsx,.json"
+            onchange="archivoSeleccionado(event)">
+          <button class="btn btn-sec" onclick="limpiarArchivo()">Limpiar</button>
+        </div>
+        <div id="deteccionInfo" style="display:none" class="deteccion-info">
+          Deteccion automatica: Columna N Parte (A) | Precio Lista (B) | Stock Disponible (C)
+        </div>
+      </div>
+
+      <!-- Tabla de Productos / Registros -->
+      <div class="tabla-wrapper">
+        <table id="tablaProductos">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Numero de Parte</th>
+              <th>Descripcion / Marca</th>
+              <th>Precio Lista S/</th>
+              <th>Stock Disp.</th>
+              <th>Estado en Portal</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBody">
+            <tr>
+              <td>1</td>
+              <td>2V262LT#ABM</td>
+              <td>HP PROBOOK 445 G8 / HP</td>
+              <td style="text-align:right">3,450.00</td>
+              <td style="text-align:center">12</td>
+              <td><span class="estado est-espera">Pendiente</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>3V5H1LT#ABM</td>
+              <td>HP ELITEDESK 800 G6 / HP</td>
+              <td style="text-align:right">4,120.00</td>
+              <td style="text-align:center">8</td>
+              <td><span class="estado est-espera">Pendiente</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>21A20005LM</td>
+              <td>THINKPAD E14 GEN 2 / LENOVO</td>
+              <td style="text-align:right">3,890.00</td>
+              <td style="text-align:center">15</td>
+              <td><span class="estado est-espera">Pendiente</span></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>20VE003DLM</td>
+              <td>THINKBOOK 15 GEN 2 / LENOVO</td>
+              <td style="text-align:right">2,980.00</td>
+              <td style="text-align:center">20</td>
+              <td><span class="estado est-espera">Pendiente</span></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>V5N36A</td>
+              <td>SCANJET PRO 2500 F1 / HP</td>
+              <td style="text-align:right">1,650.00</td>
+              <td style="text-align:center">5</td>
+              <td><span class="estado est-espera">Pendiente</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- INSPECTOR DE PARÁMETROS (Derecha) -->
+    <div class="inspector">
+      <div class="inspector-titulo">Configuracion de Ejecucion</div>
+      <div class="inspector-body">
+
+        <!-- Credenciales -->
+        <div class="grupo">
+          <div class="grupo-titulo">Acceso al Portal Peru Compras</div>
+          <div class="campo-fila">
+            <label class="campo-label">RUC / Usuario</label>
+            <input type="text" class="campo-input" value="almerco.03">
+          </div>
+          <div class="campo-fila">
+            <label class="campo-label">Contrasena</label>
+            <input type="password" class="campo-input" value="4lm3rKenYa@#">
+          </div>
+        </div>
+
+        <!-- Filtros de Catalogo -->
+        <div class="grupo">
+          <div class="grupo-titulo">Parametros de Catalogo</div>
+          <div class="campo-fila">
+            <label class="campo-label">Acuerdo</label>
+            <select class="campo-select">
+              <option>249 - EXT-CE-2022-5</option>
+            </select>
+          </div>
+          <div class="campo-fila">
+            <label class="campo-label">Catalogo</label>
+            <select class="campo-select">
+              <option>252 - COMPUTADORAS ESCRITORIO</option>
+              <option>250 - COMPUTADORAS PORTATILES</option>
+              <option>251 - ESCANERES</option>
+            </select>
+          </div>
+          <div class="campo-fila">
+            <label class="campo-label">Categoria</label>
+            <select class="campo-select">
+              <option>11735 - COMP. ESCRITORIO</option>
+              <option>11740 - ESTACION TRABAJO</option>
+              <option>11741 - MONITOR</option>
+            </select>
+          </div>
+          <div class="campo-fila">
+            <label class="campo-label">Pausa (seg)</label>
+            <input type="number" class="campo-input" value="2" min="1" max="10">
+          </div>
+        </div>
+
+        <!-- Opciones -->
+        <div class="grupo">
+          <div class="grupo-titulo">Opciones</div>
+          <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" checked> Navegador oculto (headless)
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox" checked> Guardar credenciales
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="checkbox"> Exportar log al finalizar
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Consola de eventos -->
+      <div class="consola" id="consolaLog">
+        <div class="log-info">[17:05:00] Sistema cargado. Peru Compras Bot v1.4</div>
+        <div class="log-ok">[17:05:01] Catalogo local cargado correctamente (249 acuerdos disponibles).</div>
+      </div>
+
+      <!-- Boton Ejecutar -->
+      <button class="btn-ejecutar" onclick="ejecutarProceso()">INICIAR PROCESAMIENTO (F5)</button>
+    </div>
+
+  </div>
+
+  <!-- BARRA DE ESTADO INFERIOR -->
+  <div class="statusbar">
+    <div class="st-segmento st-ok" id="stEstado">Listo</div>
+    <div class="st-segmento" id="stNavegador">Navegador: No iniciado</div>
+    <div class="st-segmento" id="stRegistros">Registros: 5 cargados</div>
+    <div class="st-segmento" id="stModulo">Modulo: Publicacion de Ofertas PDF</div>
+    <div class="st-spacer"></div>
+    <div class="st-segmento">Peru Compras Bot v1.4</div>
+  </div>
+
+  <script>
+    function seleccionarArchivo() {
+      document.getElementById('fileInputOculto').click();
+    }
+
+    function archivoSeleccionado(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('archivoPath').value = file.name;
+      document.getElementById('deteccionInfo').style.display = 'block';
+      logConsola('Archivo cargado: ' + file.name, 'log-info');
+      logConsola('Deteccion automatica: PartNumber=ColA, Precio=ColB, Stock=ColC', 'log-ok');
+    }
+
+    function limpiarArchivo() {
+      document.getElementById('archivoPath').value = '';
+      document.getElementById('deteccionInfo').style.display = 'none';
+    }
+
+    function cambiarModulo(el, nombre) {
+      document.querySelectorAll('.mod-tab').forEach(t => t.classList.remove('activo'));
+      el.classList.add('activo');
+      document.getElementById('stModulo').textContent = 'Modulo: ' + nombre;
+      logConsola('Cambiado a modulo: ' + nombre, 'log-info');
+    }
+
+    function ejecutarProceso() {
+      document.getElementById('stEstado').textContent = 'Procesando...';
+      document.getElementById('stEstado').className = 'st-segmento';
+      document.getElementById('stNavegador').textContent = 'Navegador: Iniciando';
+      logConsola('Iniciando sesion en catalogos.perucompras.gob.pe...', 'log-info');
+      setTimeout(() => {
+        logConsola('Login exitoso. Resolviendo CAPTCHA...', 'log-ok');
+        actualizarEstadoFila(0, 'Procesando', 'est-ok');
+      }, 800);
+      setTimeout(() => {
+        logConsola('Oferta actualizada: 2V262LT#ABM -> S/ 3,450.00', 'log-ok');
+        actualizarEstadoFila(0, 'Publicado', 'est-ok');
+        document.getElementById('stEstado').textContent = 'Listo';
+        document.getElementById('stEstado').className = 'st-segmento st-ok';
+        document.getElementById('stNavegador').textContent = 'Navegador: Oculto (activo)';
+      }, 2000);
+    }
+
+    function actualizarEstadoFila(idx, texto, clase) {
+      const filas = document.querySelectorAll('#tablaBody tr');
+      if (!filas[idx]) return;
+      const td = filas[idx].querySelector('td:last-child');
+      td.innerHTML = '<span class="estado ' + clase + '">' + texto + '</span>';
+    }
+
+    function logConsola(msg, clase) {
+      const box = document.getElementById('consolaLog');
+      const now = new Date().toLocaleTimeString('es-PE', { hour12: false });
+      const div = document.createElement('div');
+      div.className = clase || 'log-info';
+      div.textContent = '[' + now + '] ' + msg;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // F5 shortcut
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F5') { e.preventDefault(); ejecutarProceso(); }
+    });
+  </script>
+</body>
+</html>
