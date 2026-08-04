@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peru Compras Bot — PyWebView Desktop Interface v1.4</title>
+  <style>
+    :root {
+      --azul-pc:     #006CA8;
+      --azul-dark:   #00507E;
+      --bg-sys:      #F0F0F0;
+      --bg-panel:    #E8E8E8;
+      --border:      #C8C8C8;
+      --white:       #FFFFFF;
+      --text-main:   #1A1A1A;
+      --text-sec:    #555555;
+      --ok-text:     #1B6B1B;
+      --ok-bg:       #DFF0D8;
+      --err-text:    #8B1A1A;
+      --err-bg:      #F2DEDE;
+      --warn-text:   #854D0E;
+      --warn-bg:     #FCF8E3;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+    body { background: var(--bg-sys); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 12px; }
+
+    /* BARRA DE TÍTULO INSTITUCIONAL CSD */
+    .titlebar { background: var(--azul-pc); height: 34px; display: flex; align-items: center; justify-content: space-between; padding-left: 12px; border-bottom: 2px solid var(--azul-dark); -webkit-app-region: drag; }
+    .titlebar-info { display: flex; align-items: center; gap: 12px; color: var(--white); font-weight: bold; font-size: 13px; }
+    .titlebar-sub { color: #AACCDD; font-size: 11px; font-weight: normal; }
+    .titlebar-ctrl { display: flex; height: 100%; -webkit-app-region: no-drag; }
+    .win-btn { width: 44px; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--white); cursor: pointer; font-size: 12px; transition: background 0.15s; }
+    .win-btn:hover { background: var(--azul-dark); }
+    .win-btn.close:hover { background: #E81123; }
+
+    /* MENÚ Y TABS */
+    .menubar { background: var(--bg-panel); height: 26px; display: flex; align-items: center; padding-left: 8px; border-bottom: 1px solid var(--border); font-size: 11px; }
+    .menu-item { padding: 4px 10px; cursor: pointer; color: var(--text-main); position: relative; }
+    .menu-item:hover { background: #D8D8D8; }
+
+    .tabs-bar { background: var(--bg-panel); display: flex; border-bottom: 1px solid var(--border); }
+    .tab-btn { padding: 8px 18px; cursor: pointer; color: var(--text-sec); font-size: 12px; background: var(--bg-sys); border-right: 1px solid var(--border); }
+    .tab-btn.active { background: var(--white); color: var(--azul-pc); font-weight: bold; border-top: 2px solid var(--azul-pc); }
+
+    /* WORKSPACE CONTENEDOR PRINCIPAL 2 COLUMNAS */
+    .workspace { flex: 1; display: grid; grid-template-columns: 1fr 320px; overflow: hidden; }
+    
+    /* COLUMNA IZQUIERDA: EXCEL + TABLA */
+    .left-col { background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    
+    .sec-header { background: var(--bg-panel); padding: 5px 12px; font-weight: bold; color: var(--text-sec); font-size: 11px; border-bottom: 1px solid var(--border); }
+    .file-panel { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+    .file-row { display: flex; align-items: center; gap: 6px; }
+    .file-input { flex: 1; height: 26px; border: 1px solid var(--border); padding: 0 8px; background: var(--bg-sys); border-radius: 2px; }
+    
+    .btn-sys { background: var(--bg-panel); border: 1px solid var(--border); padding: 4px 12px; cursor: pointer; font-size: 11px; border-radius: 2px; }
+    .btn-sys:hover { background: #D8D8D8; }
+    .btn-primary { background: var(--azul-pc); color: var(--white); border: none; font-weight: bold; }
+    .btn-primary:hover { background: var(--azul-dark); }
+    
+    .status-badge { padding: 4px 8px; font-size: 11px; border-radius: 2px; }
+    .status-badge.ok { background: var(--ok-bg); color: var(--ok-text); }
+    .status-badge.warn { background: var(--warn-bg); color: var(--warn-text); }
+
+    /* TABLA DATA GRID */
+    .grid-container { flex: 1; overflow: auto; background: var(--white); }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; }
+    th { background: #E4E4E4; position: sticky; top: 0; padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--text-sec); font-weight: bold; }
+    td { padding: 6px 8px; border-bottom: 1px solid #ECECEC; }
+    tr:nth-child(even) { background: #F9F9F9; }
+    tr:hover { background: #EBF4FA; }
+
+    /* COLUMNA DERECHA: INSPECTOR */
+    .right-col { background: var(--white); display: flex; flex-direction: column; overflow-y: auto; }
+    .inspector-body { padding: 10px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label { color: var(--text-sec); font-size: 11px; font-weight: 600; }
+    .form-control { height: 28px; border: 1px solid var(--border); padding: 0 8px; border-radius: 2px; font-size: 11px; }
+
+    /* CONSOLA DE LOGS */
+    .console-box { background: #1A1A2E; color: #E0E0E0; font-family: 'Consolas', monospace; font-size: 10px; padding: 8px; height: 110px; overflow-y: auto; border-radius: 2px; }
+    .log-ok { color: #90EE90; }
+    .log-warn { color: #FFD700; }
+    .log-err { color: #FF6B6B; }
+
+    /* AUDITOR DE RESULTADOS */
+    .audit-card { background: #F8F9FA; border: 1px solid var(--border); padding: 8px; border-radius: 3px; display: flex; flex-direction: column; gap: 6px; }
+    .audit-title { font-weight: bold; color: var(--azul-pc); font-size: 11px; }
+    .audit-stats { font-size: 11px; color: var(--text-sec); }
+    .audit-btns { display: flex; gap: 6px; }
+    .btn-green { background: #1B6B1B; color: white; border: none; flex: 1; padding: 5px; font-weight: bold; border-radius: 2px; cursor: pointer; }
+    .btn-green:hover { background: #145214; }
+    .btn-blue { background: var(--azul-pc); color: white; border: none; flex: 1; padding: 5px; font-weight: bold; border-radius: 2px; cursor: pointer; }
+    .btn-blue:hover { background: var(--azul-dark); }
+
+    /* FOOTER BAR */
+    .statusbar { background: var(--bg-panel); height: 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; color: var(--text-sec); }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE TÍTULO CSD INSTITUCIONAL -->
+  <div class="titlebar">
+    <div class="titlebar-info">
+      <span>PERU COMPRAS BOT</span>
+      <span class="titlebar-sub">Sistema de Automatización de Ofertas y Catálogos v1.4 (PyWebView Desktop)</span>
+    </div>
+    <div class="titlebar-ctrl">
+      <div class="win-btn" onclick="pyapi('minimize')">—</div>
+      <div class="win-btn" onclick="pyapi('maximize')">□</div>
+      <div class="win-btn close" onclick="pyapi('close')">✕</div>
+    </div>
+  </div>
+
+  <!-- BARRA DE MENÚ CLÁSICA -->
+  <div class="menubar">
+    <div class="menu-item" onclick="pyapi('select_file')">Archivo</div>
+    <div class="menu-item" onclick="pyapi('start_process')">Acciones</div>
+    <div class="menu-item" onclick="pyapi('open_config')">Configuración</div>
+    <div class="menu-item" onclick="pyapi('open_about')">Ayuda</div>
+  </div>
+
+  <!-- TABS NATIVOS FLAT HORIZONTALES -->
+  <div class="tabs-bar">
+    <div class="tab-btn active" onclick="switchTab('pdf', this)">Publicación de Ofertas PDF</div>
+    <div class="tab-btn" onclick="switchTab('stock', this)">Actualización de Stock</div>
+    <div class="tab-btn" onclick="switchTab('json', this)">Subida de Precios JSON</div>
+    <div class="tab-btn" onclick="switchTab('guide', this)">Instrucciones de Uso</div>
+    <div class="tab-btn" onclick="switchTab('tools', this)">Herramientas Avanzadas</div>
+  </div>
+
+  <!-- WORKSPACE PRINCIPAL EN 2 COLUMNAS -->
+  <div class="workspace">
+    
+    <!-- COLUMNA IZQUIERDA: EXCEL + TREEVIEW DATA GRID -->
+    <div class="left-col">
+      <div class="sec-header">CARGA DE ARCHIVO DE TRABAJO (EXCEL .XLSX)</div>
+      
+      <div class="file-panel">
+        <div class="file-row">
+          <label style="color: var(--text-sec); font-weight: 600;">Archivo:</label>
+          <input type="text" id="filePath" class="file-input" readonly placeholder="Ningún archivo seleccionado...">
+          <button class="btn-sys" onclick="selectFile()">Examinar...</button>
+          <button class="btn-sys" onclick="clearFile()">Limpiar</button>
+        </div>
+
+        <div class="file-row">
+          <label style="color: var(--text-sec);">Pestaña Excel:</label>
+          <select id="comboSheet" class="form-control" style="width: 140px;" onchange="sheetChanged()"></select>
+
+          <label style="color: var(--text-sec); margin-left: 8px;">Col. N° Parte:</label>
+          <select id="comboParte" class="form-control" style="width: 160px;"></select>
+        </div>
+
+        <div id="statusBadge" class="status-badge warn">⚠️ Sin archivo cargado — Seleccione un archivo Excel para iniciar</div>
+      </div>
+
+      <!-- DATA GRID TABLA -->
+      <div class="grid-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 35px; text-align: center;">#</th>
+              <th style="width: 140px;">Número de Parte</th>
+              <th>Descripción / Marca</th>
+              <th style="width: 90px; text-align: right;">Precio S/</th>
+              <th style="width: 70px; text-align: center;">Stock</th>
+              <th style="width: 120px; text-align: center;">Estado Portal</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay registros cargados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA: INSPECTOR DE CONFIGURACIÓN Y EJECUCIÓN -->
+    <div class="right-col">
+      <div class="sec-header" style="background: var(--azul-pc); color: white;">CONFIGURACIÓN DE EJECUCIÓN</div>
+      
+      <div class="inspector-body">
+        <div class="form-group">
+          <label>Usuario Perú Compras:</label>
+          <input type="text" id="user" class="form-control" value="almerco.03">
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña:</label>
+          <input type="password" id="pass" class="form-control" value="4lm3rKenYa@#">
+        </div>
+
+        <div class="form-group">
+          <label>Catálogo Ext-CE-2022-5:</label>
+          <select id="comboCat" class="form-control">
+            <option>Computadoras de Escritorio</option>
+            <option>Computadoras Portátiles</option>
+            <option>Escáneres</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Pausa entre registros (seg):</label>
+          <input type="number" id="pausa" class="form-control" value="1.5" step="0.5">
+        </div>
+
+        <!-- CONSOLA LOG -->
+        <div class="form-group">
+          <label>Consola de Eventos:</label>
+          <div id="consoleLog" class="console-box">
+            <div>[SISTEMA] Motor PyWebView 6.2 listo.</div>
+            <div>[SISTEMA] Seleccione un archivo Excel para iniciar.</div>
+          </div>
+        </div>
+
+        <!-- BOTÓN INICIAR -->
+        <button class="btn-sys btn-primary" style="height: 38px; font-size: 13px;" onclick="startProcess()">INICIAR PROCESAMIENTO (F5)</button>
+        <button class="btn-sys" style="background: #8B1A1A; color: white;" onclick="stopProcess()">Detener</button>
+
+        <!-- CARD AUDITOR -->
+        <div class="audit-card">
+          <div class="audit-title">🔍 Auditor de Resultados de Proceso</div>
+          <div id="auditStats" class="audit-stats">Total: 0 | ✓ OK: 0 | ✕ Err: 0 | Éxito: 0%</div>
+          <div class="audit-btns">
+            <button class="btn-green" onclick="exportAudit('excel')">📊 Informe Excel</button>
+            <button class="btn-blue" onclick="exportAudit('pdf')">📄 Informe PDF</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BARRA DE ESTADO INFERIOR -->
+  <div class="statusbar">
+    <span id="stReady" style="color: var(--ok-text); font-weight: bold;">● Listo</span>
+    <span id="stModulo">Módulo: Publicación de Ofertas PDF</span>
+    <span>THE KING COMPUTER E.I.R.L. © 2026</span>
+  </div>
+
+  <script>
+    function pyapi(cmd, arg) {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api[cmd](arg);
+      } else {
+        console.log("PyAPI offline:", cmd, arg);
+      }
+    }
+
+    function selectFile() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.select_file().then(res => {
+          if (res && res.path) {
+            document.getElementById('filePath').value = res.name;
+            const badge = document.getElementById('statusBadge');
+            badge.className = "status-badge ok";
+            badge.innerText = `✓ Archivo cargado: ${res.name} (${res.rows.length} registros)`;
+            
+            // Llenar tabla
+            renderTable(res.rows);
+            
+            // Llenar combo sheets
+            const cSheet = document.getElementById('comboSheet');
+            cSheet.innerHTML = res.sheets.map(s => `<option>${s}</option>`).join('');
+
+            logConsole(`[OK] Archivo cargado: ${res.name} (${res.rows.length} filas)`, 'log-ok');
+          }
+        });
+      }
+    }
+
+    function clearFile() {
+      document.getElementById('filePath').value = "";
+      const badge = document.getElementById('statusBadge');
+      badge.className = "status-badge warn";
+      badge.innerText = "⚠️ Sin archivo cargado — Seleccione un archivo Excel para iniciar";
+      document.getElementById('gridBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay registros cargados</td></tr>';
+      logConsole("[INFO] Datos limpiados.");
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById('gridBody');
+      if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay registros cargados</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map((r, i) => `
+        <tr>
+          <td style="text-align: center;">${i+1}</td>
+          <td><strong>${r.parte || ''}</strong></td>
+          <td>${r.descripcion || ''}</td>
+          <td style="text-align: right;">${r.precio || ''}</td>
+          <td style="text-align: center;">${r.stock || ''}</td>
+          <td style="text-align: center; color: var(--ok-text); font-weight: bold;">${r.estado || 'Pendiente'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function logConsole(msg, cls) {
+      const box = document.getElementById('consoleLog');
+      const div = document.createElement('div');
+      if (cls) div.className = cls;
+      div.innerText = msg;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function startProcess() {
+      logConsole("[INICIO] Procesamiento disparado vía PyWebView API...", "log-warn");
+      pyapi('start_process');
+    }
+
+    function stopProcess() {
+      logConsole("[STOP] Solicitud de detención enviada.", "log-err");
+      pyapi('stop_process');
+    }
+
+    function exportAudit(fmt) {
+      logConsole(`[AUDITOR] Generando informe en formato ${fmt.toUpperCase()}...`, "log-ok");
+      pyapi('export_audit', fmt);
+    }
+
+    function switchTab(mid, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('stModulo').innerText = `Módulo: ${el.innerText}`;
+      logConsole(`[NAVEGACIÓN] Módulo activo: ${el.innerText}`);
+    }
+  </script>
+</body>
+</html>

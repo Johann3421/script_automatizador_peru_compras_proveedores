@@ -7,3 +7,4 @@ Pillow>=10.0
 httpx>=0.25
 requests>=2.31
 pywin32>=306
+pywebview>=6.2
