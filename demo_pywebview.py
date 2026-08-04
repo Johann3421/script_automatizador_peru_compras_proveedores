@@ -27,20 +27,20 @@ class PeruComprasApi:
         self._window = window
 
     # ── Controles de Ventana CSD ──────────────────────────────────
-    def minimize(self):
+    def minimize(self, *args):
         if self._window:
             self._window.minimize()
 
-    def maximize(self):
+    def maximize(self, *args):
         if self._window:
             self._window.toggle_fullscreen()
 
-    def close(self):
+    def close(self, *args):
         if self._window:
             self._window.destroy()
 
     # ── Gestión de Archivos Excel ────────────────────────────────
-    def select_file(self):
+    def select_file(self, *args):
         import tkinter as tk
         root = tk.Tk()
         root.withdraw()
@@ -68,17 +68,25 @@ class PeruComprasApi:
             "rows": rows
         }
 
+    def load_sheet(self, sheet_name=None, *args):
+        if not self._excel_path or not sheet_name:
+            return []
+        cols = detect_columns(self._excel_path, sheet_name)
+        rows = parse_excel(self._excel_path, sheet_name, parte_col=cols.get("parte_col"))
+        self._excel_rows = rows
+        return rows
+
     # ── Ejecución de Procesos ────────────────────────────────────
-    def start_process(self):
+    def start_process(self, *args):
         print("[Python Backend] INICIANDO PROCESAMIENTO VIA PLAYWRIGHT...")
         return {"status": "started", "msg": "Procesamiento iniciado exitosamente."}
 
-    def stop_process(self):
+    def stop_process(self, *args):
         print("[Python Backend] DETENIENDO PROCESAMIENTO...")
         return {"status": "stopped", "msg": "Procesamiento detenido por el usuario."}
 
     # ── Auditoría e Informes ──────────────────────────────────────
-    def export_audit(self, fmt="excel"):
+    def export_audit(self, fmt="excel", *args):
         summary = audit_results(self._excel_rows)
         import tkinter as tk
         root = tk.Tk()

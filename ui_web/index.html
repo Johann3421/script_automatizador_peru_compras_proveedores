@@ -246,7 +246,11 @@
   <script>
     function pyapi(cmd, arg) {
       if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api[cmd](arg);
+        if (arg !== undefined) {
+          window.pywebview.api[cmd](arg);
+        } else {
+          window.pywebview.api[cmd]();
+        }
       } else {
         console.log("PyAPI offline:", cmd, arg);
       }
