@@ -1930,15 +1930,23 @@ def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_don
         mode_str = "modo oculto" if headless else "modo visible en pantalla"
         on_log(f"🚀 Iniciando navegador ({mode_str})...")
         pw, browser, page = init_browser(headless=headless)
+        try:
+            page.set_viewport_size({"width": 1920, "height": 1080})
+        except Exception:
+            pass
 
-        on_log("🔐 Iniciando sesión...")
+        on_log("🔐 Iniciando sesión en Perú Compras...")
         ok = do_login(page, usuario, password, "", log, stop, app.captcha_bridge)
         if not ok or stop.is_set():
             on_log("❌ Login falló. Auditor cancelado.")
             return
 
         on_log("✅ Sesión iniciada. Navegando a MejoraBasica...")
-        page.goto(f"{BASE_URL}/MejoraBasica", wait_until="networkidle", timeout=60_000)
+        from automation_otro_bot.stock import paso2_navegacion_stock, paso3_filtros_stock
+        paso2_navegacion_stock(page)
+
+        on_log(f"📋 Aplicando filtros: {acuerdo} > {catalogo} > {categoria}")
+        paso3_filtros_stock(page, acuerdo, catalogo, categoria)
         time.sleep(1)
 
         # ── Llamar al endpoint con fetch + cookies activas ──────────
