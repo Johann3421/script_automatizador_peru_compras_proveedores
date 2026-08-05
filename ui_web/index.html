@@ -655,17 +655,20 @@
     });
 
     // Animación de la Pantalla de Carga (Splash Screen)
-    window.addEventListener('DOMContentLoaded', () => {
+    // El script está al final del body — el DOM ya existe, ejecutar directo
+    (function initSplash() {
       let progress = 0;
       const bar = document.getElementById('splashProgress');
       const status = document.getElementById('splashStatus');
       const splash = document.getElementById('splashScreen');
 
+      if (!splash) return;
+
       const interval = setInterval(() => {
         progress += 20;
         if (progress === 40) status.innerText = "Cargando motor de automatización Playwright...";
         if (progress === 80) status.innerText = "Cargando catálogos de Perú Compras...";
-        
+
         if (progress >= 100) {
           bar.style.width = '100%';
           status.innerText = "¡Sistema listo!";
@@ -680,7 +683,8 @@
       }, 80);
 
       setTimeout(loadCatalogOptions, 300);
-    });
+    })();
+
 
     function pyapi(cmd, arg) {
       if (window.pywebview && window.pywebview.api) {
