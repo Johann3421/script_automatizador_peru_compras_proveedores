@@ -2011,8 +2011,10 @@ def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_don
             precio_excel = row.get("precio", "")
             desc        = row.get("descripcion", row.get("desc", ""))
 
-            # Buscar en portal por ID de ficha
-            portal_row = portal_idx.get(ficha_id)
+            # Buscar en portal por ID de ficha o por número de parte
+            portal_row = portal_idx.get(ficha_id) if ficha_id else None
+            if portal_row is None and parte:
+                portal_row = portal_idx.get(parte)
 
             if portal_row is None:
                 resultado = "NO ENCONTRADO"
@@ -2124,40 +2126,43 @@ def _build_portal_index(registros: list, on_log) -> dict:
         # Buscar keys relevantes automáticamente
         # Candidatos comunes en el portal de Peru Compras:
         key_id     = _detect_key(primer, ["ID_ProductoOfertado", "Id_ProductoOfertado", "id"])
+        key_parte  = _detect_key(primer, ["C_CodProducto", "C_NroParte", "NroParte", "codigo_producto"])
         key_stock  = _detect_key(primer, ["N_Existencias", "existencias", "stock", "N_Stock"])
         key_estado = _detect_key(primer, ["C_Estado", "estado", "Estado"])
 
-        if not key_id:
-            on_log(f"⚠ No se detectó clave de ID en el JSON del portal. Claves: {list(primer.keys())}")
-            return idx
-
         for r in registros:
-            fid = str(r.get(key_id, "")).strip()
+            item = {
+                "stock_portal":  r.get(key_stock, "—") if key_stock else "—",
+                "estado_portal": r.get(key_estado, "—") if key_estado else "—",
+            }
+            fid = str(r.get(key_id, "")).strip() if key_id else ""
             if fid:
-                idx[fid] = {
-                    "stock_portal":  r.get(key_stock, "—"),
-                    "estado_portal": r.get(key_estado, "—"),
-                }
+                idx[fid] = item
+
+            parte_val = str(r.get(key_parte, "")).strip().upper() if key_parte else ""
+            if parte_val:
+                idx[parte_val] = item
 
     elif isinstance(primer, list):
-        # DataTables posicional — el ID suele estar en la primera columna
-        # Loguear las primeras columnas para debug
-        on_log(f"⚠ JSON posicional detectado, columnas: {len(primer)}. Verificar índices.")
-        # Asumir: [0]=img, [1]=descripcion, [2]=estado, [3]=moneda, [4]=precio, [5]=prec_pub, [6]=existencias, [7]=exist_pub, [8]=detalle_html, [9]=mejoras_html
-        # ID_ProductoOfertado se extrae del HTML de detalle/mejoras
         import re
         for r in registros:
-            # Intentar extraer ID del HTML de la columna de mejoras (col 9 o 8)
+            item = {
+                "stock_portal":  r[6] if len(r) > 6 else "—",
+                "estado_portal": r[2] if len(r) > 2 else "—",
+            }
+            # 1. Extraer por fnModificarStock(ID) o fnDetalleRegistro(ID)
             for col_idx in [9, 8]:
                 if len(r) > col_idx:
-                    m = re.search(r'fnModificarStock\((\d+)\)', str(r[col_idx]))
+                    m = re.search(r'fn(?:ModificarStock|DetalleRegistro)\((\d+)\)', str(r[col_idx]))
                     if m:
-                        fid = m.group(1)
-                        idx[fid] = {
-                            "stock_portal":  r[6] if len(r) > 6 else "—",
-                            "estado_portal": r[2] if len(r) > 2 else "—",
-                        }
-                        break
+                        idx[m.group(1)] = item
+            # 2. También indexar por descripción / marca si contiene palabras clave de código
+            desc = str(r[1]) if len(r) > 1 else ""
+            # Separar por espacio los tokens de la descripción por si coinciden con número de parte
+            for token in desc.split():
+                clean_tok = token.strip().upper()
+                if len(clean_tok) >= 4 and not clean_tok.startswith("http"):
+                    idx[clean_tok] = item
 
     return idx
 

@@ -675,6 +675,7 @@ class SubirPdfApp(ctk.CTk):
         m_acc = tk.Menu(menubar, tearoff=0, font=("Segoe UI", 10))
         m_acc.add_command(label="Iniciar procesamiento (F5)", command=self._on_launch)
         m_acc.add_command(label="Detener ejecución", command=self._on_stop)
+        m_acc.add_command(label="🔍 Auditar Portal contra Excel", command=self._on_stock_audit_start)
         m_acc.add_separator()
         m_acc.add_command(label="Publicación PDF", command=lambda: self._switch_view("pdf"))
         m_acc.add_command(label="Actualización de Stock", command=lambda: self._switch_view("stock"))
@@ -1358,48 +1359,40 @@ class SubirPdfApp(ctk.CTk):
             self._on_stock_acuerdo_changed(acuerdo_values[0])
 
         # ── Botones de acción ──
-        self._section_label(left, "Iniciar / Detener", 6)
+        self._section_label(left, "Iniciar / Detener / Auditar", 6)
         frame_btns = ctk.CTkFrame(left, fg_color="transparent")
         frame_btns.grid(row=7, column=0, padx=0, pady=(0, 8), sticky="ew")
 
         self.btn_stock_start = ctk.CTkButton(
-            frame_btns, text="Iniciar Stock", width=160, height=36,
+            frame_btns, text="Iniciar Stock", width=130, height=36,
             fg_color=C["accent"], hover_color=C["accent_h"], text_color="#FFFFFF",
-            corner_radius=6, font=ctk.CTkFont(size=13, weight="bold"),
+            corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
             command=self._on_stock_start,
         )
-        self.btn_stock_start.pack(side="left", padx=(0, 8))
+        self.btn_stock_start.pack(side="left", padx=(0, 6))
+
+        self.btn_stock_audit = ctk.CTkButton(
+            frame_btns, text="🔍 Auditar Portal", width=140, height=36,
+            fg_color="#1B6B1B", hover_color="#145214", text_color="#FFFFFF",
+            corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
+            command=self._on_stock_audit_start,
+        )
+        self.btn_stock_audit.pack(side="left", padx=(0, 6))
 
         self.btn_stock_stop = ctk.CTkButton(
-            frame_btns, text="Detener", width=110, height=36,
+            frame_btns, text="Detener", width=90, height=36,
             fg_color=C["danger"], hover_color=C["danger_h"],
             text_color="#FFFFFF", state="disabled",
             corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
             command=self._on_stock_stop,
         )
-        self.btn_stock_stop.pack(side="left", padx=(0, 8))
+        self.btn_stock_stop.pack(side="left", padx=(0, 6))
 
         self.lbl_stock_status = ctk.CTkLabel(
             frame_btns, text="Listo", text_color=C["txt3"],
-            font=ctk.CTkFont(size=12),
+            font=ctk.CTkFont(size=11),
         )
-        self.lbl_stock_status.pack(side="left", padx=8)
-
-        # Botón Auditor — separado con un separador visual
-        self._section_label(left, "Auditor de Integridad vs Portal", 8)
-        self.btn_stock_audit = ctk.CTkButton(
-            left, text="🔍 Auditar Portal ahora", height=36,
-            fg_color="#5D4E37", hover_color="#3E3126", text_color="#FFFFFF",
-            corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
-            command=self._on_stock_audit_start,
-        )
-        self.btn_stock_audit.grid(row=9, column=0, padx=0, pady=(0, 4), sticky="ew")
-
-        self.lbl_audit_status = ctk.CTkLabel(
-            left, text="Sin auditar", text_color=C["txt3"],
-            font=ctk.CTkFont(size=10), anchor="w",
-        )
-        self.lbl_audit_status.grid(row=10, column=0, padx=0, pady=(0, 8), sticky="w")
+        self.lbl_stock_status.pack(side="left", padx=4)
 
         # RIGHT COLUMN: stats + log
         right = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=8,
@@ -1738,28 +1731,69 @@ class SubirPdfApp(ctk.CTk):
     # ─── Auditor Portal Stock ───────────────────────────────────────
 
     def _on_stock_audit_start(self):
-        """Handler del botón '🔍 Auditar Portal ahora'.
-        Valida credenciales + Excel cargado, luego lanza execute_auditor en hilo.
+        """Handler del botón '🔍 Auditar Portal'.
+        Valida credenciales y utiliza el Excel ya subido en la aplicación (pestaña Stock u Ofertas),
+        luego lanza execute_auditor en un hilo en segundo plano.
         """
-        if not self._stock_excel_df:
-            self._append_stock_log("❌ Auditor: carga primero un Excel con productos")
+        from tkinter import messagebox
+        import os
+
+        # 1. Buscar Excel cargado (pestaña Stock o pestaña Principal)
+        excel_rows = getattr(self, "_stock_excel_df", []) or []
+
+        if not excel_rows:
+            excel_rows = getattr(self, "_excel_rows", []) or []
+
+        if not excel_rows:
+            path = getattr(self, "_stock_excel_path", "") or getattr(self, "_excel_path", "")
+            if path and os.path.exists(path):
+                try:
+                    from automation_otro_bot.stock import analizar_excel_stock
+                    res = analizar_excel_stock(path)
+                    if res.get("valido"):
+                        excel_rows = res["df"]
+                        self._stock_excel_df = excel_rows
+                except Exception as e:
+                    self._append_stock_log(f"⚠ No se pudo analizar {path}: {e}")
+
+        if not excel_rows:
+            self._append_stock_log("❌ Auditor: Carga primero un archivo Excel con productos (en Stock o en Ofertas)")
+            messagebox.showwarning("Auditor Portal", "Por favor carga un archivo Excel con productos antes de auditar.")
             return
 
-        usuario  = self.entry_stock_user.get().strip()
-        password = self.entry_stock_pass.get().strip()
+        # Sincronizar _stock_excel_df para que el worker tenga los datos
+        self._stock_excel_df = excel_rows
+
+        # 2. Buscar credenciales (prioridad: sección Stock, luego sección Principal)
+        usuario = ""
+        password = ""
+        if hasattr(self, "entry_stock_user"):
+            usuario = self.entry_stock_user.get().strip()
+        if hasattr(self, "entry_stock_pass"):
+            password = self.entry_stock_pass.get().strip()
+
         if not usuario or not password:
-            self._append_stock_log("❌ Auditor: rellena Usuario y Contraseña en la sección de credenciales")
+            if hasattr(self, "entry_user"):
+                usuario = self.entry_user.get().strip()
+            if hasattr(self, "entry_pass"):
+                password = self.entry_pass.get().strip()
+
+        if not usuario or not password:
+            self._append_stock_log("❌ Auditor: Rellena Usuario y Contraseña en la sección de credenciales")
+            messagebox.showwarning("Auditor Portal", "Ingrese su Usuario y Contraseña de Perú Compras antes de auditar.")
             return
 
-        acuerdo  = self.option_stock_acuerdo.get().strip()
-        catalogo  = self.option_stock_catalogo.get().strip()
-        categoria = self.option_stock_categoria.get().strip()
+        # 3. Leer filtros seleccionados
+        acuerdo = self.option_stock_acuerdo.get().strip() if hasattr(self, "option_stock_acuerdo") else "EXT-CE-2022-5"
+        catalogo = self.option_stock_catalogo.get().strip() if hasattr(self, "option_stock_catalogo") else ""
+        categoria = self.option_stock_categoria.get().strip() if hasattr(self, "option_stock_categoria") else ""
 
         self.btn_stock_audit.configure(state="disabled", text="⏳ Auditando...")
-        self.lbl_audit_status.configure(text="Conectando al portal...", text_color="#f39c12")
-        self._append_stock_log("🔍 Iniciando Auditor Portal...")
+        if hasattr(self, "lbl_audit_status"):
+            self.lbl_audit_status.configure(text="Conectando al portal...", text_color="#f39c12")
+        self._append_stock_log(f"🔍 Iniciando Auditor Portal ({len(excel_rows)} productos del Excel)...")
 
-        # Reset stop event (compartido con stock)
+        # Reset stop event
         self._stock_stop_event.clear()
 
         import threading, workers
