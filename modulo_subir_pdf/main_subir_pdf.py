@@ -1768,19 +1768,19 @@ class SubirPdfApp(ctk.CTk):
         usuario = ""
         password = ""
         if hasattr(self, "entry_stock_user"):
-            usuario = self.entry_stock_user.get().strip()
+            usuario = str(self.entry_stock_user.get() or "").strip()
         if hasattr(self, "entry_stock_pass"):
-            password = self.entry_stock_pass.get().strip()
+            password = str(self.entry_stock_pass.get() or "").strip()
 
         if not usuario or not password:
             if hasattr(self, "entry_user"):
-                usuario = usuario or self.entry_user.get().strip()
+                usuario = usuario or str(self.entry_user.get() or "").strip()
             if hasattr(self, "entry_pass"):
-                password = password or self.entry_pass.get().strip()
+                password = password or str(self.entry_pass.get() or "").strip()
 
-        # Fallback a credenciales institucionales por defecto si siguen vacías
-        usuario = usuario or "fernando.trinidad"
-        password = password or "po!tLKB#8^r4e"
+        if not usuario or not password:
+            self._append_stock_log("❌ Auditor: Rellena Usuario y Contraseña en los campos de credenciales de Stock.")
+            return
 
         # 3. Leer filtros seleccionados
         acuerdo = self.option_stock_acuerdo.get().strip() if hasattr(self, "option_stock_acuerdo") else "EXT-CE-2022-5"
@@ -3084,8 +3084,8 @@ class SubirPdfWebApi:
             if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_excel_rows", None):
                 self._app._stock_excel_df = self._app._excel_rows
 
-            user_val = (params.get("user") or "").strip() or "fernando.trinidad"
-            pass_val = (params.get("pass") or "").strip() or "po!tLKB#8^r4e"
+            user_val = str(params.get("user") or "").strip()
+            pass_val = str(params.get("pass") or "").strip()
             self._app.entry_stock_user = _DummyWidget(user_val)
             self._app.entry_stock_pass = _DummyWidget(pass_val)
             self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES")
@@ -3115,8 +3115,8 @@ class SubirPdfWebApi:
             if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_excel_rows", None):
                 self._app._stock_excel_df = self._app._excel_rows
 
-            user_val = (params.get("user") or "").strip() or "fernando.trinidad"
-            pass_val = (params.get("pass") or "").strip() or "po!tLKB#8^r4e"
+            user_val = str(params.get("user") or "").strip()
+            pass_val = str(params.get("pass") or "").strip()
             self._app.entry_stock_user = _DummyWidget(user_val)
             self._app.entry_stock_pass = _DummyWidget(pass_val)
             self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES")
