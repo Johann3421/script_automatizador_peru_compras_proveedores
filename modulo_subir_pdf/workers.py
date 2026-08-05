@@ -1874,3 +1874,302 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
             try: close_browser(pw, browser)
             except: pass
         re_enable()
+
+
+# ═══════════════════════════════════════════════════════════════════
+# execute_auditor — Auditor Portal Stock
+# ───────────────────────────────────────────────────────────────────
+# Flujo:
+#   1. Login con credenciales de la pestaña Stock
+#   2. Navega a MejoraBasica (para obtener cookies de sesión válidas)
+#   3. Llama al endpoint JSON con fetch() desde dentro del browser
+#   4. Parsea el JSON: {data: [...]} o lista directa
+#   5. Compara fila por fila con el Excel cargado (app._stock_excel_df)
+#   6. Construye filas de resultado y resumen
+#   7. Llama al callback on_done(filas, resumen) en el hilo llamante
+# NO toca app._stock_running ni los botones — eso lo gestiona el handler de UI
+# ═══════════════════════════════════════════════════════════════════
+
+def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log):
+    """
+    Auditor del Portal Stock.
+
+    Parámetros
+    ----------
+    app          : instancia de la app (para leer _stock_excel_df, _stock_stop_event)
+    usuario      : str — credenciales de la pestaña stock
+    password     : str
+    acuerdo      : str — texto del dropdown acuerdo (para resumen)
+    catalogo     : str — texto del dropdown catalogo (para resumen)
+    categoria    : str — texto del dropdown categoria (para resumen)
+    on_done      : callable(filas, resumen) — se llama al finalizar
+    on_log       : callable(str) — se llama para cada mensaje de log
+    """
+    import time
+    import json as _json
+
+    BASE_URL = "https://www.catalogos.perucompras.gob.pe"
+
+    log = _make_stock_log(on_log)
+    stop = app._stock_stop_event
+
+    # Mapear acuerdo/catalogo/categoria a sus IDs numéricos desde el JSON de combos
+    combos = getattr(app, "_stock_combos_data", {})
+    n_acuerdo  = _get_id_acuerdo(combos, acuerdo)
+    n_catalogo = _get_id_catalogo(combos, acuerdo, catalogo)
+    n_categoria = _get_id_categoria(combos, acuerdo, catalogo, categoria)
+
+    on_log(f"🔍 Auditor iniciado | Acuerdo:{n_acuerdo} Catálogo:{n_catalogo} Categoría:{n_categoria}")
+
+    pw = browser = page = None
+    filas = []
+    resumen = {}
+
+    try:
+        on_log("🚀 Iniciando navegador (modo oculto)...")
+        pw, browser, page = init_browser(headless=True)
+
+        on_log("🔐 Iniciando sesión...")
+        ok = do_login(page, usuario, password, "", log, stop, app.captcha_bridge)
+        if not ok or stop.is_set():
+            on_log("❌ Login falló. Auditor cancelado.")
+            return
+
+        on_log("✅ Sesión iniciada. Navegando a MejoraBasica...")
+        page.goto(f"{BASE_URL}/MejoraBasica", wait_until="networkidle", timeout=60_000)
+        time.sleep(1)
+
+        # ── Llamar al endpoint con fetch + cookies activas ──────────
+        ts = int(time.time() * 1000)
+        endpoint = (
+            f"{BASE_URL}/MejoraBasica/_ListaProductosOfertados"
+            f"?N_Acuerdo={n_acuerdo}&N_Catalogo={n_catalogo}"
+            f"&N_Categoria={n_categoria}&C_Descripcion=&_={ts}"
+        )
+        on_log(f"📡 Consultando endpoint JSON del portal...")
+
+        raw = page.evaluate(f"""
+            async () => {{
+                try {{
+                    const r = await fetch('{endpoint}', {{
+                        method: 'GET', credentials: 'include'
+                    }});
+                    if (!r.ok) return '__HTTP_' + r.status;
+                    return await r.text();
+                }} catch(e) {{
+                    return '__ERR_' + e.message;
+                }}
+            }}
+        """)
+
+        if not raw or raw.startswith("__"):
+            on_log(f"❌ Error del endpoint: {raw}")
+            return
+
+        try:
+            data = _json.loads(raw)
+        except Exception as e:
+            on_log(f"❌ JSON inválido del portal: {e}")
+            return
+
+        # DataTables devuelve {"data": [...]} o a veces lista directa
+        if isinstance(data, dict) and "data" in data:
+            registros_portal = data["data"]
+        elif isinstance(data, list):
+            registros_portal = data
+        else:
+            on_log(f"❌ Formato de respuesta inesperado: {type(data)}")
+            return
+
+        on_log(f"✅ Portal devolvió {len(registros_portal)} fichas.")
+
+        # ── Construir índice del portal por ID_ProductoOfertado ─────
+        # El JSON tiene campos posicionales o con nombre — detectar automáticamente
+        portal_idx = _build_portal_index(registros_portal, on_log)
+
+        # ── Leer Excel cargado en la app ────────────────────────────
+        excel_df = getattr(app, "_stock_excel_df", []) or []
+        if not excel_df:
+            on_log("❌ No hay Excel cargado en el módulo de stock.")
+            return
+
+        on_log(f"📊 Comparando {len(excel_df)} filas del Excel vs {len(portal_idx)} del portal...")
+
+        ok_count  = 0
+        dif_count = 0
+        missing   = 0
+
+        for row in excel_df:
+            if stop.is_set():
+                on_log("⏹ Auditor detenido por el usuario.")
+                break
+
+            # row es dict con: parte, stock, ficha (y posiblemente precio, desc)
+            parte       = str(row.get("parte", "")).strip().upper()
+            stock_excel = row.get("stock", 0)
+            ficha_id    = str(row.get("ficha", "")).strip()
+            precio_excel = row.get("precio", "")
+            desc        = row.get("descripcion", row.get("desc", ""))
+
+            # Buscar en portal por ID de ficha
+            portal_row = portal_idx.get(ficha_id)
+
+            if portal_row is None:
+                resultado = "NO ENCONTRADO"
+                missing += 1
+                stock_portal  = "—"
+                estado_portal = "—"
+                diferencia    = "—"
+            else:
+                stock_portal  = portal_row.get("stock_portal", 0)
+                estado_portal = portal_row.get("estado_portal", "—")
+                try:
+                    stock_p = int(stock_portal)
+                    stock_e = int(stock_excel)
+                    diferencia = stock_p - stock_e
+                    if diferencia == 0:
+                        resultado = "OK"
+                        ok_count += 1
+                    else:
+                        resultado = "DIFERENCIA"
+                        dif_count += 1
+                except (ValueError, TypeError):
+                    diferencia = "—"
+                    resultado  = "DIFERENCIA"
+                    dif_count += 1
+
+            filas.append({
+                "parte":         parte,
+                "descripcion":   desc,
+                "stock_excel":   stock_excel,
+                "precio_excel":  precio_excel,
+                "ficha":         ficha_id,
+                "stock_portal":  stock_portal,
+                "estado_portal": estado_portal,
+                "diferencia":    diferencia,
+                "resultado":     resultado,
+            })
+
+        total = len(excel_df)
+        tasa  = round((ok_count / total * 100) if total > 0 else 0, 1)
+        resumen = {
+            "total":      total,
+            "ok":         ok_count,
+            "dif":        dif_count,
+            "missing":    missing,
+            "tasa":       tasa,
+            "acuerdo":    acuerdo,
+            "catalogo":   catalogo,
+            "categoria":  categoria,
+            "excel_file": getattr(app, "_stock_excel_path", "—"),
+            "timestamp":  time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        on_log(f"✅ Auditoria completada: {ok_count} OK / {dif_count} DIFERENCIAS / {missing} NO ENCONTRADAS")
+
+    except Exception as e:
+        import traceback
+        on_log(f"❌ Error en auditor: {e}")
+        on_log(traceback.format_exc())
+    finally:
+        if browser and pw:
+            try:
+                close_browser(pw, browser)
+            except Exception:
+                pass
+
+    if on_done:
+        on_done(filas, resumen)
+
+
+def _get_id_acuerdo(combos, acuerdo_text):
+    for a in combos.get("acuerdos", []):
+        if a.get("text") == acuerdo_text:
+            return a.get("value", "249")
+    return "249"
+
+def _get_id_catalogo(combos, acuerdo_text, catalogo_text):
+    acuerdo_id = _get_id_acuerdo(combos, acuerdo_text)
+    for c in combos.get("combinaciones", []):
+        if (c.get("acuerdo", {}).get("value") == acuerdo_id
+                and c.get("catalogo", {}).get("text") == catalogo_text):
+            return c.get("catalogo", {}).get("value", "252")
+    return "252"
+
+def _get_id_categoria(combos, acuerdo_text, catalogo_text, categoria_text):
+    acuerdo_id = _get_id_acuerdo(combos, acuerdo_text)
+    for c in combos.get("combinaciones", []):
+        if (c.get("acuerdo", {}).get("value") == acuerdo_id
+                and c.get("catalogo", {}).get("text") == catalogo_text
+                and c.get("categoria", {}).get("text") == categoria_text):
+            return c.get("categoria", {}).get("value", "11736")
+    return "11736"
+
+
+def _build_portal_index(registros: list, on_log) -> dict:
+    """
+    Construye un índice {ficha_id: {stock_portal, estado_portal}}
+    a partir de los registros del portal.
+
+    El JSON puede ser:
+      - Lista de dicts con claves explícitas (e.g. ID_ProductoOfertado, N_Existencias, C_Estado)
+      - Lista de listas posicionales (DataTables style)
+    """
+    idx = {}
+    if not registros:
+        return idx
+
+    primer = registros[0]
+
+    if isinstance(primer, dict):
+        # Buscar keys relevantes automáticamente
+        # Candidatos comunes en el portal de Peru Compras:
+        key_id     = _detect_key(primer, ["ID_ProductoOfertado", "Id_ProductoOfertado", "id"])
+        key_stock  = _detect_key(primer, ["N_Existencias", "existencias", "stock", "N_Stock"])
+        key_estado = _detect_key(primer, ["C_Estado", "estado", "Estado"])
+
+        if not key_id:
+            on_log(f"⚠ No se detectó clave de ID en el JSON del portal. Claves: {list(primer.keys())}")
+            return idx
+
+        for r in registros:
+            fid = str(r.get(key_id, "")).strip()
+            if fid:
+                idx[fid] = {
+                    "stock_portal":  r.get(key_stock, "—"),
+                    "estado_portal": r.get(key_estado, "—"),
+                }
+
+    elif isinstance(primer, list):
+        # DataTables posicional — el ID suele estar en la primera columna
+        # Loguear las primeras columnas para debug
+        on_log(f"⚠ JSON posicional detectado, columnas: {len(primer)}. Verificar índices.")
+        # Asumir: [0]=img, [1]=descripcion, [2]=estado, [3]=moneda, [4]=precio, [5]=prec_pub, [6]=existencias, [7]=exist_pub, [8]=detalle_html, [9]=mejoras_html
+        # ID_ProductoOfertado se extrae del HTML de detalle/mejoras
+        import re
+        for r in registros:
+            # Intentar extraer ID del HTML de la columna de mejoras (col 9 o 8)
+            for col_idx in [9, 8]:
+                if len(r) > col_idx:
+                    m = re.search(r'fnModificarStock\((\d+)\)', str(r[col_idx]))
+                    if m:
+                        fid = m.group(1)
+                        idx[fid] = {
+                            "stock_portal":  r[6] if len(r) > 6 else "—",
+                            "estado_portal": r[2] if len(r) > 2 else "—",
+                        }
+                        break
+
+    return idx
+
+
+def _detect_key(d: dict, candidates: list) -> str:
+    for k in candidates:
+        if k in d:
+            return k
+    # Búsqueda insensible a mayúsculas
+    d_lower = {k2.lower(): k2 for k2 in d}
+    for c in candidates:
+        found = d_lower.get(c.lower())
+        if found:
+            return found
+    return ""

@@ -1385,6 +1385,22 @@ class SubirPdfApp(ctk.CTk):
         )
         self.lbl_stock_status.pack(side="left", padx=8)
 
+        # Botón Auditor — separado con un separador visual
+        self._section_label(left, "Auditor de Integridad vs Portal", 8)
+        self.btn_stock_audit = ctk.CTkButton(
+            left, text="🔍 Auditar Portal ahora", height=36,
+            fg_color="#5D4E37", hover_color="#3E3126", text_color="#FFFFFF",
+            corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
+            command=self._on_stock_audit_start,
+        )
+        self.btn_stock_audit.grid(row=9, column=0, padx=0, pady=(0, 4), sticky="ew")
+
+        self.lbl_audit_status = ctk.CTkLabel(
+            left, text="Sin auditar", text_color=C["txt3"],
+            font=ctk.CTkFont(size=10), anchor="w",
+        )
+        self.lbl_audit_status.grid(row=10, column=0, padx=0, pady=(0, 8), sticky="w")
+
         # RIGHT COLUMN: stats + log
         right = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=8,
                              border_width=1, border_color=C["border"])
@@ -1718,6 +1734,89 @@ class SubirPdfApp(ctk.CTk):
         #   Paso 4: iterar cada fila del Excel y llamar actualizar_producto()
         import workers
         workers.execute_stock(self, usuario, password, acuerdo, catalogo, categoria, pausa)
+
+    # ─── Auditor Portal Stock ───────────────────────────────────────
+
+    def _on_stock_audit_start(self):
+        """Handler del botón '🔍 Auditar Portal ahora'.
+        Valida credenciales + Excel cargado, luego lanza execute_auditor en hilo.
+        """
+        if not self._stock_excel_df:
+            self._append_stock_log("❌ Auditor: carga primero un Excel con productos")
+            return
+
+        usuario  = self.entry_stock_user.get().strip()
+        password = self.entry_stock_pass.get().strip()
+        if not usuario or not password:
+            self._append_stock_log("❌ Auditor: rellena Usuario y Contraseña en la sección de credenciales")
+            return
+
+        acuerdo  = self.option_stock_acuerdo.get().strip()
+        catalogo  = self.option_stock_catalogo.get().strip()
+        categoria = self.option_stock_categoria.get().strip()
+
+        self.btn_stock_audit.configure(state="disabled", text="⏳ Auditando...")
+        self.lbl_audit_status.configure(text="Conectando al portal...", text_color="#f39c12")
+        self._append_stock_log("🔍 Iniciando Auditor Portal...")
+
+        # Reset stop event (compartido con stock)
+        self._stock_stop_event.clear()
+
+        import threading, workers
+        threading.Thread(
+            target=workers.execute_auditor,
+            args=(self, usuario, password, acuerdo, catalogo, categoria,
+                  self._on_audit_done, self._append_stock_log),
+            daemon=True,
+        ).start()
+
+    def _on_audit_done(self, filas: list, resumen: dict):
+        """Callback llamado por execute_auditor cuando termina.
+        Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
+        """
+        def _ui_done():
+            self.btn_stock_audit.configure(state="normal", text="🔍 Auditar Portal ahora")
+            if not filas:
+                self.lbl_audit_status.configure(text="Sin datos para guardar", text_color="#e74c3c")
+                return
+
+            ok    = resumen.get("ok", 0)
+            dif   = resumen.get("dif", 0)
+            mis   = resumen.get("missing", 0)
+            total = resumen.get("total", 0)
+            tasa  = resumen.get("tasa", 0)
+            status_text  = f"{ok}/{total} OK | {dif} dif | {mis} no enc. | {tasa:.1f}%"
+            status_color = "#27ae60" if dif == 0 and mis == 0 else "#e67e22" if mis == 0 else "#e74c3c"
+            self.lbl_audit_status.configure(text=status_text, text_color=status_color)
+
+            # Guardar con filedialog
+            from tkinter import filedialog, messagebox
+            ts = time.strftime("%Y%m%d_%H%M%S")
+            path = filedialog.asksaveasfilename(
+                title="Guardar Informe de Auditoría",
+                initialfile=f"Auditoria_Stock_{ts}.xlsx",
+                defaultextension=".xlsx",
+                filetypes=[("Libro Excel", "*.xlsx")],
+            )
+            if not path:
+                return
+
+            from utils_mod.audit_portal_excel import generar_excel_auditoria
+            ok_save, msg = generar_excel_auditoria(filas, resumen, path)
+            if ok_save:
+                self._append_stock_log(f"📊 Informe guardado: {path}")
+                import subprocess
+                try:
+                    subprocess.Popen(["start", "", path], shell=True)
+                except Exception:
+                    pass
+            else:
+                messagebox.showerror("Error al guardar", msg)
+
+        try:
+            self.after(0, _ui_done)
+        except Exception:
+            _ui_done()
     def _build_credentials_section(self, parent):
         C = self._C
         self._section_label(parent, "Credenciales de Perú Compras", 0)
