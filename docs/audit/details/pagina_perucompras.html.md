@@ -1,0 +1,22 @@
+# Documentación Técnica: `pagina_perucompras.html`
+
+- **Ruta relativa:** `pagina_perucompras.html`
+- **Tipo de archivo:** `.html`
+- **Líneas de código:** 2894
+- **Fecha de inspección:** 2026-08-05 18:37:53
+
+---
+
+## 🛠️ Reglas de Modificación (Qué tocar y qué NO tocar)
+
+> [!NOTE]
+> **MODULO DE INTERFAZ / UTILIDAD (MODIFICABLE CON PRECAUCIÓN)**
+> Este archivo gestiona la presentación, puente PyWebView o formateo de reportes.
+> **Regla:** Se pueden hacer mejoras estéticas, agregar eventos de UI o ajustar layouts cuidando no romper la comunicación con el backend.
+
+## 📋 Estructura Interna del Archivo
+
+### Secciones principales del HTML:
+- **Vistas Pane:** `#view-pdf`, `#view-stock`, `#view-json`, `#view-guide`, `#view-tools`
+- **Puente PyWebView:** Invocaciones mediante `pyapi(cmd, params)`
+- **Formularios:** Credenciales, Filtros de catálogo, checkboxes de visibilidad

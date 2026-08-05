@@ -1,0 +1,511 @@
+{
+  "generated_at": "2026-08-05 18:40:49",
+  "total_files": 63,
+  "total_lines": 23968,
+  "files": [
+    {
+      "rel_path": "automation/__init__.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\__init__.py",
+      "language": "python",
+      "lines": 0,
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "ui/__init__.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui\\__init__.py",
+      "language": "python",
+      "lines": 0,
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "utils/__init__.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\utils\\__init__.py",
+      "language": "python",
+      "lines": 0,
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/automation_mod/__init__.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\automation_mod\\__init__.py",
+      "language": "python",
+      "lines": 1,
+      "hash": "251421cf3a22693144c019563e964f05b454caf3700b8177581bc1b981e492fe",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/utils_mod/__init__.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\utils_mod\\__init__.py",
+      "language": "python",
+      "lines": 1,
+      "hash": "b5540d6d3452cf489a8da2ab1ba9767383c0602f0423c032dfa95a92e052d629",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/automation_mod/__init__.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_mod\\__init__.py",
+      "language": "python",
+      "lines": 1,
+      "hash": "251421cf3a22693144c019563e964f05b454caf3700b8177581bc1b981e492fe",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/utils_mod/__init__.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\utils_mod\\__init__.py",
+      "language": "python",
+      "lines": 1,
+      "hash": "b5540d6d3452cf489a8da2ab1ba9767383c0602f0423c032dfa95a92e052d629",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/automation_otro_bot/__init__.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_otro_bot\\__init__.py",
+      "language": "python",
+      "lines": 10,
+      "hash": "af2a816a8ae6f611ee570563ee71c3174cb8c1943df38ccad2ad5ddfea1187fe",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "main.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\main.py",
+      "language": "python",
+      "lines": 16,
+      "hash": "17d4ca6f54ce9258fad817e2b7577677f459baebd1df5272bd8244e6ef559463",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/run_subir_pdf.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\run_subir_pdf.py",
+      "language": "python",
+      "lines": 21,
+      "hash": "84cb306de92a69a534eb9b648860501efb6d4139ce04b46b234aca523be31f4b",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "utils/logger.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\utils\\logger.py",
+      "language": "python",
+      "lines": 24,
+      "hash": "4125dde8932e3f387dd83a069bff9a7ead1fee4d5e09eb440e640318254154da",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/utils_mod/logger_mod.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\utils_mod\\logger_mod.py",
+      "language": "python",
+      "lines": 33,
+      "hash": "6e1319c9bc0a4ca1f5f090135d6dbe97b808302fcd26be81e15e99febe55629e",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/utils_mod/logger_mod.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\utils_mod\\logger_mod.py",
+      "language": "python",
+      "lines": 33,
+      "hash": "6e1319c9bc0a4ca1f5f090135d6dbe97b808302fcd26be81e15e99febe55629e",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/utils_mod/config_helper.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\utils_mod\\config_helper.py",
+      "language": "python",
+      "lines": 34,
+      "hash": "e1078b15f1c95af8913edf744e590319bc0d9233966a0af43897862bb5d4fae2",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "resource_helper.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\resource_helper.py",
+      "language": "python",
+      "lines": 36,
+      "hash": "1b0b7cb5cd3e7e399bd9ecad6198c6f4f4658c8df7d23bba1c7e84332b9eff80",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "utils/excel_writer.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\utils\\excel_writer.py",
+      "language": "python",
+      "lines": 48,
+      "hash": "15db211cfee65faadef0aa75cd35a7daabf821937e1b1e9c841f1101416b80fc",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/utils_mod/excel_writer_mod.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\utils_mod\\excel_writer_mod.py",
+      "language": "python",
+      "lines": 57,
+      "hash": "8a179bb2100df9a5230f696feee27eec6f0edb3a5090bf1c7f7224b82eec778e",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/utils_mod/excel_writer_mod.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\utils_mod\\excel_writer_mod.py",
+      "language": "python",
+      "lines": 58,
+      "hash": "f06e8efc8edd27364a1b05994a535ae3d9bdf2ef6033d5c1d5a2ded26462b508",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/automation_mod/login_mod.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\automation_mod\\login_mod.py",
+      "language": "python",
+      "lines": 78,
+      "hash": "9dea2dc311f6413c8bd7a3be1d10fe3e5f8706607037e36d2ec22c4a47c58cf0",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/test_ficha_endpoint.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\test_ficha_endpoint.py",
+      "language": "python",
+      "lines": 78,
+      "hash": "4d9fa931b0af665fbe007f40dba91e70c696cc96950809cbecc021fda10e6064",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "utils/excel_parser.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\utils\\excel_parser.py",
+      "language": "python",
+      "lines": 84,
+      "hash": "3f287d00e01d35d50ac5702ce1d2d4eeffcc25d01b2c11636986db241bb2541a",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "extract_catalog.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\extract_catalog.py",
+      "language": "python",
+      "lines": 96,
+      "hash": "5f24f972797c61dc5821d225a96b4a3c2d6fa1f3eb3c81e327498c96fc0f298c",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "ui/app.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui\\app.py",
+      "language": "python",
+      "lines": 101,
+      "hash": "2804903d0325327d4c334dbace416a01003c73b8976a5f62c67f848adad5b364",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/gui_instructions_tab.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\gui_instructions_tab.py",
+      "language": "python",
+      "lines": 104,
+      "hash": "0d9cf85f156b9c3cb045b5cbdcfb3c25c5f27564ee08f233083fe7b0e7f1161f",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "ui/screen_login.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui\\screen_login.py",
+      "language": "python",
+      "lines": 106,
+      "hash": "8d6a8b6fbb7c1b17780edc43b4230a77b02e244da7f4963a86df1bf2fccf390e",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/test_1_ficha.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\test_1_ficha.py",
+      "language": "python",
+      "lines": 132,
+      "hash": "ad4f0f63dbb26ef196914919dbc23a7459cb8b09b1a09bf43e5b8534bbb37689",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "automation/offer_loop.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\offer_loop.py",
+      "language": "python",
+      "lines": 137,
+      "hash": "0d1d2af7abe7958102dc74c2b072c7e4b4313625d828e6fe9a139844d1dfdf02",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "ui/screen_excel.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui\\screen_excel.py",
+      "language": "python",
+      "lines": 139,
+      "hash": "c8100a40decf4e5206bacb2bd3667065748751026a130bc7b9ecde5179260c4d",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "demo_pywebview.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\demo_pywebview.py",
+      "language": "python",
+      "lines": 152,
+      "hash": "bfecb249beffb1f6619b69a52411b1b277889a9e3791f25f75b5e83de6c7453f",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/extraer_combos_mejora.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\extraer_combos_mejora.py",
+      "language": "python",
+      "lines": 168,
+      "hash": "c9fe09655a7ac26b919408cee056508f5a706852e19187f2c2b71774a73c1a0b",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/automation_mod/modificar_loop.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\automation_mod\\modificar_loop.py",
+      "language": "python",
+      "lines": 170,
+      "hash": "4e5f0c48789882bbc47345fc517d99228ae4fa000d067d3557f2ade9bf3de7c8",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/utils_mod/excel_parser_mod.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\utils_mod\\excel_parser_mod.py",
+      "language": "python",
+      "lines": 183,
+      "hash": "a5f06e0efd81516b1475ec3ee5d5e5d31cb20cc87926d9fd25e46e9eba1e345f",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "build_exe.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\build_exe.py",
+      "language": "python",
+      "lines": 192,
+      "hash": "745af021101d10873d3349fffa94b480d2cc726ef3ba8e07b64f17c35ef546c1",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/automation_mod/bulk_modificar.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\automation_mod\\bulk_modificar.py",
+      "language": "python",
+      "lines": 195,
+      "hash": "dcaff7bfdb1b0aeb7def62b4191df1e89f72f0aa9ca7486a90daf7c92da40f84",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/test_extraccion_json.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\test_extraccion_json.py",
+      "language": "python",
+      "lines": 196,
+      "hash": "54416a8e7d12b792660a3f399f3bac858bf2054fa1fc414ac40449f85d98dda2",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "build_installer.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\build_installer.py",
+      "language": "python",
+      "lines": 218,
+      "hash": "7030b21c2f464a18b3756c76808ec69a529815c395e36ad55eeb88af709122e8",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "intercept_payload.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\intercept_payload.py",
+      "language": "python",
+      "lines": 229,
+      "hash": "36672f00cee4feb10516c91d05bae79aea4311a785ddb7990d888ae40bfad646",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/intercept_modificar.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\intercept_modificar.py",
+      "language": "python",
+      "lines": 238,
+      "hash": "8c42bb99fb03a6e5afa224e825615ec5c253f113b74c6711baec97c4fc38e082",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/test_buscar_ficha.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\test_buscar_ficha.py",
+      "language": "python",
+      "lines": 246,
+      "hash": "a67d6c741822615b4ec82ba349bb3bb0f9a513249267bf6919f10642bb13e740",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "automation/browser.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\browser.py",
+      "language": "python",
+      "lines": 251,
+      "hash": "d002009f641e02755842f6b53db5c1a1da68d8a6aac3d9cd905782f00e3eda7c",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/utils_mod/audit_portal_excel.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\utils_mod\\audit_portal_excel.py",
+      "language": "python",
+      "lines": 251,
+      "hash": "a336310bfcd03ec548b973d59009ae82f8493a307a027c09ee33e328dba2f963",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/extract_combinaciones.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\extract_combinaciones.py",
+      "language": "python",
+      "lines": 272,
+      "hash": "c22145aa6f0b148062f09624c382c2e61013494522048f02a9a6fa035c5d5156",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "automation/navigation.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\navigation.py",
+      "language": "python",
+      "lines": 289,
+      "hash": "86b27e8760a033d82afca080da2532876a273990c80837889d757fbbb96d4b46",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/utils_mod/audit_reporter.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\utils_mod\\audit_reporter.py",
+      "language": "python",
+      "lines": 293,
+      "hash": "603e5aa57b143cbda8de599382b8ea0c32d697a0234e05783cf8d233f862de20",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/automation_mod/bulk_subir_pdf.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_mod\\bulk_subir_pdf.py",
+      "language": "python",
+      "lines": 311,
+      "hash": "547f1a85ab2af86d06e6641f538f008008bee525cfa3514be5f2d4ca5a6d0f82",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/extract_dropdowns_modificar.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\extract_dropdowns_modificar.py",
+      "language": "python",
+      "lines": 315,
+      "hash": "e98c15337e7e4c9f8951041248d5c452d2ba503f8a0f1f0a36b1d3f07d903a5a",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/utils_mod/excel_parser_mod.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\utils_mod\\excel_parser_mod.py",
+      "language": "python",
+      "lines": 339,
+      "hash": "90eee74139a3a8b7c40e46fa42e0af0f87d38c69d964e5a043aab64e94bdceee",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "automation/login.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\login.py",
+      "language": "python",
+      "lines": 348,
+      "hash": "253252881fe5214925dee48cb78d75db7922d88fcbed3b10a8e833ffb07213cb",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "ui/screen_run.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui\\screen_run.py",
+      "language": "python",
+      "lines": 359,
+      "hash": "e211b884423841546073cf684139d363b2dacca8dcf6a4d7eb16d17b68d1d473",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "automation/bulk_upload.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\bulk_upload.py",
+      "language": "python",
+      "lines": 411,
+      "hash": "c9ec895d7cbf8f7971cf137b429a96fba0594cdce86e24669dbb41883139fae7",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/ctk_compat.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\ctk_compat.py",
+      "language": "python",
+      "lines": 452,
+      "hash": "f176bd1e6df6bb72c47c4db07169aa8ed927f96c30fc3fa42350b47fdbdc7369",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/tab_precios_json.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\tab_precios_json.py",
+      "language": "python",
+      "lines": 456,
+      "hash": "c1b90363fc2096941f0aa756d82a4480b25e50cd12c5c1afbf5178f721faf5b3",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/discovery_perucompras.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\discovery_perucompras.py",
+      "language": "python",
+      "lines": 489,
+      "hash": "1eac40cc0556719ab39998547507c38616dfbd8254cb508baa60f64e0e104971",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/discovery_v2_perucompras.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\discovery_v2_perucompras.py",
+      "language": "python",
+      "lines": 603,
+      "hash": "6775dd3feff409460a8f790f735851716e4309da3cc65c3da32b85862f6b1cfa",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "install_perucombras.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\install_perucombras.py",
+      "language": "python",
+      "lines": 745,
+      "hash": "faead0b7631c770475c2941defde704d1b2b34961eb4b3f4776303671a3ca153",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/automation_mod/navegacion_productos.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\automation_mod\\navegacion_productos.py",
+      "language": "python",
+      "lines": 756,
+      "hash": "844142191543bd768fca82ad6c8809c026f74d1e912720504fccd710ff7f45ee",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "ui_web/index.html",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui_web\\index.html",
+      "language": "html",
+      "lines": 1047,
+      "hash": "5a98ef0c4971a2ad7d1c8e6696820ba0db2ae51401341f7ac223d9c5da8a125b",
+      "ext": ".html"
+    },
+    {
+      "rel_path": "modulo_modificar_productos/main_modificar.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_modificar_productos\\main_modificar.py",
+      "language": "python",
+      "lines": 1076,
+      "hash": "34e29dd13e34b5071041420782304031bef73b44aa178e372b33ea3e270284a9",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/automation_otro_bot/stock.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_otro_bot\\stock.py",
+      "language": "python",
+      "lines": 1418,
+      "hash": "eb5b85a3065c5b50d49ee3073731623a2a5aa861831841e8ad1af23fbeadfcb5",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/automation_mod/navegacion_productos.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_mod\\navegacion_productos.py",
+      "language": "python",
+      "lines": 1464,
+      "hash": "af444aa2e230f3460709821d2de15907b93a74cfa0fb659ab857e4a478584be4",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/workers.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\workers.py",
+      "language": "python",
+      "lines": 2190,
+      "hash": "96d16a22dc57b097803df7691b3950d445bb26bd1abbdb3dc867a975f7078b9b",
+      "ext": ".py"
+    },
+    {
+      "rel_path": "pagina_perucompras.html",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\pagina_perucompras.html",
+      "language": "html",
+      "lines": 2894,
+      "hash": "fe069406a02ab09a309294719306a26943e6d974cb8e00c9638dc5a0d699e208",
+      "ext": ".html"
+    },
+    {
+      "rel_path": "modulo_subir_pdf/main_subir_pdf.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\main_subir_pdf.py",
+      "language": "python",
+      "lines": 3323,
+      "hash": "4e4cbefdb2bd8ffd4361bac792734986f4f5eb3f9f1b3ced96a7b5121dd87778",
+      "ext": ".py"
+    }
+  ]
+}
