@@ -172,14 +172,18 @@ def do_login(
     max_retries: int = 5,
 ) -> bool:
     """Intenta login hasta max_retries veces (por si el CAPTCHA falla)."""
+    if stop_event is None:
+        import threading
+        stop_event = threading.Event()
     log.info(f"Navegando a {LOGIN_URL}")
     page.goto(LOGIN_URL, wait_until="networkidle")
     page.wait_for_load_state("domcontentloaded")
     time.sleep(3)
 
     for retry in range(1, max_retries + 1):
-        if stop_event.is_set():
+        if stop_event and stop_event.is_set():
             return False
+
 
         log.info(f"Intento de login {retry}/{max_retries}")
 

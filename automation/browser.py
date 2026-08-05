@@ -44,21 +44,15 @@ def _chromium_valid(base_dir, required_executable=None):
     if not base_dir or not os.path.isdir(base_dir):
         return False
     base_dir = os.path.abspath(base_dir)
-    if required_executable:
-        required_executable = os.path.abspath(required_executable)
-        base_drive, _ = os.path.splitdrive(base_dir)
-        req_drive, _ = os.path.splitdrive(required_executable)
-        if base_drive.lower() != req_drive.lower():
-            return False
-        try:
-            if os.path.commonpath([base_dir, required_executable]) == base_dir:
-                return os.path.isfile(required_executable)
-            return False
-        except Exception:
-            return False
-    for entry in glob.glob(os.path.join(base_dir, "chromium-*")):
-        for sub in ("chrome-win64", "chrome-win"):
-            if os.path.isfile(os.path.join(entry, sub, "chrome.exe")):
+
+    # Si se especificó un ejecutable concreto, verificar que exista de verdad
+    if required_executable and os.path.isfile(required_executable):
+        return True
+
+    # Verificar si existe un chrome.exe o chrome-headless-shell.exe REAL dentro de la carpeta
+    for root, dirs, files in os.walk(base_dir):
+        for f in files:
+            if f.lower() in ("chrome.exe", "chrome-headless-shell.exe", "headless_shell.exe"):
                 return True
     return False
 
@@ -75,11 +69,12 @@ def find_chromium_browsers_path(required_executable=None):
     if userprofile:
         candidates.append(os.path.join(userprofile, "AppData", "Local", "ms-playwright"))
     if getattr(sys, "frozen", False):
-        candidates.append(getattr(sys, "_MEIPASS", os.path.dirname(sys.executable)))
-        candidates.append(os.path.join(getattr(sys, "_MEIPASS", os.path.dirname(sys.executable)), "playwright_browsers"))
-        candidates.append(os.path.join(getattr(sys, "_MEIPASS", os.path.dirname(sys.executable)), "browsers"))
-        candidates.append(os.path.join(os.path.dirname(sys.executable), "playwright_browsers"))
-        candidates.append(os.path.join(os.path.dirname(sys.executable), "browsers"))
+        exe_dir = os.path.dirname(sys.executable)
+        meipass = getattr(sys, "_MEIPASS", exe_dir)
+        candidates.append(os.path.join(exe_dir, "playwright_browsers"))
+        candidates.append(os.path.join(exe_dir, "browsers"))
+        candidates.append(os.path.join(meipass, "playwright_browsers"))
+        candidates.append(os.path.join(meipass, "browsers"))
     candidates.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "playwright_browsers"))
     candidates.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "browsers"))
     candidates.append(os.path.join(os.environ.get("ProgramFiles", "C:\\Program Files"),
@@ -93,49 +88,23 @@ def find_chromium_browsers_path(required_executable=None):
 
 
 def _ensure_chromium():
-    # En la app empaquetada solo se permiten navegadores incluidos;
-    # no se intenta descargar nada en la máquina del cliente.
-    if getattr(sys, "frozen", False):
-        path = find_chromium_browsers_path(None)
-        if path:
-            os.environ["PLAYWRIGHT_BROWSERS_PATH"] = path
-            return path
-        raise RuntimeError(
-            "No se encontro Chromium empaquetado para Playwright.\n"
-            "Verifica que la carpeta 'browsers/' esté incluida en el instalador."
-        )
+    """Localiza Chromium en carpetas conocidas y configura PLAYWRIGHT_BROWSERS_PATH.
 
-    env_path = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "")
-    expected_executable = _get_expected_chromium_executable()
-    if env_path and not _chromium_valid(env_path, expected_executable):
-        os.environ.pop("PLAYWRIGHT_BROWSERS_PATH", None)
-
-    path = find_chromium_browsers_path(expected_executable)
+    Chromium se instala UNA VEZ durante la instalación del .exe via setup.iss
+    (node.exe cli.js install chromium). En ejecución normal solo necesitamos
+    encontrar la carpeta ya instalada en %LOCALAPPDATA%\\ms-playwright.
+    """
+    path = find_chromium_browsers_path(None)
     if path:
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = path
         return path
 
-    python_exe = _find_python_for_playwright()
-    if python_exe:
-        try:
-            subprocess.run(
-                [python_exe, "-m", "playwright", "install", "chromium"],
-                check=False, timeout=600,
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-            )
-        except Exception:
-            pass
-        path = find_chromium_browsers_path()
-        if path:
-            os.environ["PLAYWRIGHT_BROWSERS_PATH"] = path
-            return path
-
+    # Limpiar variable inválida para que Playwright use su ruta por defecto
     os.environ.pop("PLAYWRIGHT_BROWSERS_PATH", None)
-    raise RuntimeError(
-        "No se encontro Chromium para Playwright.\n\n"
-        "Ejecuta en una terminal:\n"
-        "    playwright install chromium"
-    )
+    return None
+
+
+
 
 
 def _find_python_for_playwright():

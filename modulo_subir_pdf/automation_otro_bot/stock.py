@@ -147,16 +147,20 @@ def _tiene_campos_login(page) -> bool:
         return False
 
 
-def _relogin(page, usuario: str, password: str, log_func, stop_event, captcha_bridge=None) -> bool:
+def _relogin(page, usuario: str, password: str, log_func, stop_event=None, captcha_bridge=None) -> bool:
     """Vuelve a la pagina de login, se loguea de cero y navega a MejoraBasica.
 
     Usa automation.login.do_login (la misma funcion del login inicial) porque
     cierra mejor los modales del portal PeruCompras.
     """
+    if stop_event is None:
+        import threading
+        stop_event = threading.Event()
     log_func("🔁 Sesión expirada. Volviendo a login para re-loguear de cero...")
     try:
         if stop_event and stop_event.is_set():
             return False
+
 
         # Importar do_login del flujo principal (mismo que login inicial)
         try:
@@ -201,8 +205,31 @@ def _relogin(page, usuario: str, password: str, log_func, stop_event, captcha_br
 # LOGGING
 # ══════════════════════════════════════════════════════════════════════════════
 
+import sys, os, time, json, re
+from datetime import datetime
+
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if sys.stderr and hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 def log(msg):
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
+    txt = f"[{datetime.now().strftime('%H:%M:%S')}] {msg}"
+    try:
+        print(txt)
+    except Exception:
+        try:
+            enc = getattr(sys.stdout, 'encoding', None) or 'utf-8'
+            print(txt.encode(enc, errors='replace').decode(enc, errors='replace'))
+        except Exception:
+            pass
+
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -606,7 +633,24 @@ def seleccionar_por_texto_flexible(page, select_id, texto_objetivo):
             page.select_option(select_id, value=opt["value"])
             return True
 
+    # 4. Coincidencia por código o palabra principal (p.ej. "EXT-CE-2022-5")
+    words = [w for w in target.split() if len(w) >= 3]
+    if words:
+        first_code = words[0]
+        for opt in options:
+            if first_code in normalizar(opt["text"]):
+                page.select_option(select_id, value=opt["value"])
+                return True
+
+    # 5. Coincidencia directa por ID de value (p.ej. "252" o "11740")
+    for opt in options:
+        if str(opt["value"]).strip() == str(texto_objetivo).strip():
+            page.select_option(select_id, value=opt["value"])
+            return True
+
     return False
+
+
 
 
 def _wait_for_select_options(page, select_id, timeout_ms=30_000):
@@ -791,33 +835,36 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
             except Exception:
                 pass
 
-            # 1. SIEMPRE limpiar el filtro principal para no arrastrar búsquedas anteriores
+            # 1. Selector de campo de búsqueda principal (#C_Descripcion) y botón Buscar
+            search_input = page.locator("#C_Descripcion, input[name='C_Descripcion']").first
+            buscar_btn = page.locator("#btnBuscar, button[name='btnBuscar'], .btn-primary:has-text('Buscar'), button:has-text('Iniciar Búsqueda')").first
+
+            # GARANTIZAR que el cuadro superior #C_Descripcion ("Palabra Clave") esté 100% VACÍO
+            # IMPORTANTE: NO hacer click en btnBuscar con campo vacío — eso navega al inicio.
+            # Solo limpiar el campo. La tabla ya tiene todos los registros cargados.
             try:
-                search_input = page.locator("#C_Descripcion, input[name='C_Descripcion']").first
                 if search_input.count() > 0:
-                    search_input.fill("")
+                    current_val = search_input.evaluate("el => el.value") or ""
+                    if current_val.strip() != "":
+                        search_input.fill("")
+                        # Disparar evento input/change para que el campo quede limpio en el DOM
+                        search_input.dispatch_event("input")
+                        search_input.dispatch_event("change")
+                        time.sleep(0.3)
             except Exception:
                 pass
 
-            # 2. FICHAS SIGUIENTES: esperar a que cargue la tabla y aparezca el buscador dinámico
-            try:
-                page.wait_for_selector(
-                    ".loading, .spinner, .fa-spinner, .progress, .ajax-loading",
-                    state="detached",
-                    timeout=60_000,
-                )
-            except Exception:
-                pass
-            if stop_event and stop_event.is_set():
-                return False, "Detenido por usuario"
+            # 2. Selector del buscador dinámico de DataTables (cuadro de abajo "Buscar:")
+            dynamic_search = page.locator("input[type='search'][aria-controls='TablaProductos'], #TablaProductos_filter input").first
 
-            # Esperar al buscador dinámico (hasta 30s, el portal es lento)
-            dynamic_search = page.locator("input[type='search'][aria-controls='TablaProductos']").first
+            # Comprobar si el buscador dinámico de DataTables está visible de inmediato
+            has_dynamic = False
             try:
-                dynamic_search.wait_for(state="visible", timeout=30_000)
-                has_dynamic = dynamic_search.count() > 0
+                if dynamic_search.count() > 0 and dynamic_search.is_visible():
+                    has_dynamic = True
             except Exception:
                 has_dynamic = False
+
             if stop_event and stop_event.is_set():
                 return False, "Detenido por usuario"
 
@@ -828,30 +875,29 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
                     dynamic_search.fill(str(parte))
                     dynamic_search.press("Enter")
                     dynamic_search.dispatch_event("input")
-                    time.sleep(1.5)
+                    time.sleep(1.0)
                 except Exception as e:
-                    return False, f"No se pudo escribir en buscador dinámico: {e}"
-            else:
-                # Primer producto: filtro principal del portal
+                    has_dynamic = False
+
+            if not has_dynamic:
+                # Escribir directamente en #C_Descripcion y hacer click en #btnBuscar solo si no hay buscador dinamico
                 try:
                     if search_input.count() > 0:
+                        search_input.fill("")
                         search_input.fill(str(parte))
-                        time.sleep(1)
-                except Exception as e:
-                    return False, f"No se pudo escribir en campo de búsqueda: {e}"
+                        time.sleep(0.5)
 
-                # Click Buscar
-                try:
-                    buscar_btn = page.locator("#btnBuscar, button[name='btnBuscar']").first
                     if buscar_btn.count() > 0:
                         buscar_btn.click(force=True, timeout=5_000)
-                    else:
+                    elif search_input.count() > 0:
                         search_input.press("Enter")
                 except Exception as e:
-                    return False, f"No se pudo clickear Buscar: {e}"
+                    return False, f"No se pudo escribir en #C_Descripcion o buscar: {e}"
 
-                # Esperar a que la tabla se actualice (resultado de búsqueda)
+                # Esperar a que la tabla se actualice con el resultado
                 time.sleep(2)
+
+
 
             # 4. Verificar que la fila encontrada contiene EXACTAMENTE la parte buscada
             row = _find_exact_matching_row(page, parte)
@@ -948,10 +994,15 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
                 pass
             return False, "Campo de stock editable no encontrado"
 
-        # 6. Limpiar y escribir nuevo stock
+        # 6. Limpiar y escribir nuevo stock (sanitizado)
+        try:
+            clean_stock = str(int(float(str(stock).replace(',', '').strip())))
+        except Exception:
+            clean_stock = str(stock).strip()
         stock_input.fill("")
-        stock_input.fill(str(stock))
+        stock_input.fill(clean_stock)
         time.sleep(0.5)
+
         if stop_event and stop_event.is_set():
             return False, "Detenido por usuario"
 
@@ -1025,10 +1076,24 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
         return False, str(e)
 
 
+def _get_field(row, keys, default=""):
+    if isinstance(row, dict):
+        for k in keys:
+            if k in row and row[k] is not None:
+                return row[k]
+        row_lower = {str(k).lower().strip(): v for k, v in row.items()}
+        for k in keys:
+            kl = str(k).lower().strip()
+            if kl in row_lower and row_lower[kl] is not None:
+                return row_lower[kl]
+    return default
+
+
 def paso4_actualizar_stock(page, df: list, pausa: float = PAUSA_ENTRE_PRODUCTOS,
                            log_func=None, usuario: str = "", password: str = "",
                            captcha_bridge=None, acuerdo: str = ACUERDO_TEXTO,
                            catalogo: str = CATALOGO_TEXTO, categoria: str = CATEGORIA_TEXTO) -> int:
+
     """Itera el DataFrame y actualiza cada producto. Retorna cantidad de éxitos."""
     if log_func is None:
         log_func = log
@@ -1070,9 +1135,11 @@ def paso4_actualizar_stock(page, df: list, pausa: float = PAUSA_ENTRE_PRODUCTOS,
             log_func("⏹ Detención solicitada durante pausa, saliendo...")
             break
 
-        parte = row["Parte"]
-        stock = row["Stock"]
-        ficha = row.get("Ficha", "")
+        parte = str(_get_field(row, ["Parte", "parte", "PARTE", "N° Parte", "num_parte", "codigo"], default="")).strip()
+        stock = _get_field(row, ["Stock", "stock", "STOCK", "Cantidad", "cantidad"], default=0)
+        ficha = str(_get_field(row, ["Ficha", "ficha", "FICHA", "id", "N° Ficha"], default="")).strip()
+
+
 
         log_func(f"📦 [{i}/{total}] {parte} (stock={stock}, ficha={ficha})")
         t0 = time.time()
@@ -1096,13 +1163,20 @@ def paso4_actualizar_stock(page, df: list, pausa: float = PAUSA_ENTRE_PRODUCTOS,
                     break
                 time.sleep(0.5)
 
-        # Si se pidió detención o el browser cerró, salir del bucle principal
+        # Si se pidió detención o el browser cerró, intentar recuperación o salir
         if STOP_EVENT and STOP_EVENT.is_set():
             log_func("⏹ Detención solicitada, saliendo...")
             break
-        if _browser_cerrado(error_msg):
-            log_func("⏹ Navegador cerrado, deteniendo flujo...")
+        if not exito and (_browser_cerrado(error_msg) or "session" in error_msg.lower() or "expir" in error_msg.lower()):
+            if usuario and password:
+                log_func("🔁 Sesión o conexión interrumpida. Re-logueando automáticamente...")
+                if _relogin(page, usuario, password, log_func, STOP_EVENT, captcha_bridge):
+                    log_func("  Re-aplicando filtros...")
+                    paso3_filtros_stock(page, acuerdo, catalogo, categoria)
+                    continue
+            log_func("⏹ No se pudo recuperar la sesión, deteniendo flujo...")
             break
+
 
         duracion = time.time() - t0
         tipo_fallo = "" if exito else clasificar_error(error_msg)
@@ -1138,7 +1212,20 @@ HEADER_FONT = Font(bold=True, color="FFFFFF")
 def generar_reporte_excel(output_path: str, acuerdo="", catalogo="", categoria="") -> str:
     """Genera el reporte Excel con 3 hojas."""
     if not RESULTADOS:
-        return ""
+        wb = openpyxl.Workbook()
+        ws1 = wb.active
+        ws1.title = "Resumen"
+        ws1["A1"] = "Reporte de Actualización de Stock"
+        ws1["A2"] = f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        ws1["A3"] = f"Acuerdo: {acuerdo}"
+        ws1["A4"] = f"Catálogo: {catalogo}"
+        ws1["A5"] = f"Categoría: {categoria}"
+        ws1["A7"] = "Estado del Proceso"
+        ws1["B7"] = "No se registraron productos o el proceso finalizó antes de procesar la lista."
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+        wb.save(output_path)
+        return output_path
+
 
     wb = openpyxl.Workbook()
     total = len(RESULTADOS)

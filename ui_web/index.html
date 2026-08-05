@@ -23,7 +23,26 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+    .console-box, .console-box *, input, textarea, td, th, label, .selectable { user-select: text !important; -webkit-user-select: text !important; }
+    /* Solo la barra de título arrastra la ventana. El workspace, logs y formularios NUNCA mueven la ventana */
+    .menubar, .tabs-bar, .workspace, .view-pane, .left-col, .right-col, .console-box, .console-box *, input, select, textarea, button, table, td, th, .grid-container, .inspector-body {
+      -webkit-app-region: no-drag !important;
+    }
     body { background: var(--bg-sys); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; font-size: 12px; }
+
+
+    /* ══ PANTALLA DE CARGA (SPLASH OVERLAY) ══ */
+    .splash-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: linear-gradient(135deg, #00507E 0%, #006CA8 100%);
+      z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: white; transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    .splash-title { font-size: 26px; font-weight: bold; letter-spacing: 1px; margin-bottom: 4px; }
+    .splash-sub { font-size: 13px; color: #AACCDD; margin-bottom: 24px; }
+    .splash-bar-bg { width: 340px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+    .splash-bar-fill { width: 0%; height: 100%; background: #00FFCC; transition: width 0.2s ease; }
+    .splash-status { font-size: 11px; color: #E0F2FE; }
 
     /* BARRA DE TÍTULO INSTITUCIONAL CSD */
     .titlebar { background: var(--azul-pc); height: 34px; display: flex; align-items: center; justify-content: space-between; padding-left: 12px; border-bottom: 2px solid var(--azul-dark); -webkit-app-region: drag; }
@@ -34,22 +53,33 @@
     .win-btn:hover { background: var(--azul-dark); }
     .win-btn.close:hover { background: #E81123; }
 
-    /* MENÚ Y TABS */
-    .menubar { background: var(--bg-panel); height: 26px; display: flex; align-items: center; padding-left: 8px; border-bottom: 1px solid var(--border); font-size: 11px; }
-    .menu-item { padding: 4px 10px; cursor: pointer; color: var(--text-main); position: relative; }
-    .menu-item:hover { background: #D8D8D8; }
+    /* MENÚ SUPERIOR CON CLICK DROPDOWNS */
+    .menubar { background: var(--bg-panel); height: 26px; display: flex; align-items: center; padding-left: 4px; border-bottom: 1px solid var(--border); font-size: 11px; position: relative; z-index: 100; }
+    .menu-item { padding: 4px 10px; cursor: pointer; color: var(--text-main); position: relative; border-radius: 2px; }
+    .menu-item:hover, .menu-item.active { background: #D8D8D8; color: var(--azul-pc); font-weight: 600; }
+    .menu-dropdown { display: none; position: absolute; top: 25px; left: 0; background: var(--white); border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 210px; z-index: 200; border-radius: 2px; padding: 4px 0; }
+    .menu-item.active .menu-dropdown { display: block; }
+    .dropdown-opt { padding: 6px 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; color: var(--text-main); font-weight: normal; }
+    .dropdown-opt:hover { background: var(--azul-pc); color: white; }
+    .dropdown-sep { height: 1px; background: var(--border); margin: 3px 0; }
 
+    /* TABS */
     .tabs-bar { background: var(--bg-panel); display: flex; border-bottom: 1px solid var(--border); }
     .tab-btn { padding: 8px 18px; cursor: pointer; color: var(--text-sec); font-size: 12px; background: var(--bg-sys); border-right: 1px solid var(--border); }
     .tab-btn.active { background: var(--white); color: var(--azul-pc); font-weight: bold; border-top: 2px solid var(--azul-pc); }
 
-    /* WORKSPACE CONTENEDOR PRINCIPAL 2 COLUMNAS */
-    .workspace { flex: 1; display: grid; grid-template-columns: 1fr 320px; overflow: hidden; }
+    /* WORKSPACE CONTENEDOR VISTAS */
+    .workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
+    .view-pane { display: none; width: 100%; height: 100%; overflow: hidden; }
+    .view-pane.active { display: flex; }
+
+    /* LAYOUT 2 COLUMNAS */
+    .two-col-layout { width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 350px; overflow: hidden; }
     
-    /* COLUMNA IZQUIERDA: EXCEL + TABLA */
+    /* COLUMNA IZQUIERDA */
     .left-col { background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
     
-    .sec-header { background: var(--bg-panel); padding: 5px 12px; font-weight: bold; color: var(--text-sec); font-size: 11px; border-bottom: 1px solid var(--border); }
+    .sec-header { background: var(--bg-panel); padding: 6px 12px; font-weight: bold; color: var(--text-sec); font-size: 11px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     .file-panel { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
     .file-row { display: flex; align-items: center; gap: 6px; }
     .file-input { flex: 1; height: 26px; border: 1px solid var(--border); padding: 0 8px; background: var(--bg-sys); border-radius: 2px; }
@@ -73,14 +103,31 @@
 
     /* COLUMNA DERECHA: INSPECTOR */
     .right-col { background: var(--white); display: flex; flex-direction: column; overflow-y: auto; }
-    .inspector-body { padding: 10px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .inspector-body { padding: 10px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
     
-    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group { display: flex; flex-direction: column; gap: 2px; }
     .form-group label { color: var(--text-sec); font-size: 11px; font-weight: 600; }
-    .form-control { height: 28px; border: 1px solid var(--border); padding: 0 8px; border-radius: 2px; font-size: 11px; }
+    .form-control { height: 26px; border: 1px solid var(--border); padding: 0 8px; border-radius: 2px; font-size: 11px; width: 100%; }
 
-    /* CONSOLA DE LOGS */
-    .console-box { background: #1A1A2E; color: #E0E0E0; font-family: 'Consolas', monospace; font-size: 10px; padding: 8px; height: 110px; overflow-y: auto; border-radius: 2px; }
+    /* CONSOLA DE LOGS (SELECCIONABLE / COPIABLE) */
+    .console-box {
+      background: #1A1A2E;
+      color: #E0E0E0;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      padding: 8px 10px;
+      height: 140px;
+      overflow-y: auto;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      cursor: text;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
     .log-ok { color: #90EE90; }
     .log-warn { color: #FFD700; }
     .log-err { color: #FF6B6B; }
@@ -95,17 +142,41 @@
     .btn-blue { background: var(--azul-pc); color: white; border: none; flex: 1; padding: 5px; font-weight: bold; border-radius: 2px; cursor: pointer; }
     .btn-blue:hover { background: var(--azul-dark); }
 
+    /* CARDS GENÉRICOS */
+    .scroll-pane { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .card-sec { background: var(--white); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+    .card-hdr { background: var(--bg-panel); padding: 8px 14px; font-weight: bold; color: var(--azul-pc); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+    .card-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+    /* MODALES */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); z-index: 999; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-win { background: var(--white); border-radius: 4px; width: 500px; max-width: 90%; border: 1px solid var(--border); box-shadow: 0 4px 16px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; }
+    .modal-hdr { background: var(--azul-pc); color: white; padding: 10px 14px; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; }
+    .modal-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; font-size: 11px; max-height: 70vh; overflow-y: auto; }
+    .modal-ftr { background: var(--bg-panel); padding: 8px 14px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
     /* FOOTER BAR */
     .statusbar { background: var(--bg-panel); height: 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 11px; color: var(--text-sec); }
   </style>
 </head>
 <body>
 
+  <!-- ══ PANTALLA DE CARGA (SPLASH SCREEN) ══ -->
+  <div id="splashScreen" class="splash-overlay">
+    <div class="splash-title">PERÚ COMPRAS BOT</div>
+    <div class="splash-sub">Sistema Integrado de Automatización de Ofertas y Catálogos</div>
+    <div class="splash-bar-bg">
+      <div id="splashProgress" class="splash-bar-fill"></div>
+    </div>
+    <div id="splashStatus" class="splash-status">Inicializando sistema y componentes...</div>
+  </div>
+
   <!-- BARRA DE TÍTULO CSD INSTITUCIONAL -->
   <div class="titlebar">
     <div class="titlebar-info">
       <span>PERU COMPRAS BOT</span>
-      <span class="titlebar-sub">Sistema de Automatización de Ofertas y Catálogos v1.4 (PyWebView Desktop)</span>
+      <span class="titlebar-sub">Plataforma Oficial Perú Compras v1.4 (PyWebView Desktop)</span>
     </div>
     <div class="titlebar-ctrl">
       <div class="win-btn" onclick="pyapi('minimize')">—</div>
@@ -114,12 +185,47 @@
     </div>
   </div>
 
-  <!-- BARRA DE MENÚ CLÁSICA -->
+  <!-- BARRA DE MENÚ CLÁSICA CON CLICK DROPDOWNS -->
   <div class="menubar">
-    <div class="menu-item" onclick="pyapi('select_file')">Archivo</div>
-    <div class="menu-item" onclick="pyapi('start_process')">Acciones</div>
-    <div class="menu-item" onclick="pyapi('open_config')">Configuración</div>
-    <div class="menu-item" onclick="pyapi('open_about')">Ayuda</div>
+    <div class="menu-item" onclick="toggleMenu(event, this)">
+      Archivo
+      <div class="menu-dropdown">
+        <div class="dropdown-opt" onclick="selectFile()"><span>📂 Abrir archivo Excel...</span><span>Ctrl+O</span></div>
+        <div class="dropdown-opt" onclick="clearFile()"><span>🧹 Limpiar datos</span></div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-opt" onclick="pyapi('close')"><span>✕ Salir</span><span>Alt+F4</span></div>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="toggleMenu(event, this)">
+      Acciones
+      <div class="menu-dropdown">
+        <div class="dropdown-opt" onclick="startProcess()"><span>▶️ Iniciar procesamiento</span><span>F5</span></div>
+        <div class="dropdown-opt" onclick="stopProcess()"><span>⏹️ Detener ejecución</span></div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-opt" onclick="switchTab('pdf', document.querySelectorAll('.tab-btn')[0])"><span>📄 Publicación Ofertas PDF</span></div>
+        <div class="dropdown-opt" onclick="switchTab('stock', document.querySelectorAll('.tab-btn')[1])"><span>📦 Actualización de Stock</span></div>
+        <div class="dropdown-opt" onclick="switchTab('json', document.querySelectorAll('.tab-btn')[2])"><span>🏷️ Subida de Precios JSON</span></div>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="toggleMenu(event, this)">
+      Configuración
+      <div class="menu-dropdown">
+        <div class="dropdown-opt" onclick="openModal('modalConfig')"><span>⚙️ Preferencias de conexión...</span></div>
+        <div class="dropdown-opt" onclick="openModal('modalConfig')"><span>🌐 Parámetros de red y tiempos...</span></div>
+      </div>
+    </div>
+
+    <div class="menu-item" onclick="toggleMenu(event, this)">
+      Ayuda
+      <div class="menu-dropdown">
+        <div class="dropdown-opt" onclick="switchTab('guide', document.querySelectorAll('.tab-btn')[3])"><span>📘 Manual de Usuario</span></div>
+        <div class="dropdown-opt" onclick="switchTab('tools', document.querySelectorAll('.tab-btn')[4])"><span>🛠️ Herramientas de Diagnóstico</span></div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-opt" onclick="openModal('modalAbout')"><span>ℹ️ Acerca del sistema...</span></div>
+      </div>
+    </div>
   </div>
 
   <!-- TABS NATIVOS FLAT HORIZONTALES -->
@@ -131,131 +237,540 @@
     <div class="tab-btn" onclick="switchTab('tools', this)">Herramientas Avanzadas</div>
   </div>
 
-  <!-- WORKSPACE PRINCIPAL EN 2 COLUMNAS -->
+  <!-- WORKSPACE PRINCIPAL CON CONTENEDOR DE VISTAS -->
   <div class="workspace">
-    
-    <!-- COLUMNA IZQUIERDA: EXCEL + TREEVIEW DATA GRID -->
-    <div class="left-col">
-      <div class="sec-header">CARGA DE ARCHIVO DE TRABAJO (EXCEL .XLSX)</div>
-      
-      <div class="file-panel">
-        <div class="file-row">
-          <label style="color: var(--text-sec); font-weight: 600;">Archivo:</label>
-          <input type="text" id="filePath" class="file-input" readonly placeholder="Ningún archivo seleccionado...">
-          <button class="btn-sys" onclick="selectFile()">Examinar...</button>
-          <button class="btn-sys" onclick="clearFile()">Limpiar</button>
+
+    <!-- ═ VISTA 1: PUBLICACIÓN DE OFERTAS PDF ═ -->
+    <div id="view-pdf" class="view-pane active">
+      <div class="two-col-layout">
+        <!-- Columna Izquierda: Excel + DataGrid -->
+        <div class="left-col">
+          <div class="sec-header">CARGA DE ARCHIVO DE TRABAJO (EXCEL .XLSX)</div>
+          
+          <div class="file-panel">
+            <div class="file-row">
+              <label style="color: var(--text-sec); font-weight: 600;">Archivo:</label>
+              <input type="text" id="filePath" class="file-input" readonly placeholder="Ningún archivo seleccionado...">
+              <button class="btn-sys" onclick="selectFile()">Examinar...</button>
+              <button class="btn-sys" onclick="clearFile()">Limpiar</button>
+            </div>
+
+            <div class="file-row">
+              <label style="color: var(--text-sec);">Pestaña Excel:</label>
+              <select id="comboSheet" class="form-control" style="width: 140px;" onchange="sheetChanged()"></select>
+
+              <label style="color: var(--text-sec); margin-left: 8px;">Col. N° Parte:</label>
+              <select id="comboParte" class="form-control" style="width: 160px;"></select>
+            </div>
+
+            <div id="statusBadge" class="status-badge warn">⚠️ Sin archivo cargado — Seleccione un archivo Excel para iniciar</div>
+          </div>
+
+          <!-- Data Grid -->
+          <div class="grid-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 35px; text-align: center;">#</th>
+                  <th style="width: 140px;">Número de Parte</th>
+                  <th>Descripción / Marca</th>
+                  <th style="width: 90px; text-align: right;">Precio S/</th>
+                  <th style="width: 70px; text-align: center;">Stock</th>
+                  <th style="width: 120px; text-align: center;">Estado Portal</th>
+                </tr>
+              </thead>
+              <tbody id="gridBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay registros cargados</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="file-row">
-          <label style="color: var(--text-sec);">Pestaña Excel:</label>
-          <select id="comboSheet" class="form-control" style="width: 140px;" onchange="sheetChanged()"></select>
+        <!-- Columna Derecha: Inspector -->
+        <div class="right-col">
+          <div class="sec-header" style="background: var(--azul-pc); color: white;">PARÁMETROS Y EJECUCIÓN (PDF)</div>
+          
+          <div class="inspector-body">
+            <div class="form-group">
+              <label>Usuario Perú Compras:</label>
+              <input type="text" id="user" class="form-control" value="almerco.03">
+            </div>
 
-          <label style="color: var(--text-sec); margin-left: 8px;">Col. N° Parte:</label>
-          <select id="comboParte" class="form-control" style="width: 160px;"></select>
+            <div class="form-group">
+              <label>Contraseña:</label>
+              <input type="password" id="pass" class="form-control" value="4lm3rKenYa@#">
+            </div>
+
+            <div class="form-group">
+              <label><input type="checkbox" id="chkVisible"> Mostrar navegador en pantalla</label>
+            </div>
+
+            <div class="form-group">
+              <label>Catálogo Electrónico:</label>
+              <select id="comboCat" class="form-control" onchange="onCatalogoChanged()"></select>
+            </div>
+
+            <div class="form-group">
+              <label>Categoría:</label>
+              <select id="comboCategoria" class="form-control" onchange="onCategoriaChanged()"></select>
+            </div>
+
+            <div class="form-group">
+              <label>Estado en Portal:</label>
+              <select id="comboEstado" class="form-control"></select>
+            </div>
+
+            <div class="form-group">
+              <label>Pausa entre registros (seg):</label>
+              <input type="number" id="pausa" class="form-control" value="1.5" step="0.5">
+            </div>
+
+            <!-- Consola Log -->
+            <div class="form-group">
+              <label>Consola de Eventos:</label>
+              <div id="consoleLog" class="console-box">
+                <div>[SISTEMA] Motor PyWebView 6.2 listo.</div>
+                <div>[SISTEMA] Seleccione un archivo Excel para iniciar.</div>
+              </div>
+            </div>
+
+            <!-- Botones Iniciar/Detener -->
+            <button class="btn-sys btn-primary" style="height: 34px; font-size: 12px;" onclick="startProcess()">INICIAR PROCESAMIENTO (F5)</button>
+            <button class="btn-sys" style="background: #8B1A1A; color: white;" onclick="stopProcess()">Detener</button>
+
+            <!-- Card Auditor -->
+            <div class="audit-card">
+              <div class="audit-title">🔍 Auditor de Resultados de Proceso</div>
+              <div id="auditStats" class="audit-stats">Total: 0 | ✓ OK: 0 | ✕ Err: 0 | Éxito: 0%</div>
+              <div class="audit-btns">
+                <button class="btn-green" onclick="exportAudit('excel')">📊 Informe Excel</button>
+                <button class="btn-blue" onclick="exportAudit('pdf')">📄 Informe PDF</button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div id="statusBadge" class="status-badge warn">⚠️ Sin archivo cargado — Seleccione un archivo Excel para iniciar</div>
-      </div>
-
-      <!-- DATA GRID TABLA -->
-      <div class="grid-container">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 35px; text-align: center;">#</th>
-              <th style="width: 140px;">Número de Parte</th>
-              <th>Descripción / Marca</th>
-              <th style="width: 90px; text-align: right;">Precio S/</th>
-              <th style="width: 70px; text-align: center;">Stock</th>
-              <th style="width: 120px; text-align: center;">Estado Portal</th>
-            </tr>
-          </thead>
-          <tbody id="gridBody">
-            <tr>
-              <td colspan="6" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay registros cargados</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
 
-    <!-- COLUMNA DERECHA: INSPECTOR DE CONFIGURACIÓN Y EJECUCIÓN -->
-    <div class="right-col">
-      <div class="sec-header" style="background: var(--azul-pc); color: white;">CONFIGURACIÓN DE EJECUCIÓN</div>
-      
-      <div class="inspector-body">
-        <div class="form-group">
-          <label>Usuario Perú Compras:</label>
-          <input type="text" id="user" class="form-control" value="almerco.03">
-        </div>
-
-        <div class="form-group">
-          <label>Contraseña:</label>
-          <input type="password" id="pass" class="form-control" value="4lm3rKenYa@#">
-        </div>
-
-        <div class="form-group">
-          <label>Catálogo Ext-CE-2022-5:</label>
-          <select id="comboCat" class="form-control">
-            <option>Computadoras de Escritorio</option>
-            <option>Computadoras Portátiles</option>
-            <option>Escáneres</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Pausa entre registros (seg):</label>
-          <input type="number" id="pausa" class="form-control" value="1.5" step="0.5">
-        </div>
-
-        <!-- CONSOLA LOG -->
-        <div class="form-group">
-          <label>Consola de Eventos:</label>
-          <div id="consoleLog" class="console-box">
-            <div>[SISTEMA] Motor PyWebView 6.2 listo.</div>
-            <div>[SISTEMA] Seleccione un archivo Excel para iniciar.</div>
+    <!-- ═ VISTA 2: ACTUALIZACIÓN DE STOCK ═ -->
+    <div id="view-stock" class="view-pane">
+      <div class="two-col-layout">
+        <div class="left-col">
+          <div class="sec-header">MÓDULO DE ACTUALIZACIÓN DE STOCK Y COBERTURA</div>
+          <div class="file-panel">
+            <div class="file-row">
+              <label style="color: var(--text-sec); font-weight: 600;">Excel Stock:</label>
+              <input type="text" id="stockFilePath" class="file-input" readonly placeholder="Seleccionar Excel de Stock...">
+              <button class="btn-sys" onclick="selectStockFile()">Examinar...</button>
+              <button class="btn-sys" onclick="clearStockFile()">Limpiar</button>
+            </div>
+            <div class="file-row">
+              <button class="btn-sys" onclick="downloadStockTemplate()">📥 Descargar Plantilla Stock</button>
+            </div>
+            <div id="stockBadge" class="status-badge warn">⚠️ Cargar Excel con columnas: Parte, Stock, Ficha</div>
+          </div>
+          <div class="grid-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 35px;">#</th>
+                  <th>N° Parte</th>
+                  <th>N° Ficha Portal</th>
+                  <th style="width: 80px; text-align: center;">Stock Disp.</th>
+                  <th style="width: 90px; text-align: center;">Cobertura</th>
+                  <th style="width: 80px; text-align: center;">Plazo (días)</th>
+                  <th style="width: 100px; text-align: center;">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="stockGridBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay datos de stock cargados</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- BOTÓN INICIAR -->
-        <button class="btn-sys btn-primary" style="height: 38px; font-size: 13px;" onclick="startProcess()">INICIAR PROCESAMIENTO (F5)</button>
-        <button class="btn-sys" style="background: #8B1A1A; color: white;" onclick="stopProcess()">Detener</button>
+        <div class="right-col">
+          <div class="sec-header" style="background: var(--azul-pc); color: white;">PARÁMETROS DE STOCK</div>
+          <div class="inspector-body">
+            <div class="form-group">
+              <label>Usuario Stock:</label>
+              <input type="text" id="stockUser" class="form-control" value="fernando.trinidad">
+            </div>
+            <div class="form-group">
+              <label>Contraseña:</label>
+              <input type="password" id="stockPass" class="form-control" value="po!tLKB#8^r4e">
+            </div>
+            <div class="form-group">
+              <label><input type="checkbox" id="chkStockVisible"> Mostrar navegador en pantalla</label>
+            </div>
+            <div class="form-group">
+              <label>Acuerdo Marco:</label>
+              <select id="stockAcuerdo" class="form-control">
+                <option>EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Catálogo Electrónico Stock:</label>
+              <select id="stockCat" class="form-control" onchange="onStockCatalogoChanged()"></select>
+            </div>
+            <div class="form-group">
+              <label>Categoría Stock:</label>
+              <select id="stockCategoria" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>Filtro de Búsqueda:</label>
+              <select class="form-control">
+                <option>Todos los productos</option>
+                <option>Solo productos con stock mayor a 0</option>
+                <option>Solo productos sin stock</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Modo de Ajuste:</label>
+              <select class="form-control">
+                <option>Establecer valor exacto de Excel</option>
+                <option>Incrementar stock existente</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Pausa (seg):</label>
+              <input type="number" id="stockPausa" value="2.0" step="0.5" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Consola Eventos Stock:</label>
+              <div id="stockLog" class="console-box"><div>[STOCK] Módulo de Stock listo.</div></div>
+            </div>
+            <button class="btn-sys btn-primary" style="height: 34px;" onclick="startStockProcess()">INICIAR ACTUALIZACIÓN DE STOCK</button>
+            <button class="btn-sys" style="background: #8B1A1A; color: white;" onclick="stopStockProcess()">Detener</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <!-- CARD AUDITOR -->
-        <div class="audit-card">
-          <div class="audit-title">🔍 Auditor de Resultados de Proceso</div>
-          <div id="auditStats" class="audit-stats">Total: 0 | ✓ OK: 0 | ✕ Err: 0 | Éxito: 0%</div>
-          <div class="audit-btns">
-            <button class="btn-green" onclick="exportAudit('excel')">📊 Informe Excel</button>
-            <button class="btn-blue" onclick="exportAudit('pdf')">📄 Informe PDF</button>
+    <!-- ═ VISTA 3: SUBIDA DE PRECIOS JSON ═ -->
+    <div id="view-json" class="view-pane">
+      <div class="two-col-layout">
+        <div class="left-col">
+          <div class="sec-header">SUBIDA MASIVA DE PRECIOS Y OFERTAS JSON</div>
+          <div class="file-panel">
+            <div class="file-row">
+              <label style="color: var(--text-sec); font-weight: 600;">Archivo JSON:</label>
+              <input type="text" id="jsonFilePath" class="file-input" readonly placeholder="Seleccionar archivo JSON de Precios...">
+              <button class="btn-sys" onclick="selectJsonFile()">Examinar...</button>
+              <button class="btn-sys" onclick="clearJsonFile()">Limpiar</button>
+            </div>
+            <div id="jsonBadge" class="status-badge warn">⚠️ Cargar JSON o generar oferta desde catálogo</div>
+          </div>
+          <div class="grid-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 35px;">#</th>
+                  <th>ID Ficha</th>
+                  <th>Número de Parte</th>
+                  <th style="width: 90px; text-align: right;">Precio Base</th>
+                  <th style="width: 80px; text-align: center;">Desc. %</th>
+                  <th style="width: 90px; text-align: right;">Precio JSON</th>
+                  <th style="width: 100px; text-align: center;">Estado Envío</th>
+                </tr>
+              </thead>
+              <tbody id="jsonGridBody">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay archivo JSON cargado</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
+        <div class="right-col">
+          <div class="sec-header" style="background: var(--azul-pc); color: white;">PARÁMETROS SUBIDA JSON</div>
+          <div class="inspector-body">
+            <div class="form-group">
+              <label>Tipo de Oferta:</label>
+              <select class="form-control">
+                <option>Oferta Individual Ficha por Ficha</option>
+                <option>Lote Masivo de Precios (API Batch)</option>
+                <option>Descuento General Porcentual</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Modo de Envío:</label>
+              <select class="form-control">
+                <option>Lote directo API Perú Compras</option>
+                <option>Secuencial con simulación browser</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Token / Endpoint API:</label>
+              <input type="text" class="form-control" value="https://catalogos.perucompras.gob.pe/api/v1/ofertas" readonly>
+            </div>
+            <div class="form-group">
+              <label>Consola Eventos JSON:</label>
+              <div id="jsonLog" class="console-box"><div>[JSON] Módulo de Subida JSON listo.</div></div>
+            </div>
+            <button class="btn-sys btn-primary" style="height: 34px;" onclick="startJsonProcess()">SUBIR PRECIOS JSON (API)</button>
+            <button class="btn-sys" style="background: #8B1A1A; color: white;" onclick="stopJsonProcess()">Detener</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═ VISTA 4: INSTRUCCIONES DE USO ═ -->
+    <div id="view-guide" class="view-pane">
+      <div class="scroll-pane">
+        <div class="card-sec">
+          <div class="card-hdr">MANUAL DE OPERACIÓN — PERÚ COMPRAS BOT</div>
+          <div class="card-body">
+            <p>Guía paso a paso para automatizar la publicación de fichas técnicas PDF, actualización de stock y precios.</p>
+            
+            <h4 style="color: var(--azul-pc); margin-top: 8px;">Flujo de Trabajo — Carga de PDFs</h4>
+            <ol style="margin-left: 20px; line-height: 1.8;">
+              <td><strong>1. Credenciales:</strong> Ingrese usuario y contraseña oficial del portal Perú Compras.</td><br>
+              <td><strong>2. Archivo Excel:</strong> Seleccione el archivo `.xlsx` con productos y confirme la pestaña.</td><br>
+              <td><strong>3. Parámetros de Catálogo:</strong> Elija el Catálogo Electrónico, Categoría y Estado correspondientes.</td><br>
+              <td><strong>4. Ejecución:</strong> Haga clic en <strong>INICIAR PROCESAMIENTO (F5)</strong>. El bot operará automáticamente.</td><br>
+              <td><strong>5. Auditoría:</strong> Genere informes oficiales en Excel o PDF con el botón correspondiente.</td>
+            </ol>
+
+            <h4 style="color: var(--azul-pc); margin-top: 12px;">Formato Requerido de Excel (.xlsx)</h4>
+            <table style="margin-top: 6px; width: 100%;">
+              <thead>
+                <tr><th>Campo</th><th>Nombres Aceptados de Columna</th><th>Descripción</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>N° de Parte</strong></td><td>Part Number, N PARTE, CODIGO, MPN</td><td>Identificador único del producto</td></tr>
+                <tr><td><strong>Precio Lista</strong></td><td>PRECIO, PRECIO LISTA, OFERTA</td><td>Monto numérico a ofertar en soles</td></tr>
+                <tr><td><strong>Ficha PDF</strong></td><td>RUTA_PDF, PDF, FICHA</td><td>Ruta local del documento PDF</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═ VISTA 5: HERRAMIENTAS AVANZADAS ═ -->
+    <div id="view-tools" class="view-pane">
+      <div class="scroll-pane">
+        <div class="card-sec">
+          <div class="card-hdr">PRUEBAS RÁPIDAS Y DIAGNÓSTICO DE ENDPOINTS</div>
+          <div class="card-body">
+            <p>Ejecute pruebas unitarias de procesamiento o scrapers directos sobre el portal de Perú Compras.</p>
+            
+            <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+              <button class="btn-sys btn-primary" onclick="runToolTest('test_1')">🧪 Test 1 Ficha</button>
+              <button class="btn-sys" onclick="runToolTest('nro_parte')">🔍 Solo N° Parte</button>
+              <button class="btn-sys" onclick="runToolTest('certs')">🏅 Solo Certificaciones</button>
+              <button class="btn-sys" onclick="runToolTest('discovery')">📡 Discovery v1 (Endpoints)</button>
+              <button class="btn-sys" onclick="runToolTest('discovery2')">🔬 Discovery v2 (JSON Schema)</button>
+            </div>
+
+            <div class="form-group" style="margin-top: 12px;">
+              <label>Consola Diagnóstico:</label>
+              <div id="toolsLog" class="console-box" style="height: 180px;">
+                <div>[DIAGNÓSTICO] Herramientas avanzadas disponibles.</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
   </div>
 
-  <!-- BARRA DE ESTADO INFERIOR -->
+  <!-- MODAL CONFIGURACIÓN -->
+  <div id="modalConfig" class="modal-overlay">
+    <div class="modal-win">
+      <div class="modal-hdr">
+        <span>CONFIGURACIÓN Y PREFERENCIAS DEL SISTEMA</span>
+        <span style="cursor: pointer;" onclick="closeModal('modalConfig')">✕</span>
+      </div>
+      <div class="modal-body">
+        <label><strong>Almacenamiento de Credenciales</strong></label>
+        <label><input type="checkbox" checked> Guardar credenciales de inicio de sesión encriptadas</label>
+        <label><input type="checkbox" checked> Recordar catálogo y categoría seleccionados</label>
+        
+        <label style="margin-top: 8px;"><strong>Parámetros de Red y Tiempos</strong></label>
+        <label>Reintentos automáticos por error de red: <input type="number" value="3" class="form-control" style="width: 80px; display: inline-block;"></label>
+        <label>Pausa por defecto entre solicitudes (seg): <input type="number" value="1.5" step="0.5" class="form-control" style="width: 80px; display: inline-block;"></label>
+        
+        <label style="margin-top: 8px;"><strong>Motores de Automatización</strong></label>
+        <div style="color: var(--ok-text);">✓ Tesseract OCR: Integrado y activo</div>
+        <div style="color: var(--ok-text);">✓ Playwright Chromium: Motor listo</div>
+      </div>
+      <div class="modal-ftr">
+        <button class="btn-sys btn-primary" onclick="closeModal('modalConfig')">Guardar Cambios</button>
+        <button class="btn-sys" onclick="closeModal('modalConfig')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ACERCA DE -->
+  <div id="modalAbout" class="modal-overlay">
+    <div class="modal-win">
+      <div class="modal-hdr">
+        <span>ACERCA DE PERÚ COMPRAS BOT</span>
+        <span style="cursor: pointer;" onclick="closeModal('modalAbout')">✕</span>
+      </div>
+      <div class="modal-body">
+        <h3 style="color: var(--azul-pc);">PERÚ COMPRAS BOT v1.4</h3>
+        <p>Sistema Integrado de Automatización de Ofertas, Gestión de Stock y Carga Masiva de Catálogos Electrónicos.</p>
+        <ul style="margin-left: 20px; line-height: 1.6;">
+          <td>Acuerdo Marco: EXT-CE-2022-5</td>
+          <td>Motor: Playwright Chromium + Tesseract OCR</td>
+          <td>Desarrollo Oficial: THE KING COMPUTER E.I.R.L.</td>
+          <td>Todos los derechos reservados © 2026</td>
+        </ul>
+      </div>
+      <div class="modal-ftr">
+        <button class="btn-sys btn-primary" onclick="closeModal('modalAbout')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE ESTADO INFERIOR SEGMENTADA -->
   <div class="statusbar">
     <span id="stReady" style="color: var(--ok-text); font-weight: bold;">● Listo</span>
     <span id="stModulo">Módulo: Publicación de Ofertas PDF</span>
+    <span id="stCounter">Registros: 0 cargados</span>
     <span>THE KING COMPUTER E.I.R.L. © 2026</span>
   </div>
 
   <script>
+    let catalogData = {};
+
+    // Manejo de Clics en la Barra de Menú (Dropdowns)
+    function toggleMenu(e, item) {
+      e.stopPropagation();
+      const isActive = item.classList.contains('active');
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      if (!isActive) item.classList.add('active');
+    }
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    });
+
+    // Animación de la Pantalla de Carga (Splash Screen)
+    window.addEventListener('DOMContentLoaded', () => {
+      let progress = 0;
+      const bar = document.getElementById('splashProgress');
+      const status = document.getElementById('splashStatus');
+      const splash = document.getElementById('splashScreen');
+
+      const interval = setInterval(() => {
+        progress += 20;
+        if (progress === 40) status.innerText = "Cargando motor de automatización Playwright...";
+        if (progress === 80) status.innerText = "Cargando catálogos de Perú Compras...";
+        
+        if (progress >= 100) {
+          bar.style.width = '100%';
+          status.innerText = "¡Sistema listo!";
+          clearInterval(interval);
+          setTimeout(() => {
+            splash.style.opacity = '0';
+            splash.style.visibility = 'hidden';
+          }, 250);
+        } else {
+          bar.style.width = progress + '%';
+        }
+      }, 80);
+
+      setTimeout(loadCatalogOptions, 300);
+    });
+
     function pyapi(cmd, arg) {
       if (window.pywebview && window.pywebview.api) {
         if (arg !== undefined) {
-          window.pywebview.api[cmd](arg);
+          return window.pywebview.api[cmd](arg);
         } else {
-          window.pywebview.api[cmd]();
+          return window.pywebview.api[cmd]();
         }
       } else {
-        console.log("PyAPI offline:", cmd, arg);
+        console.log("PyAPI call:", cmd, arg);
       }
     }
 
+    function loadCatalogOptions() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.get_catalog_options().then(res => {
+          if (res && res.combinaciones) {
+            catalogData = res;
+            populateCatalogoDropdowns();
+          }
+        });
+      }
+    }
+
+    function populateCatalogoDropdowns() {
+      const comboCat = document.getElementById('comboCat');
+      const stockCat = document.getElementById('stockCat');
+      if (!catalogData.combinaciones) return;
+
+      const catHTML = catalogData.combinaciones.map(c => `<option value="${c.value}">${c.text}</option>`).join('');
+      comboCat.innerHTML = catHTML;
+      stockCat.innerHTML = catHTML;
+
+      onCatalogoChanged();
+      onStockCatalogoChanged();
+    }
+
+    function onCatalogoChanged() {
+      const comboCat = document.getElementById('comboCat');
+      const comboCatg = document.getElementById('comboCategoria');
+      const selectedVal = comboCat.value;
+      
+      const catObj = catalogData.combinaciones.find(c => c.value === selectedVal);
+      if (catObj && catObj.children) {
+        comboCatg.innerHTML = catObj.children.map(ch => `<option value="${ch.value}">${ch.text}</option>`).join('');
+        onCategoriaChanged();
+      } else {
+        comboCatg.innerHTML = '<option value="">Todas las categorías</option>';
+      }
+    }
+
+    function onCategoriaChanged() {
+      const comboCat = document.getElementById('comboCat');
+      const comboCatg = document.getElementById('comboCategoria');
+      const comboEst = document.getElementById('comboEstado');
+      
+      const catObj = catalogData.combinaciones.find(c => c.value === comboCat.value);
+      if (catObj && catObj.children) {
+        const catgObj = catObj.children.find(ch => ch.value === comboCatg.value);
+        if (catgObj && catgObj.children) {
+          comboEst.innerHTML = catgObj.children.map(st => `<option value="${st.value}">${st.text}</option>`).join('');
+          return;
+        }
+      }
+      comboEst.innerHTML = '<option value="ACTIVO">ACTIVO</option><option value="PENDIENTE">PENDIENTE</option><option value="TODOS">TODOS</option>';
+    }
+
+    function onStockCatalogoChanged() {
+      const stockCat = document.getElementById('stockCat');
+      const stockCatg = document.getElementById('stockCategoria');
+      const selectedVal = stockCat.value;
+
+      const catObj = catalogData.combinaciones.find(c => c.value === selectedVal);
+      if (catObj && catObj.children) {
+        stockCatg.innerHTML = catObj.children.map(ch => `<option value="${ch.value}">${ch.text}</option>`).join('');
+      } else {
+        stockCatg.innerHTML = '<option value="">Todas las categorías</option>';
+      }
+    }
+
+    function switchTab(mid, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (el) el.classList.add('active');
+
+      document.querySelectorAll('.view-pane').forEach(v => v.classList.remove('active'));
+      const viewEl = document.getElementById('view-' + mid);
+      if (viewEl) viewEl.classList.add('active');
+
+      document.getElementById('stModulo').innerText = `Módulo: ${el ? el.innerText : mid}`;
+      logConsole(`[NAVEGACIÓN] Módulo activo: ${el ? el.innerText : mid}`);
+    }
+
+    /* CARGA DE ARCHIVO PARA MÓDULO PUBLICACIÓN PDF */
     function selectFile() {
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.select_file().then(res => {
@@ -264,15 +779,14 @@
             const badge = document.getElementById('statusBadge');
             badge.className = "status-badge ok";
             badge.innerText = `✓ Archivo cargado: ${res.name} (${res.rows.length} registros)`;
+            document.getElementById('stCounter').innerText = `Registros: ${res.rows.length} cargados`;
             
-            // Llenar tabla
-            renderTable(res.rows);
+            renderPdfTable(res.rows);
             
-            // Llenar combo sheets
             const cSheet = document.getElementById('comboSheet');
             cSheet.innerHTML = res.sheets.map(s => `<option>${s}</option>`).join('');
 
-            logConsole(`[OK] Archivo cargado: ${res.name} (${res.rows.length} filas)`, 'log-ok');
+            logConsole(`[PDF OK] Archivo cargado: ${res.name} (${res.rows.length} filas)`, 'log-ok');
           }
         });
       }
@@ -284,10 +798,11 @@
       badge.className = "status-badge warn";
       badge.innerText = "⚠️ Sin archivo cargado — Seleccione un archivo Excel para iniciar";
       document.getElementById('gridBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay registros cargados</td></tr>';
-      logConsole("[INFO] Datos limpiados.");
+      document.getElementById('stCounter').innerText = `Registros: 0 cargados`;
+      logConsole("[PDF] Datos limpiados.");
     }
 
-    function renderTable(rows) {
+    function renderPdfTable(rows) {
       const tbody = document.getElementById('gridBody');
       if (!rows || rows.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay registros cargados</td></tr>';
@@ -305,8 +820,99 @@
       `).join('');
     }
 
+    /* CARGA DE ARCHIVO EXCLUSIVO PARA MÓDULO ACTUALIZACIÓN DE STOCK */
+    function selectStockFile() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.select_stock_file().then(res => {
+          if (res && res.path) {
+            document.getElementById('stockFilePath').value = res.name;
+            const badge = document.getElementById('stockBadge');
+            badge.className = "status-badge ok";
+            badge.innerText = `✓ Excel Stock cargado: ${res.name} (${res.rows.length} registros)`;
+            
+            renderStockTable(res.rows);
+            logStockConsole(`[STOCK OK] Archivo cargado: ${res.name} (${res.rows.length} filas)`, 'log-ok');
+          }
+        });
+      }
+    }
+
+    function clearStockFile() {
+      document.getElementById('stockFilePath').value = "";
+      const badge = document.getElementById('stockBadge');
+      badge.className = "status-badge warn";
+      badge.innerText = "⚠️ Cargar Excel con columnas: Parte, Stock, Ficha";
+      document.getElementById('stockGridBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay datos de stock cargados</td></tr>';
+      logStockConsole("[STOCK] Datos limpiados.");
+    }
+
+    function renderStockTable(rows) {
+      const tbody = document.getElementById('stockGridBody');
+      if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay datos de stock cargados</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map((r, i) => `
+        <tr>
+          <td style="text-align: center;">${i+1}</td>
+          <td><strong>${r.parte || ''}</strong></td>
+          <td style="text-align: center;">${r.ficha || r.id || 'F-' + (1000+i)}</td>
+          <td style="text-align: center; font-weight: bold;">${r.stock || 0}</td>
+          <td style="text-align: center;">Nacional</td>
+          <td style="text-align: center;">2 días</td>
+          <td style="text-align: center; color: var(--ok-text); font-weight: bold;">${r.estado || 'Listo'}</td>
+        </tr>
+      `).join('');
+    }
+
+    /* CARGA DE ARCHIVO EXCLUSIVO PARA MÓDULO SUBIDA DE PRECIOS JSON */
+    function selectJsonFile() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.select_file().then(res => {
+          if (res && res.path) {
+            document.getElementById('jsonFilePath').value = res.name;
+            const badge = document.getElementById('jsonBadge');
+            badge.className = "status-badge ok";
+            badge.innerText = `✓ JSON cargado: ${res.name} (${res.rows.length} ofertas)`;
+            
+            renderJsonTable(res.rows);
+            logJsonConsole(`[JSON OK] Archivo cargado: ${res.name} (${res.rows.length} ofertas)`, 'log-ok');
+          }
+        });
+      }
+    }
+
+    function clearJsonFile() {
+      document.getElementById('jsonFilePath').value = "";
+      const badge = document.getElementById('jsonBadge');
+      badge.className = "status-badge warn";
+      badge.innerText = "⚠️ Cargar JSON o generar oferta desde catálogo";
+      document.getElementById('jsonGridBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay archivo JSON cargado</td></tr>';
+      logJsonConsole("[JSON] Datos limpiados.");
+    }
+
+    function renderJsonTable(rows) {
+      const tbody = document.getElementById('jsonGridBody');
+      if (!rows || rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay archivo JSON cargado</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map((r, i) => `
+        <tr>
+          <td style="text-align: center;">${i+1}</td>
+          <td>FICHA-${10000+i}</td>
+          <td><strong>${r.parte || ''}</strong></td>
+          <td style="text-align: right;">S/ ${r.precio || '0.00'}</td>
+          <td style="text-align: center;">0.0%</td>
+          <td style="text-align: right; font-weight: bold; color: var(--azul-pc);">S/ ${r.precio || '0.00'}</td>
+          <td style="text-align: center; color: var(--ok-text); font-weight: bold;">Pendiente API</td>
+        </tr>
+      `).join('');
+    }
+
     function logConsole(msg, cls) {
       const box = document.getElementById('consoleLog');
+      if (!box) return;
       const div = document.createElement('div');
       if (cls) div.className = cls;
       div.innerText = msg;
@@ -314,9 +920,47 @@
       box.scrollTop = box.scrollHeight;
     }
 
+    function logStockConsole(msg, cls) {
+      const box = document.getElementById('stockLog');
+      if (!box) return;
+      const div = document.createElement('div');
+      if (cls) div.className = cls;
+      div.innerText = msg;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function logJsonConsole(msg, cls) {
+      const box = document.getElementById('jsonLog');
+      if (!box) return;
+      const div = document.createElement('div');
+      if (cls) div.className = cls;
+      div.innerText = msg;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function getSelectText(id) {
+      const el = document.getElementById(id);
+      if (!el) return "";
+      if (el.selectedIndex >= 0 && el.options[el.selectedIndex]) {
+        const text = el.options[el.selectedIndex].text;
+        if (text && text.trim()) return text.trim();
+      }
+      return el.value || "";
+    }
+
     function startProcess() {
-      logConsole("[INICIO] Procesamiento disparado vía PyWebView API...", "log-warn");
-      pyapi('start_process');
+      const user = document.getElementById('user').value;
+      const pass = document.getElementById('pass').value;
+      const visible = document.getElementById('chkVisible') ? document.getElementById('chkVisible').checked : false;
+      const cat = getSelectText('comboCat');
+      const catg = getSelectText('comboCategoria');
+      const estado = getSelectText('comboEstado');
+      const pausa = document.getElementById('pausa').value;
+
+      logConsole("[INICIO] Procesamiento PDF disparado...", "log-warn");
+      pyapi('start_process', { user, pass, visible, cat, catg, estado, pausa });
     }
 
     function stopProcess() {
@@ -329,11 +973,55 @@
       pyapi('export_audit', fmt);
     }
 
-    function switchTab(mid, el) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
-      document.getElementById('stModulo').innerText = `Módulo: ${el.innerText}`;
-      logConsole(`[NAVEGACIÓN] Módulo activo: ${el.innerText}`);
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function downloadStockTemplate() {
+      logStockConsole("[STOCK] Solicitando plantilla Excel oficial de stock...");
+      pyapi('download_stock_template');
+    }
+
+
+    function startStockProcess() {
+      const user = document.getElementById('stockUser').value;
+      const pass = document.getElementById('stockPass').value;
+      const acuerdo = getSelectText('stockAcuerdo');
+      const cat = getSelectText('stockCat');
+      const catg = getSelectText('stockCategoria');
+      const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
+      const pausa = document.getElementById('stockPausa') ? document.getElementById('stockPausa').value : "2.0";
+
+      logStockConsole(`[STOCK] Iniciando actualización... (${acuerdo} > ${cat} > ${catg})`, "log-ok");
+      pyapi('start_stock_process', { user, pass, acuerdo, cat, catg, visible, pausa });
+    }
+
+
+    function stopStockProcess() {
+      logStockConsole("[STOCK] Procesamiento de stock detenido.");
+      pyapi('stop_stock_process');
+    }
+
+    function startJsonProcess() {
+      logJsonConsole("[JSON] Envío masivo JSON a API Perú Compras iniciado...", "log-ok");
+      pyapi('start_process');
+    }
+
+    function stopJsonProcess() {
+      logJsonConsole("[JSON] Envío masivo JSON detenido.");
+      pyapi('stop_process');
+    }
+
+    function runToolTest(testName) {
+      const box = document.getElementById('toolsLog');
+      const div = document.createElement('div');
+      div.className = "log-warn";
+      div.innerText = `[PRUEBA] Ejecutando: ${testName}...`;
+      box.appendChild(div);
     }
   </script>
 </body>

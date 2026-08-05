@@ -76,7 +76,6 @@ def build():
     print(f"\nTesseract: {tess_dir or 'NO ENCONTRADO'}")
     print(f"Playwright browsers: {pw_dir or 'NO ENCONTRADO'}")
 
-    # Construir argumentos
     pyi_args = [
         sys.executable, "-m", "PyInstaller",
         "--name", EXE_NAME,
@@ -86,8 +85,22 @@ def build():
         "--noconfirm",
         "--distpath", DIST_DIR,
         "--workpath", BUILD_DIR,
-        "--add-data", f"{PROJECT_DIR};peru_compras_bot",
     ]
+
+    add_data_dirs = [
+        ("ui_web", "ui_web"),
+        ("modulo_subir_pdf", "modulo_subir_pdf"),
+        ("automation", "automation"),
+        ("utils", "utils"),
+        ("scripts", "scripts"),
+    ]
+    for src, dst in add_data_dirs:
+        full_src = os.path.join(PROJECT_DIR, src)
+        if os.path.exists(full_src):
+            pyi_args += ["--add-data", f"{full_src};{dst}"]
+            print(f"  Incluyendo carpeta: {src}")
+
+
 
     # Incluir Tesseract
     if tess_dir:
@@ -96,13 +109,15 @@ def build():
 
     # Incluir Playwright browsers
     if pw_dir:
-        # Mapeamos ms-playwright a playwright/driver (donde Playwright los busca)
         dest_name = "playwright_browsers"
         pyi_args += ["--add-data", f"{pw_dir};{dest_name}"]
         print("  Incluyendo Playwright browsers")
 
     # Hidden imports necesarios
     hidden_imports = [
+        "webview",
+        "clr",
+        "pythonnet",
         "customtkinter",
         "playwright",
         "playwright.sync_api",
@@ -133,8 +148,10 @@ def build():
     for mod in hidden_imports:
         pyi_args += ["--hidden-import", mod]
 
-    # Entry point
-    pyi_args += [os.path.join(PROJECT_DIR, "main.py")]
+
+    # Entry point principal
+    pyi_args += [os.path.join(PROJECT_DIR, "modulo_subir_pdf", "main_subir_pdf.py")]
+
 
     # Incluir catalog_options.json si existe
     catalog_json = os.path.join(PROJECT_DIR, "catalog_options.json")
@@ -148,11 +165,21 @@ def build():
     # Copiar archivos adicionales a la carpeta dist
     dist_exe_dir = os.path.join(DIST_DIR, EXE_NAME)
     if os.path.isdir(dist_exe_dir):
+        # Copiar ui_web al nivel del exe para doble garantía de localización
+        ui_web_dst = os.path.join(dist_exe_dir, "ui_web")
+        ui_web_src = os.path.join(PROJECT_DIR, "ui_web")
+        if os.path.isdir(ui_web_src):
+            if os.path.exists(ui_web_dst):
+                shutil.rmtree(ui_web_dst, ignore_errors=True)
+            shutil.copytree(ui_web_src, ui_web_dst)
+            print("  ui_web copiado a la raíz del paquete.")
+
         # Crear batch launcher alternativo (por si el .exe da problemas)
         bat_path = os.path.join(DIST_DIR, f"Iniciar {EXE_NAME}.bat")
         with open(bat_path, "w") as f:
             f.write(f'@echo off\nstart "" "{EXE_NAME}\\{EXE_NAME}.exe"\n')
         print(f"  Launcher .bat creado: {bat_path}")
+
 
     print("\n" + "=" * 60)
     print(f"  BUILD COMPLETADO")
