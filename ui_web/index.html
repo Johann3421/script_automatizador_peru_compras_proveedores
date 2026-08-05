@@ -442,8 +442,11 @@
               <label>Consola Eventos Stock:</label>
               <div id="stockLog" class="console-box"><div>[STOCK] Módulo de Stock listo.</div></div>
             </div>
-            <button class="btn-sys btn-primary" style="height: 34px;" onclick="startStockProcess()">INICIAR ACTUALIZACIÓN DE STOCK</button>
-            <button class="btn-sys" style="background: #8B1A1A; color: white;" onclick="stopStockProcess()">Detener</button>
+            <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+              <button class="btn-sys btn-primary" style="height: 36px; flex: 1; font-weight: bold;" onclick="startStockProcess()">INICIAR ACTUALIZACIÓN DE STOCK</button>
+              <button class="btn-sys" style="height: 36px; background: #1B6B1B; color: white; font-weight: bold;" onclick="startStockAudit()">🔍 AUDITAR PORTAL</button>
+            </div>
+            <button class="btn-sys" style="background: #8B1A1A; color: white; height: 32px;" onclick="stopStockProcess()">Detener</button>
           </div>
         </div>
       </div>
@@ -998,6 +1001,15 @@
 
       logStockConsole(`[STOCK] Iniciando actualización... (${acuerdo} > ${cat} > ${catg})`, "log-ok");
       pyapi('start_stock_process', { user, pass, acuerdo, cat, catg, visible, pausa });
+    function startStockAudit() {
+      const user = document.getElementById('stockUser').value;
+      const pass = document.getElementById('stockPass').value;
+      const acuerdo = getSelectText('stockAcuerdo');
+      const cat = getSelectText('stockCat');
+      const catg = getSelectText('stockCategoria');
+
+      logStockConsole(`[AUDITOR] Iniciando auditoría del portal vs Excel... (${acuerdo})`, "log-ok");
+      pyapi('start_stock_audit', { user, pass, acuerdo, cat, catg });
     }
 
 

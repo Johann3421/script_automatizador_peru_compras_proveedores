@@ -3072,6 +3072,34 @@ class SubirPdfWebApi:
         except Exception as e:
             return {"status": "error", "msg": str(e)}
 
+    def start_stock_audit(self, params=None, *a):
+        try:
+            params = params or {}
+            # Carga fallback de data de stock si no se cargó con el dialog específico
+            if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_stock_excel_path", None):
+                try:
+                    from automation_otro_bot.stock import analizar_excel_stock
+                    res = analizar_excel_stock(self._app._stock_excel_path)
+                    if res and res.get("valido"):
+                        self._app._stock_excel_df = res["df"]
+                except Exception:
+                    pass
+
+            if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_excel_rows", None):
+                self._app._stock_excel_df = self._app._excel_rows
+
+            self._app.entry_stock_user = _DummyWidget(params.get("user", ""))
+            self._app.entry_stock_pass = _DummyWidget(params.get("pass", ""))
+            self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo", "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES"))
+            self._app.option_stock_catalogo = _DummyWidget(params.get("cat", "ESCÁNERES"))
+            self._app.option_stock_categoria = _DummyWidget(params.get("catg", "ESCANER DE PLANOS"))
+
+            self._app._on_stock_audit_start()
+            return {"status": "started"}
+        except Exception as e:
+            return {"status": "error", "msg": str(e)}
+
+
     def stop_stock_process(self, *a):
         try:
             if hasattr(self._app, "_on_stock_stop"):

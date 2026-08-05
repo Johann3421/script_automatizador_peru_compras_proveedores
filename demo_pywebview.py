@@ -85,6 +85,19 @@ class PeruComprasApi:
         print("[Python Backend] DETENIENDO PROCESAMIENTO...")
         return {"status": "stopped", "msg": "Procesamiento detenido por el usuario."}
 
+    def start_stock_process(self, params=None, *args):
+        print(f"[Python Backend] INICIANDO PROCESO DE STOCK... params={params}")
+        return {"status": "started"}
+
+    def stop_stock_process(self, *args):
+        print("[Python Backend] DETENIENDO PROCESO DE STOCK...")
+        return {"status": "stopped"}
+
+    def start_stock_audit(self, params=None, *args):
+        print(f"[Python Backend] INICIANDO AUDITORIA DE STOCK... params={params}")
+        return {"status": "started"}
+
+
     # ── Auditoría e Informes ──────────────────────────────────────
     def export_audit(self, fmt="excel", *args):
         summary = audit_results(self._excel_rows)
