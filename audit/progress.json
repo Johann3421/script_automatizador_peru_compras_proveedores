@@ -381,9 +381,9 @@
     },
     "automation/perucompras_core.py": {
       "status": "done",
-      "lines": 334,
-      "hash": "5000417218bbe77dfd157191aaf6a60be722498e6b5411676e67dbe7c27cc92d",
-      "updated_at": "2026-08-05 18:48:24"
+      "lines": 339,
+      "hash": "0b4367f4dd60a19c48b0d8f52fa1563920fc0ef9e5763323548d661f50809d26",
+      "updated_at": "2026-08-05 18:55:24"
     }
   }
 }

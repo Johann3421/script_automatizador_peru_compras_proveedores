@@ -76,8 +76,13 @@ def login_automatico(
         _log(log_func, f"⚠️ No se pudo fijar viewport HD: {e}")
 
     class _LogAdapter:
+        def info(self, msg): _log(log_func, str(msg).strip())
+        def warning(self, msg): _log(log_func, f"⚠️ {str(msg).strip()}")
+        def error(self, msg): _log(log_func, f"❌ {str(msg).strip()}")
+        def success(self, msg): _log(log_func, f"✅ {str(msg).strip()}")
+        def ok(self, msg): _log(log_func, f"✅ {str(msg).strip()}")
         def write(self, txt):
-            clean = txt.strip()
+            clean = str(txt).strip()
             if clean:
                 _log(log_func, clean)
         def flush(self): pass

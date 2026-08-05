@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-05 18:52:58",
+  "generated_at": "2026-08-05 18:55:24",
   "total_files": 64,
-  "total_lines": 24266,
+  "total_lines": 24271,
   "files": [
     {
       "rel_path": "automation/__init__.py",
@@ -375,8 +375,8 @@
       "rel_path": "automation/perucompras_core.py",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\perucompras_core.py",
       "language": "python",
-      "lines": 334,
-      "hash": "5000417218bbe77dfd157191aaf6a60be722498e6b5411676e67dbe7c27cc92d",
+      "lines": 339,
+      "hash": "0b4367f4dd60a19c48b0d8f52fa1563920fc0ef9e5763323548d661f50809d26",
       "ext": ".py"
     },
     {

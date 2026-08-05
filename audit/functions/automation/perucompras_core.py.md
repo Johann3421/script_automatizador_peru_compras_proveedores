@@ -1,8 +1,8 @@
 # Auditoría de Funciones: `automation/perucompras_core.py`
 
 - **Lenguaje:** `python`
-- **Líneas de código:** 334
-- **Hash SHA256:** `5000417218bb`
+- **Líneas de código:** 339
+- **Hash SHA256:** `0b4367f4dd60`
 - **Estrategia de Análisis:** Pasada directa
 
 ---
@@ -18,7 +18,7 @@
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def login_automatico(page, usuario, password, captcha_bridge, stop_event, log_func)`
-- **Línea inicial:** 36 | **Línea final:** 91
+- **Línea inicial:** 36 | **Línea final:** 96
 - **Firma completa:** `def login_automatico(page, usuario, password, captcha_bridge, stop_event, log_func)`
 - **Propósito:** FUNCION PADRE 1: Login Automático en Perú Compras.
 
@@ -45,11 +45,11 @@ Retorno
 bool
     True si el inicio de sesión fue exitoso, False si falló.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_log, set_viewport_size, strip, _LogAdapter, do_login`
+- **Dependencias / Invocaciones:** `strip, _log, set_viewport_size, do_login, str, _LogAdapter`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def saltar_verificacion(page, log_func)`
-- **Línea inicial:** 94 | **Línea final:** 129
+- **Línea inicial:** 99 | **Línea final:** 134
 - **Firma completa:** `def saltar_verificacion(page, log_func)`
 - **Propósito:** FUNCION PADRE 2: Saltar Verificación y Retroceso Seguro.
 
@@ -68,11 +68,11 @@ Retorno
 bool
     True al completar la maniobra de retroceso.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, go_back, sleep, _log`
+- **Dependencias / Invocaciones:** `sleep, _log, go_back, goto`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def navegar_mejora_basica(page, log_func)`
-- **Línea inicial:** 132 | **Línea final:** 159
+- **Línea inicial:** 137 | **Línea final:** 164
 - **Firma completa:** `def navegar_mejora_basica(page, log_func)`
 - **Propósito:** FUNCION PADRE 3: Navegación Garantizada a MejoraBasica.
 
@@ -88,11 +88,11 @@ Retorno
 bool
     True si la página de MejoraBasica cargó correctamente.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, sleep, _log`
+- **Dependencias / Invocaciones:** `sleep, _log, goto`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def completar_menu_dinamico(page, acuerdo, catalogo, categoria, log_func)`
-- **Línea inicial:** 162 | **Línea final:** 199
+- **Línea inicial:** 167 | **Línea final:** 204
 - **Firma completa:** `def completar_menu_dinamico(page, acuerdo, catalogo, categoria, log_func)`
 - **Propósito:** FUNCION PADRE 4: Completar Menú Dinámico y Filtros.
 
@@ -115,11 +115,11 @@ Retorno
 bool
     True si los 3 combos se seleccionaron con éxito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `paso3_filtros_stock, _log`
+- **Dependencias / Invocaciones:** `_log, paso3_filtros_stock`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def insertar_stock_item(page, nro_parte, nuevo_stock, pausa, log_func)`
-- **Línea inicial:** 202 | **Línea final:** 271
+- **Línea inicial:** 207 | **Línea final:** 276
 - **Firma completa:** `def insertar_stock_item(page, nro_parte, nuevo_stock, pausa, log_func)`
 - **Propósito:** FUNCION PADRE 5: Insertar / Actualizar Stock de Producto.
 
@@ -142,11 +142,11 @@ Retorno
 dict
     {"exito": bool, "parte": str, "stock": int, "mensaje": str}
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_log, query_selector, press, query_selector_all, click, sleep, len, wait_for_selector, fill, str`
+- **Dependencias / Invocaciones:** `_log, query_selector, press, len, sleep, wait_for_selector, str, click, fill, query_selector_all`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 7)
 
 ### `def consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, log_func)`
-- **Línea inicial:** 274 | **Línea final:** 334
+- **Línea inicial:** 279 | **Línea final:** 339
 - **Firma completa:** `def consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, log_func)`
 - **Propósito:** FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
 
@@ -166,19 +166,59 @@ Retorno
 list
     Lista de diccionarios de fichas ofertadas extraídas.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `isinstance, evaluate, _log, get, loads, len, time, startswith, str, int`
+- **Dependencias / Invocaciones:** `_log, len, loads, evaluate, time, str, get, isinstance, int, startswith`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
+### `def info(self, msg)`
+- **Línea inicial:** 79 | **Línea final:** 79
+- **Firma completa:** `def info(self, msg)`
+- **Propósito:** Sin docstring explícito.
+- **Efectos Secundarios:** Cálculo interno o mutación local
+- **Dependencias / Invocaciones:** `strip, _log, str`
+- **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
+
+### `def warning(self, msg)`
+- **Línea inicial:** 80 | **Línea final:** 80
+- **Firma completa:** `def warning(self, msg)`
+- **Propósito:** Sin docstring explícito.
+- **Efectos Secundarios:** Cálculo interno o mutación local
+- **Dependencias / Invocaciones:** `strip, _log, str`
+- **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
+
+### `def error(self, msg)`
+- **Línea inicial:** 81 | **Línea final:** 81
+- **Firma completa:** `def error(self, msg)`
+- **Propósito:** Sin docstring explícito.
+- **Efectos Secundarios:** Cálculo interno o mutación local
+- **Dependencias / Invocaciones:** `strip, _log, str`
+- **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
+
+### `def success(self, msg)`
+- **Línea inicial:** 82 | **Línea final:** 82
+- **Firma completa:** `def success(self, msg)`
+- **Propósito:** Sin docstring explícito.
+- **Efectos Secundarios:** Cálculo interno o mutación local
+- **Dependencias / Invocaciones:** `strip, _log, str`
+- **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
+
+### `def ok(self, msg)`
+- **Línea inicial:** 83 | **Línea final:** 83
+- **Firma completa:** `def ok(self, msg)`
+- **Propósito:** Sin docstring explícito.
+- **Efectos Secundarios:** Cálculo interno o mutación local
+- **Dependencias / Invocaciones:** `strip, _log, str`
+- **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
+
 ### `def write(self, txt)`
-- **Línea inicial:** 79 | **Línea final:** 82
+- **Línea inicial:** 84 | **Línea final:** 87
 - **Firma completa:** `def write(self, txt)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `strip, _log`
+- **Dependencias / Invocaciones:** `_log, strip, str`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def flush(self)`
-- **Línea inicial:** 83 | **Línea final:** 83
+- **Línea inicial:** 88 | **Línea final:** 88
 - **Firma completa:** `def flush(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local

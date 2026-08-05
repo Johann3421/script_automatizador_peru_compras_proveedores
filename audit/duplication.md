@@ -1,6 +1,6 @@
 # REPORTE DE DUPLICACIÓN Y REUTILIZACIÓN (FASE 3.2)
 
-### Función `info` (17 ocurrencias)
+### Función `info` (18 ocurrencias)
 - `utils/logger.py` (Línea 8)
 - `modulo_modificar_productos/utils_mod/logger_mod.py` (Línea 20)
 - `modulo_subir_pdf/utils_mod/logger_mod.py` (Línea 20)
@@ -12,6 +12,7 @@
 - `modulo_subir_pdf/test_buscar_ficha.py` (Línea 37)
 - `modulo_modificar_productos/extract_combinaciones.py` (Línea 45)
 - `modulo_modificar_productos/extract_dropdowns_modificar.py` (Línea 69)
+- `automation/perucompras_core.py` (Línea 79)
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 87)
 - `modulo_subir_pdf/workers.py` (Línea 10)
 - `modulo_subir_pdf/workers.py` (Línea 1109)
@@ -19,7 +20,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 1527)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 174)
 
-### Función `ok` (14 ocurrencias)
+### Función `ok` (15 ocurrencias)
 - `utils/logger.py` (Línea 11)
 - `modulo_modificar_productos/utils_mod/logger_mod.py` (Línea 23)
 - `modulo_subir_pdf/utils_mod/logger_mod.py` (Línea 23)
@@ -28,6 +29,7 @@
 - `modulo_subir_pdf/extraer_combos_mejora.py` (Línea 51)
 - `modulo_subir_pdf/test_extraccion_json.py` (Línea 59)
 - `modulo_subir_pdf/test_buscar_ficha.py` (Línea 40)
+- `automation/perucompras_core.py` (Línea 83)
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 90)
 - `modulo_subir_pdf/workers.py` (Línea 14)
 - `modulo_subir_pdf/workers.py` (Línea 1110)
@@ -35,7 +37,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 1528)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 178)
 
-### Función `error` (14 ocurrencias)
+### Función `error` (15 ocurrencias)
 - `utils/logger.py` (Línea 14)
 - `modulo_modificar_productos/utils_mod/logger_mod.py` (Línea 29)
 - `modulo_subir_pdf/utils_mod/logger_mod.py` (Línea 29)
@@ -44,6 +46,7 @@
 - `modulo_subir_pdf/extraer_combos_mejora.py` (Línea 50)
 - `modulo_subir_pdf/test_extraccion_json.py` (Línea 60)
 - `modulo_subir_pdf/test_buscar_ficha.py` (Línea 39)
+- `automation/perucompras_core.py` (Línea 81)
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 93)
 - `modulo_subir_pdf/workers.py` (Línea 12)
 - `modulo_subir_pdf/workers.py` (Línea 1112)
@@ -186,8 +189,9 @@
 - `modulo_modificar_productos/automation_mod/bulk_modificar.py` (Línea 29)
 - `modulo_subir_pdf/automation_mod/bulk_subir_pdf.py` (Línea 27)
 
-### Función `warning` (3 ocurrencias)
+### Función `warning` (4 ocurrencias)
 - `modulo_subir_pdf/test_extraccion_json.py` (Línea 61)
+- `automation/perucompras_core.py` (Línea 80)
 - `modulo_subir_pdf/workers.py` (Línea 11)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 175)
 
@@ -207,6 +211,11 @@
 ### Función `explore_level` (2 ocurrencias)
 - `modulo_modificar_productos/extract_combinaciones.py` (Línea 107)
 - `modulo_modificar_productos/extract_dropdowns_modificar.py` (Línea 156)
+
+### Función `success` (3 ocurrencias)
+- `automation/perucompras_core.py` (Línea 82)
+- `modulo_subir_pdf/workers.py` (Línea 13)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
 
 ### Función `do_login` (3 ocurrencias)
 - `automation/login.py` (Línea 164)
@@ -291,10 +300,6 @@
 ### Función `re_enable` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1233)
 - `modulo_subir_pdf/workers.py` (Línea 1514)
-
-### Función `success` (2 ocurrencias)
-- `modulo_subir_pdf/workers.py` (Línea 13)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
 
 ### Función `handle_request` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1323)
