@@ -169,30 +169,33 @@ def do_login(
     log: LogWriter,
     stop_event: threading.Event,
     captcha_bridge=None,
-    max_retries: int = 5,
+    max_retries: int = 99,
 ) -> bool:
-    """Intenta login hasta max_retries veces (por si el CAPTCHA falla)."""
+    """Intenta login repetidamente (por defecto hasta 99 intentos) hasta ingresar o ser detenido."""
     if stop_event is None:
         import threading
         stop_event = threading.Event()
     log.info(f"Navegando a {LOGIN_URL}")
-    page.goto(LOGIN_URL, wait_until="networkidle")
-    page.wait_for_load_state("domcontentloaded")
-    time.sleep(3)
+    try:
+        page.goto(LOGIN_URL, wait_until="networkidle")
+        page.wait_for_load_state("domcontentloaded")
+        time.sleep(2)
+    except Exception as e:
+        log.warning(f"Advertencia al cargar página de login: {e}")
 
     for retry in range(1, max_retries + 1):
         if stop_event and stop_event.is_set():
+            log.info("⏹ Login cancelado por el usuario.")
             return False
 
+        log.info(f"🔑 Intento de login #{retry}")
 
-        log.info(f"Intento de login {retry}/{max_retries}")
-
-        result = _attempt_login_once(
+        ok, is_fatal_credentials = _attempt_login_once(
             page, usuario, password, captcha_key,
             log, stop_event, captcha_bridge,
         )
 
-        if result:
+        if ok:
             # Navegar directo al catálogo de ofertas (evita modales del dashboard)
             current = page.url
             if "t_ProductoOfertadoAmp" not in current:
@@ -204,8 +207,12 @@ def do_login(
                     pass
             return True
 
-        if result is False and retry < max_retries and not stop_event.is_set():
-            log.info(f"Login falló (intento {retry}), refrescando página para reintentar...")
+        if is_fatal_credentials:
+            log.error("❌ Se detienen los reintentos debido a credenciales inválidas o rechazadas por el portal.")
+            return False
+
+        if retry < max_retries and not stop_event.is_set():
+            log.info(f"Reintentando login (intento #{retry + 1})...")
             try:
                 page.goto(LOGIN_URL, wait_until="networkidle")
                 time.sleep(2)
@@ -224,13 +231,13 @@ def _attempt_login_once(
     log: LogWriter,
     stop_event: threading.Event,
     captcha_bridge=None,
-) -> bool:
-    """Un solo intento de login. Retorna True si éxito, False si falló."""
+) -> tuple[bool, bool]:
+    """Un solo intento de login. Retorna (éxito: bool, es_error_credenciales_fatal: bool)."""
     try:
         _eliminar_modales(page)
 
         if stop_event.is_set():
-            return False
+            return False, False
 
         log.info("Rellenando credenciales de Peru Compras...")
 
@@ -239,7 +246,7 @@ def _attempt_login_once(
 
         if user_input.count() == 0 or pass_input.count() == 0:
             log.error("No se encontraron los campos #ID_Usuario / #Contrasena.")
-            return False
+            return False, False
 
         user_input.fill(usuario)
         _trigger_materialize_validation(page, "ID_Usuario")
@@ -250,15 +257,15 @@ def _attempt_login_once(
         time.sleep(0.5)
 
         if stop_event.is_set():
-            return False
+            return False, False
 
         # --- Resolver CAPTCHA con OCR + fallback manual ---
-        log.info("Resolviendo CAPTCHA con OCR...")
+        log.info("Resolviendo CAPTCHA...")
         captcha_code = _solve_captcha(page, log, stop_event, captcha_bridge)
 
         if not captcha_code or len(captcha_code) < 4:
-            log.error("No se pudo resolver el CAPTCHA.")
-            return False
+            log.error("No se pudo obtener un código CAPTCHA válido para este intento.")
+            return False, False
 
         captcha_input = page.locator("#CodigoCaptcha").first
         captcha_input.fill(captcha_code)
@@ -266,14 +273,14 @@ def _attempt_login_once(
         time.sleep(0.3)
 
         if stop_event.is_set():
-            return False
+            return False, False
 
         # --- Click en botón Ingresar ---
         log.info("Click en botón Ingresar...")
         login_btn = page.locator("#btnLogin").first
         if login_btn.count() == 0:
             log.error("No se encontró el botón #btnLogin.")
-            return False
+            return False, False
 
         login_btn.click(force=True)
 
@@ -284,7 +291,7 @@ def _attempt_login_once(
         time.sleep(3)
 
         if stop_event.is_set():
-            return False
+            return False, False
 
         current_url = page.url
 
@@ -301,11 +308,19 @@ def _attempt_login_once(
                     error_msg = error_el.inner_text(timeout=2000)
             except Exception:
                 pass
+
+            err_lower = error_msg.lower()
+            # Detectar si el mensaje es de credenciales incorrectas (no de CAPTCHA)
+            is_fatal = any(k in err_lower for k in [
+                "usuario no existe", "contraseña incorrecta", "usuario o contraseña",
+                "credenciales no válidas", "usuario inactivo", "bloquead", "deshabilitad"
+            ])
+
             log.error(
                 f"Login falló — seguimos en la página de login. "
-                f"{'Mensaje: ' + error_msg if error_msg else 'CAPTCHA incorrecto o credenciales inválidas.'}"
+                f"{'Mensaje portal: ' + error_msg if error_msg else 'CAPTCHA incorrecto o respuesta lenta.'}"
             )
-            return False
+            return False, is_fatal
 
         # Si caímos en ValidarAcceso, retroceder para completar el login
         if "ValidarAcceso" in path:
@@ -320,13 +335,14 @@ def _attempt_login_once(
             parsed2 = urlparse(new_url)
             if parsed2.path.rstrip("/") == "/AccesoGeneral":
                 log.error("go_back() nos devolvió al login. Reintentando...")
-                return False
+                return False, False
             log.ok(f"Login exitoso -> {new_url[:80]}")
-            return True
+            return True, False
 
         log.ok(f"Login exitoso en Peru Compras -> {current_url[:80]}")
-        return True
+        return True, False
 
     except Exception as e:
         log.error(f"Excepción en intento de login: {e}")
-        return False
+        return False, False
+
