@@ -1788,9 +1788,12 @@ class SubirPdfApp(ctk.CTk):
         catalogo = self.option_stock_catalogo.get().strip() if hasattr(self, "option_stock_catalogo") else ""
         categoria = self.option_stock_categoria.get().strip() if hasattr(self, "option_stock_categoria") else ""
 
-        self.btn_stock_audit.configure(state="disabled", text="⏳ Auditando...")
+        if hasattr(self, "btn_stock_audit"):
+            try: self.btn_stock_audit.configure(state="disabled", text="⏳ Auditando...")
+            except Exception: pass
         if hasattr(self, "lbl_audit_status"):
-            self.lbl_audit_status.configure(text="Conectando al portal...", text_color="#f39c12")
+            try: self.lbl_audit_status.configure(text="Conectando al portal...", text_color="#f39c12")
+            except Exception: pass
         self._append_stock_log(f"🔍 Iniciando Auditor Portal ({len(excel_rows)} productos del Excel)...")
 
         # Reset stop event
@@ -1809,9 +1812,13 @@ class SubirPdfApp(ctk.CTk):
         Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
         """
         def _ui_done():
-            self.btn_stock_audit.configure(state="normal", text="🔍 Auditar Portal ahora")
+            if hasattr(self, "btn_stock_audit"):
+                try: self.btn_stock_audit.configure(state="normal", text="🔍 Auditar Portal ahora")
+                except Exception: pass
             if not filas:
-                self.lbl_audit_status.configure(text="Sin datos para guardar", text_color="#e74c3c")
+                if hasattr(self, "lbl_audit_status"):
+                    try: self.lbl_audit_status.configure(text="Sin datos para guardar", text_color="#e74c3c")
+                    except Exception: pass
                 return
 
             ok    = resumen.get("ok", 0)
@@ -3248,6 +3255,8 @@ def run_app():
     app.lbl_stock_report = _DummyWidget()
     app.btn_stock_start = _DummyWidget()
     app.btn_stock_stop = _DummyWidget()
+    app.btn_stock_audit = _DummyWidget()
+    app.lbl_audit_status = _DummyWidget()
     app.log_stock = _DummyWidget()
 
     api = SubirPdfWebApi(app)
