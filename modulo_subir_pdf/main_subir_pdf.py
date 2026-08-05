@@ -1788,13 +1788,20 @@ class SubirPdfApp(ctk.CTk):
         catalogo = self.option_stock_catalogo.get().strip() if hasattr(self, "option_stock_catalogo") else ""
         categoria = self.option_stock_categoria.get().strip() if hasattr(self, "option_stock_categoria") else ""
 
+        # 4. Leer visibilidad del navegador
+        visible = False
+        if hasattr(self, "check_stock_visible"):
+            try: visible = bool(self.check_stock_visible.get())
+            except Exception: pass
+        headless = not visible
+
         if hasattr(self, "btn_stock_audit"):
             try: self.btn_stock_audit.configure(state="disabled", text="⏳ Auditando...")
             except Exception: pass
         if hasattr(self, "lbl_audit_status"):
             try: self.lbl_audit_status.configure(text="Conectando al portal...", text_color="#f39c12")
             except Exception: pass
-        self._append_stock_log(f"🔍 Iniciando Auditor Portal ({len(excel_rows)} productos del Excel)...")
+        self._append_stock_log(f"🔍 Iniciando Auditor Portal ({len(excel_rows)} productos | Navegador {'visible' if visible else 'oculto'})...")
 
         # Reset stop event
         self._stock_stop_event.clear()
@@ -1804,6 +1811,7 @@ class SubirPdfApp(ctk.CTk):
             target=workers.execute_auditor,
             args=(self, usuario, password, acuerdo, catalogo, categoria,
                   self._on_audit_done, self._append_stock_log),
+            kwargs={"headless": headless},
             daemon=True,
         ).start()
 
@@ -1828,31 +1836,42 @@ class SubirPdfApp(ctk.CTk):
             tasa  = resumen.get("tasa", 0)
             status_text  = f"{ok}/{total} OK | {dif} dif | {mis} no enc. | {tasa:.1f}%"
             status_color = "#27ae60" if dif == 0 and mis == 0 else "#e67e22" if mis == 0 else "#e74c3c"
-            self.lbl_audit_status.configure(text=status_text, text_color=status_color)
+            if hasattr(self, "lbl_audit_status"):
+                try: self.lbl_audit_status.configure(text=status_text, text_color=status_color)
+                except Exception: pass
 
-            # Guardar con filedialog
-            from tkinter import filedialog, messagebox
+            # Guardar reporte Excel
             ts = time.strftime("%Y%m%d_%H%M%S")
-            path = filedialog.asksaveasfilename(
-                title="Guardar Informe de Auditoría",
-                initialfile=f"Auditoria_Stock_{ts}.xlsx",
-                defaultextension=".xlsx",
-                filetypes=[("Libro Excel", "*.xlsx")],
-            )
+            path = ""
+            if not hasattr(self, "_api_bridge"):
+                try:
+                    from tkinter import filedialog
+                    path = filedialog.asksaveasfilename(
+                        title="Guardar Informe de Auditoría",
+                        initialfile=f"Auditoria_Stock_{ts}.xlsx",
+                        defaultextension=".xlsx",
+                        filetypes=[("Libro Excel", "*.xlsx")],
+                    )
+                except Exception:
+                    path = ""
+
             if not path:
-                return
+                out_dir = os.path.join(_PROJECT_ROOT, "reportes_auditoria")
+                os.makedirs(out_dir, exist_ok=True)
+                path = os.path.join(out_dir, f"Auditoria_Stock_{ts}.xlsx")
 
             from utils_mod.audit_portal_excel import generar_excel_auditoria
             ok_save, msg = generar_excel_auditoria(filas, resumen, path)
             if ok_save:
-                self._append_stock_log(f"📊 Informe guardado: {path}")
+                self._append_stock_log(f"📊 ¡Informe de Auditoría generado exitosamente!")
+                self._append_stock_log(f"📂 Guardado en: {path}")
                 import subprocess
                 try:
                     subprocess.Popen(["start", "", path], shell=True)
                 except Exception:
                     pass
             else:
-                messagebox.showerror("Error al guardar", msg)
+                self._append_stock_log(f"❌ Error al generar el Excel: {msg}")
 
         try:
             self.after(0, _ui_done)
@@ -3206,7 +3225,8 @@ def run_app():
     _methods_to_bind = (
         "_load_dropdown_json", "_on_launch", "_on_stop", "_export_audit_report",
         "_on_stock_start", "_on_stock_stop", "_execute_stock",
-        "_on_download_stock_template", "_execute", "_reset_after_stop"
+        "_on_download_stock_template", "_execute", "_reset_after_stop",
+        "_on_stock_audit_start", "_on_audit_done"
     )
 
     for _m in _methods_to_bind:

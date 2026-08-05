@@ -1890,7 +1890,7 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
 # NO toca app._stock_running ni los botones — eso lo gestiona el handler de UI
 # ═══════════════════════════════════════════════════════════════════
 
-def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log):
+def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log, headless=True):
     """
     Auditor del Portal Stock.
 
@@ -1904,6 +1904,7 @@ def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_don
     categoria    : str — texto del dropdown categoria (para resumen)
     on_done      : callable(filas, resumen) — se llama al finalizar
     on_log       : callable(str) — se llama para cada mensaje de log
+    headless     : bool — True para oculto, False para visible en pantalla
     """
     import time
     import json as _json
@@ -1926,8 +1927,9 @@ def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_don
     resumen = {}
 
     try:
-        on_log("🚀 Iniciando navegador (modo oculto)...")
-        pw, browser, page = init_browser(headless=True)
+        mode_str = "modo oculto" if headless else "modo visible en pantalla"
+        on_log(f"🚀 Iniciando navegador ({mode_str})...")
+        pw, browser, page = init_browser(headless=headless)
 
         on_log("🔐 Iniciando sesión...")
         ok = do_login(page, usuario, password, "", log, stop, app.captcha_bridge)
