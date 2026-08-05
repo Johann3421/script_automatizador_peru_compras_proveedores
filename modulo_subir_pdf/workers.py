@@ -1936,21 +1936,26 @@ def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_don
             completar_menu_dinamico, consultar_json_productos
         )
 
+        on_log("📌 [PASO 1/4] 🔐 Login automático con OCR...")
         ok = login_automatico(page, usuario, password, app.captcha_bridge, stop, on_log)
         if not ok or stop.is_set():
             on_log("❌ Login falló. Auditor cancelado.")
             return
 
+        on_log("📌 [PASO 2/4] 🔄 Saltar verificación y navegación a MejoraBasica...")
         saltar_verificacion(page, on_log)
+
+        on_log(f"📌 [PASO 3/4] 📋 Completando menú dinámico ({acuerdo} > {catalogo} > {categoria})...")
         completar_menu_dinamico(page, acuerdo, catalogo, categoria, on_log)
 
+        on_log("📌 [PASO 4/4] 📡 Extrayendo dataset JSON crudo del portal...")
         registros_portal = consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, on_log)
         if not registros_portal:
             on_log("⚠️ No se obtuvieron fichas del portal.")
             on_done([], {})
             return
 
-        on_log(f"✅ Portal devolvió {len(registros_portal)} fichas.")
+        on_log(f"✅ Portal devolvió {len(registros_portal)} fichas. Iniciando auditoría...")
 
         # ── Construir índice del portal por ID_ProductoOfertado ─────
         # El JSON tiene campos posicionales o con nombre — detectar automáticamente
