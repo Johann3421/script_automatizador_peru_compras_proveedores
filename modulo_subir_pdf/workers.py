@@ -1930,65 +1930,24 @@ def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_don
         mode_str = "modo oculto" if headless else "modo visible en pantalla"
         on_log(f"🚀 Iniciando navegador ({mode_str})...")
         pw, browser, page = init_browser(headless=headless)
-        try:
-            page.set_viewport_size({"width": 1920, "height": 1080})
-        except Exception:
-            pass
 
-        on_log("🔐 Iniciando sesión en Perú Compras...")
-        ok = do_login(page, usuario, password, "", log, stop, app.captcha_bridge)
+        from automation.perucompras_core import (
+            login_automatico, saltar_verificacion, navegar_mejora_basica,
+            completar_menu_dinamico, consultar_json_productos
+        )
+
+        ok = login_automatico(page, usuario, password, app.captcha_bridge, stop, on_log)
         if not ok or stop.is_set():
             on_log("❌ Login falló. Auditor cancelado.")
             return
 
-        on_log("✅ Sesión iniciada. Navegando a MejoraBasica...")
-        from automation_otro_bot.stock import paso2_navegacion_stock, paso3_filtros_stock
-        paso2_navegacion_stock(page)
+        saltar_verificacion(page, on_log)
+        completar_menu_dinamico(page, acuerdo, catalogo, categoria, on_log)
 
-        on_log(f"📋 Aplicando filtros: {acuerdo} > {catalogo} > {categoria}")
-        paso3_filtros_stock(page, acuerdo, catalogo, categoria)
-        time.sleep(1)
-
-        # ── Llamar al endpoint con fetch + cookies activas ──────────
-        ts = int(time.time() * 1000)
-        endpoint = (
-            f"{BASE_URL}/MejoraBasica/_ListaProductosOfertados"
-            f"?N_Acuerdo={n_acuerdo}&N_Catalogo={n_catalogo}"
-            f"&N_Categoria={n_categoria}&C_Descripcion=&_={ts}"
-        )
-        on_log(f"📡 Consultando endpoint JSON del portal...")
-
-        raw = page.evaluate(f"""
-            async () => {{
-                try {{
-                    const r = await fetch('{endpoint}', {{
-                        method: 'GET', credentials: 'include'
-                    }});
-                    if (!r.ok) return '__HTTP_' + r.status;
-                    return await r.text();
-                }} catch(e) {{
-                    return '__ERR_' + e.message;
-                }}
-            }}
-        """)
-
-        if not raw or raw.startswith("__"):
-            on_log(f"❌ Error del endpoint: {raw}")
-            return
-
-        try:
-            data = _json.loads(raw)
-        except Exception as e:
-            on_log(f"❌ JSON inválido del portal: {e}")
-            return
-
-        # DataTables devuelve {"data": [...]} o a veces lista directa
-        if isinstance(data, dict) and "data" in data:
-            registros_portal = data["data"]
-        elif isinstance(data, list):
-            registros_portal = data
-        else:
-            on_log(f"❌ Formato de respuesta inesperado: {type(data)}")
+        registros_portal = consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, on_log)
+        if not registros_portal:
+            on_log("⚠️ No se obtuvieron fichas del portal.")
+            on_done([], {})
             return
 
         on_log(f"✅ Portal devolvió {len(registros_portal)} fichas.")
