@@ -1774,14 +1774,13 @@ class SubirPdfApp(ctk.CTk):
 
         if not usuario or not password:
             if hasattr(self, "entry_user"):
-                usuario = self.entry_user.get().strip()
+                usuario = usuario or self.entry_user.get().strip()
             if hasattr(self, "entry_pass"):
-                password = self.entry_pass.get().strip()
+                password = password or self.entry_pass.get().strip()
 
-        if not usuario or not password:
-            self._append_stock_log("❌ Auditor: Rellena Usuario y Contraseña en la sección de credenciales")
-            messagebox.showwarning("Auditor Portal", "Ingrese su Usuario y Contraseña de Perú Compras antes de auditar.")
-            return
+        # Fallback a credenciales institucionales por defecto si siguen vacías
+        usuario = usuario or "fernando.trinidad"
+        password = password or "po!tLKB#8^r4e"
 
         # 3. Leer filtros seleccionados
         acuerdo = self.option_stock_acuerdo.get().strip() if hasattr(self, "option_stock_acuerdo") else "EXT-CE-2022-5"
@@ -3085,11 +3084,13 @@ class SubirPdfWebApi:
             if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_excel_rows", None):
                 self._app._stock_excel_df = self._app._excel_rows
 
-            self._app.entry_stock_user = _DummyWidget(params.get("user", "fernando.trinidad"))
-            self._app.entry_stock_pass = _DummyWidget(params.get("pass", "po!tLKB#8^r4e"))
-            self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo", "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES"))
-            self._app.option_stock_catalogo = _DummyWidget(params.get("cat", "ESCÁNERES"))
-            self._app.option_stock_categoria = _DummyWidget(params.get("catg", "ESCANER DE PLANOS"))
+            user_val = (params.get("user") or "").strip() or "fernando.trinidad"
+            pass_val = (params.get("pass") or "").strip() or "po!tLKB#8^r4e"
+            self._app.entry_stock_user = _DummyWidget(user_val)
+            self._app.entry_stock_pass = _DummyWidget(pass_val)
+            self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES")
+            self._app.option_stock_catalogo = _DummyWidget(params.get("cat") or "ESCÁNERES")
+            self._app.option_stock_categoria = _DummyWidget(params.get("catg") or "ESCANER DE PLANOS")
             self._app.entry_stock_pausa = _DummyWidget(str(params.get("pausa", "2.0")))
             self._app.check_stock_visible = _DummyWidget(params.get("visible", False))
 
@@ -3114,11 +3115,14 @@ class SubirPdfWebApi:
             if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_excel_rows", None):
                 self._app._stock_excel_df = self._app._excel_rows
 
-            self._app.entry_stock_user = _DummyWidget(params.get("user", ""))
-            self._app.entry_stock_pass = _DummyWidget(params.get("pass", ""))
-            self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo", "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES"))
-            self._app.option_stock_catalogo = _DummyWidget(params.get("cat", "ESCÁNERES"))
-            self._app.option_stock_categoria = _DummyWidget(params.get("catg", "ESCANER DE PLANOS"))
+            user_val = (params.get("user") or "").strip() or "fernando.trinidad"
+            pass_val = (params.get("pass") or "").strip() or "po!tLKB#8^r4e"
+            self._app.entry_stock_user = _DummyWidget(user_val)
+            self._app.entry_stock_pass = _DummyWidget(pass_val)
+            self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES")
+            self._app.option_stock_catalogo = _DummyWidget(params.get("cat") or "ESCÁNERES")
+            self._app.option_stock_categoria = _DummyWidget(params.get("catg") or "ESCANER DE PLANOS")
+            self._app.check_stock_visible = _DummyWidget(params.get("visible", False))
 
             self._app._on_stock_audit_start()
             return {"status": "started"}

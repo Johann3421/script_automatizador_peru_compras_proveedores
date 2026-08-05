@@ -1013,9 +1013,10 @@
       const acuerdo = getSelectText('stockAcuerdo');
       const cat = getSelectText('stockCat');
       const catg = getSelectText('stockCategoria');
+      const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
 
       logStockConsole(`[AUDITOR] Iniciando auditoría del portal vs Excel... (${acuerdo})`, "log-ok");
-      pyapi('start_stock_audit', { user, pass, acuerdo, cat, catg });
+      pyapi('start_stock_audit', { user, pass, acuerdo, cat, catg, visible });
     }
 
 
