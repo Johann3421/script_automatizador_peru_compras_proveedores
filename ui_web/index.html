@@ -1005,6 +1005,8 @@
 
       logStockConsole(`[STOCK] Iniciando actualización... (${acuerdo} > ${cat} > ${catg})`, "log-ok");
       pyapi('start_stock_process', { user, pass, acuerdo, cat, catg, visible, pausa });
+    }
+
     function startStockAudit() {
       const user = document.getElementById('stockUser').value;
       const pass = document.getElementById('stockPass').value;
