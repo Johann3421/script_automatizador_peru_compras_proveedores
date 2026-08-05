@@ -1,8 +1,8 @@
 # Auditoría de Funciones: `automation/perucompras_core.py`
 
 - **Lenguaje:** `python`
-- **Líneas de código:** 339
-- **Hash SHA256:** `0b4367f4dd60`
+- **Líneas de código:** 274
+- **Hash SHA256:** `1cbd436931a3`
 - **Estrategia de Análisis:** Pasada directa
 
 ---
@@ -18,159 +18,69 @@
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def login_automatico(page, usuario, password, captcha_bridge, stop_event, log_func)`
-- **Línea inicial:** 36 | **Línea final:** 96
+- **Línea inicial:** 36 | **Línea final:** 76
 - **Firma completa:** `def login_automatico(page, usuario, password, captcha_bridge, stop_event, log_func)`
 - **Propósito:** FUNCION PADRE 1: Login Automático en Perú Compras.
 
 Asegura la configuración del viewport (1920x1080), navega al portal de acceso,
 rellena credenciales y resuelve el CAPTCHA numérico con OCR Tesseract.
-
-Parámetros
-----------
-page : Playwright Page
-    Instancia de la página activa del navegador.
-usuario : str
-    Nombre de usuario del proveedor en Perú Compras.
-password : str
-    Contraseña de acceso.
-captcha_bridge : CaptchaBridge, opcional
-    Puente para resolución manual si el OCR falla.
-stop_event : threading.Event, opcional
-    Evento de detención provisto por la app.
-log_func : Callable[[str], None], opcional
-    Función para recibir logs de progreso.
-    
-Retorno
--------
-bool
-    True si el inicio de sesión fue exitoso, False si falló.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `strip, _log, set_viewport_size, do_login, str, _LogAdapter`
+- **Dependencias / Invocaciones:** `set_viewport_size, _log, do_login, str, strip, _LogAdapter`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def saltar_verificacion(page, log_func)`
-- **Línea inicial:** 99 | **Línea final:** 134
+- **Línea inicial:** 79 | **Línea final:** 111
 - **Firma completa:** `def saltar_verificacion(page, log_func)`
-- **Propósito:** FUNCION PADRE 2: Saltar Verificación y Retroceso Seguro.
+- **Propósito:** FUNCION PADRE 2: Saltar Verificación y Navegación a MejoraBasica.
 
-Ejecuta el truco de retroceso de historial de navegación en el browser
-y vuelve a cargar el portal base para refrescar cookies de sesión.
-
-Parámetros
-----------
-page : Playwright Page
-    Instancia activa del navegador.
-log_func : Callable[[str], None], opcional
-    Función para recepción de logs.
-    
-Retorno
--------
-bool
-    True al completar la maniobra de retroceso.
+Ejecuta la secuencia probada de navegación:
+1) Retroceso seguro de historial (go_back)
+2) Recarga de BASE_URL
+3) Navegación final a MEJORA_URL (sección MejoraBasica)
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `sleep, _log, go_back, goto`
-- **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
+- **Dependencias / Invocaciones:** `_log, goto, go_back, sleep`
+- **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def navegar_mejora_basica(page, log_func)`
-- **Línea inicial:** 137 | **Línea final:** 164
+- **Línea inicial:** 114 | **Línea final:** 129
 - **Firma completa:** `def navegar_mejora_basica(page, log_func)`
 - **Propósito:** FUNCION PADRE 3: Navegación Garantizada a MejoraBasica.
-
-Navega a la sección de catálogo y actualización del portal.
-
-Parámetros
-----------
-page : Playwright Page
-log_func : Callable[[str], None], opcional
-
-Retorno
--------
-bool
-    True si la página de MejoraBasica cargó correctamente.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `sleep, _log, goto`
+- **Dependencias / Invocaciones:** `_log, goto, sleep`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def completar_menu_dinamico(page, acuerdo, catalogo, categoria, log_func)`
-- **Línea inicial:** 167 | **Línea final:** 204
+- **Línea inicial:** 132 | **Línea final:** 162
 - **Firma completa:** `def completar_menu_dinamico(page, acuerdo, catalogo, categoria, log_func)`
 - **Propósito:** FUNCION PADRE 4: Completar Menú Dinámico y Filtros.
 
-Selecciona de forma flexible (insensible a tildes y mayúsculas) los 3 dropdowns
-del catálogo electrónico (Acuerdo, Catálogo y Categoría).
-
-Parámetros
-----------
-page : Playwright Page
-acuerdo : str
-    Nombre del Acuerdo Marco.
-catalogo : str
-    Nombre del Catálogo.
-categoria : str
-    Nombre de la Categoría.
-log_func : Callable[[str], None], opcional
-
-Retorno
--------
-bool
-    True si los 3 combos se seleccionaron con éxito.
-- **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_log, paso3_filtros_stock`
-- **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
+Asegura que el navegador esté en MejoraBasica y selecciona de forma flexible
+los 3 dropdowns del catálogo electrónico (Acuerdo, Catálogo y Categoría).
+- **Efectos Secundarios:** Navegación / Red HTTP
+- **Dependencias / Invocaciones:** `query_selector, _log, goto, paso3_filtros_stock, sleep`
+- **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def insertar_stock_item(page, nro_parte, nuevo_stock, pausa, log_func)`
-- **Línea inicial:** 207 | **Línea final:** 276
+- **Línea inicial:** 165 | **Línea final:** 211
 - **Firma completa:** `def insertar_stock_item(page, nro_parte, nuevo_stock, pausa, log_func)`
 - **Propósito:** FUNCION PADRE 5: Insertar / Actualizar Stock de Producto.
-
-Busca una ficha por su número de parte o código en el cuadro de búsqueda principal
-del portal e inserta la nueva cantidad de existencias.
-
-Parámetros
-----------
-page : Playwright Page
-nro_parte : str
-    Número de parte o código del producto a buscar.
-nuevo_stock : int
-    Cantidad de existencias a asignar.
-pausa : float
-    Pausa de espera en segundos tras la actualización.
-log_func : Callable[[str], None], opcional
-
-Retorno
--------
-dict
-    {"exito": bool, "parte": str, "stock": int, "mensaje": str}
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_log, query_selector, press, len, sleep, wait_for_selector, str, click, fill, query_selector_all`
+- **Dependencias / Invocaciones:** `len, query_selector, query_selector_all, click, _log, wait_for_selector, press, fill, sleep, str`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 7)
 
 ### `def consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, log_func)`
-- **Línea inicial:** 279 | **Línea final:** 339
+- **Línea inicial:** 214 | **Línea final:** 274
 - **Firma completa:** `def consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, log_func)`
 - **Propósito:** FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
 
 Consulta el endpoint JSON crudo `_ListaProductosOfertados` mediante `fetch`
-con las cookies activas de la sesión.
-
-Parámetros
-----------
-page : Playwright Page
-n_acuerdo : int
-n_catalogo : int
-n_categoria : int
-log_func : Callable[[str], None], opcional
-
-Retorno
--------
-list
-    Lista de diccionarios de fichas ofertadas extraídas.
-- **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_log, len, loads, evaluate, time, str, get, isinstance, int, startswith`
-- **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
+utilizando las cookies activas de la sesión.
+- **Efectos Secundarios:** Navegación / Red HTTP
+- **Dependencias / Invocaciones:** `len, startswith, get, time, int, isinstance, loads, type, _log, goto`
+- **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 8)
 
 ### `def info(self, msg)`
-- **Línea inicial:** 79 | **Línea final:** 79
+- **Línea inicial:** 59 | **Línea final:** 59
 - **Firma completa:** `def info(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -178,7 +88,7 @@ list
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def warning(self, msg)`
-- **Línea inicial:** 80 | **Línea final:** 80
+- **Línea inicial:** 60 | **Línea final:** 60
 - **Firma completa:** `def warning(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -186,7 +96,7 @@ list
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def error(self, msg)`
-- **Línea inicial:** 81 | **Línea final:** 81
+- **Línea inicial:** 61 | **Línea final:** 61
 - **Firma completa:** `def error(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -194,7 +104,7 @@ list
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def success(self, msg)`
-- **Línea inicial:** 82 | **Línea final:** 82
+- **Línea inicial:** 62 | **Línea final:** 62
 - **Firma completa:** `def success(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -202,7 +112,7 @@ list
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def ok(self, msg)`
-- **Línea inicial:** 83 | **Línea final:** 83
+- **Línea inicial:** 63 | **Línea final:** 63
 - **Firma completa:** `def ok(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -210,15 +120,15 @@ list
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def write(self, txt)`
-- **Línea inicial:** 84 | **Línea final:** 87
+- **Línea inicial:** 64 | **Línea final:** 67
 - **Firma completa:** `def write(self, txt)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_log, strip, str`
+- **Dependencias / Invocaciones:** `strip, _log, str`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def flush(self)`
-- **Línea inicial:** 88 | **Línea final:** 88
+- **Línea inicial:** 68 | **Línea final:** 68
 - **Firma completa:** `def flush(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local

@@ -11,8 +11,8 @@
 - `modulo_modificar_productos/intercept_modificar.py` (Línea 48)
 - `modulo_subir_pdf/test_buscar_ficha.py` (Línea 37)
 - `modulo_modificar_productos/extract_combinaciones.py` (Línea 45)
+- `automation/perucompras_core.py` (Línea 59)
 - `modulo_modificar_productos/extract_dropdowns_modificar.py` (Línea 69)
-- `automation/perucompras_core.py` (Línea 79)
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 87)
 - `modulo_subir_pdf/workers.py` (Línea 10)
 - `modulo_subir_pdf/workers.py` (Línea 1109)
@@ -29,7 +29,7 @@
 - `modulo_subir_pdf/extraer_combos_mejora.py` (Línea 51)
 - `modulo_subir_pdf/test_extraccion_json.py` (Línea 59)
 - `modulo_subir_pdf/test_buscar_ficha.py` (Línea 40)
-- `automation/perucompras_core.py` (Línea 83)
+- `automation/perucompras_core.py` (Línea 63)
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 90)
 - `modulo_subir_pdf/workers.py` (Línea 14)
 - `modulo_subir_pdf/workers.py` (Línea 1110)
@@ -46,7 +46,7 @@
 - `modulo_subir_pdf/extraer_combos_mejora.py` (Línea 50)
 - `modulo_subir_pdf/test_extraccion_json.py` (Línea 60)
 - `modulo_subir_pdf/test_buscar_ficha.py` (Línea 39)
-- `automation/perucompras_core.py` (Línea 81)
+- `automation/perucompras_core.py` (Línea 61)
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 93)
 - `modulo_subir_pdf/workers.py` (Línea 12)
 - `modulo_subir_pdf/workers.py` (Línea 1112)
@@ -191,7 +191,7 @@
 
 ### Función `warning` (4 ocurrencias)
 - `modulo_subir_pdf/test_extraccion_json.py` (Línea 61)
-- `automation/perucompras_core.py` (Línea 80)
+- `automation/perucompras_core.py` (Línea 60)
 - `modulo_subir_pdf/workers.py` (Línea 11)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 175)
 
@@ -213,7 +213,7 @@
 - `modulo_modificar_productos/extract_dropdowns_modificar.py` (Línea 156)
 
 ### Función `success` (3 ocurrencias)
-- `automation/perucompras_core.py` (Línea 82)
+- `automation/perucompras_core.py` (Línea 62)
 - `modulo_subir_pdf/workers.py` (Línea 13)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
 

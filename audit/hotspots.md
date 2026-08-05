@@ -122,6 +122,7 @@
 | `utils/excel_parser.py` | `find_header_row` | 84 | 8 | **MEDIA** |
 | `modulo_modificar_productos/automation_mod/bulk_modificar.py` | `buscar_producto_api` | 195 | 8 | **MEDIA** |
 | `automation/browser.py` | `find_chromium_browsers_path` | 251 | 8 | **MEDIA** |
+| `automation/perucompras_core.py` | `consultar_json_productos` | 274 | 8 | **MEDIA** |
 | `automation/navigation.py` | `_select2_choose` | 289 | 8 | **MEDIA** |
 | `automation/bulk_upload.py` | `_match_parte` | 411 | 8 | **MEDIA** |
 | `automation/bulk_upload.py` | `process_bulk_upload` | 411 | 8 | **MEDIA** |
