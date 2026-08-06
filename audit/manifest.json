@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-06 09:02:52",
+  "generated_at": "2026-08-06 12:43:37",
   "total_files": 64,
-  "total_lines": 24272,
+  "total_lines": 24244,
   "files": [
     {
       "rel_path": "automation/__init__.py",
@@ -476,19 +476,19 @@
       "ext": ".py"
     },
     {
+      "rel_path": "modulo_subir_pdf/automation_otro_bot/stock.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_otro_bot\\stock.py",
+      "language": "python",
+      "lines": 1462,
+      "hash": "4ff47189b21e038b31b82fd5c21c1f3d5d4fe92924a0486ed389c10d3448fdf2",
+      "ext": ".py"
+    },
+    {
       "rel_path": "modulo_subir_pdf/automation_mod/navegacion_productos.py",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_mod\\navegacion_productos.py",
       "language": "python",
       "lines": 1464,
       "hash": "af444aa2e230f3460709821d2de15907b93a74cfa0fb659ab857e4a478584be4",
-      "ext": ".py"
-    },
-    {
-      "rel_path": "modulo_subir_pdf/automation_otro_bot/stock.py",
-      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_otro_bot\\stock.py",
-      "language": "python",
-      "lines": 1490,
-      "hash": "2d5aa70ace18373562b58ffb85881bdc0982756b613b75f40da04140d631de98",
       "ext": ".py"
     },
     {

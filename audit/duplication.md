@@ -255,7 +255,7 @@
 ### Función `log` (3 ocurrencias)
 - `modulo_subir_pdf/discovery_perucompras.py` (Línea 153)
 - `modulo_subir_pdf/discovery_v2_perucompras.py` (Línea 122)
-- `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 222)
+- `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 194)
 
 ### Función `apply_dropdowns_and_search` (2 ocurrencias)
 - `modulo_modificar_productos/automation_mod/navegacion_productos.py` (Línea 112)

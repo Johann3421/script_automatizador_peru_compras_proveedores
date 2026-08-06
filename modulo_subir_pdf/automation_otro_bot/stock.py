@@ -148,56 +148,28 @@ def _tiene_campos_login(page) -> bool:
 
 
 def _relogin(page, usuario: str, password: str, log_func, stop_event=None, captcha_bridge=None) -> bool:
-    """Vuelve a la pagina de login, se loguea de cero y navega a MejoraBasica.
-
-    Usa automation.login.do_login (la misma funcion del login inicial) porque
-    cierra mejor los modales del portal PeruCompras.
-    """
+    """Vuelve a la página de login y se loguea de cero usando la Función Padre centralizada login_automatico."""
     if stop_event is None:
         import threading
         stop_event = threading.Event()
-    log_func("🔁 Sesión expirada. Volviendo a login para re-loguear de cero...")
+    log_func("🔁 Sesión expirada. Ejecutando re-login automático...")
     try:
         if stop_event and stop_event.is_set():
             return False
 
+        from automation.perucompras_core import login_automatico, saltar_verificacion
 
-        # Importar do_login del flujo principal (mismo que login inicial)
-        try:
-            from automation.login import do_login
-        except Exception:
-            _root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            if _root not in sys.path:
-                sys.path.insert(0, _root)
-            from automation.login import do_login
-
-        # 1. Navegar a login usando domcontentloaded (más rápido y evita timeouts por modales)
-        log_func("  Navegando a pagina de login...")
-        page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=60_000)
-        if stop_event and stop_event.is_set():
-            return False
-        time.sleep(2)
-
-        # 2. Login fresco como la primera vez, con do_login (mejor manejo de modales)
-        log_func("  Intentando do_login...")
-        log_adapter = _LogAdapter(log_func)
-        ok = do_login(page, usuario, password, "", log_adapter, stop_event, captcha_bridge, max_retries=5)
-        if stop_event and stop_event.is_set():
-            return False
-        if not ok:
-            log_func("  ❌ Login falló tras sesión expirada")
+        # 1. Login automático idéntico a la primera vez (viewport HD + OCR sin limite)
+        ok = login_automatico(page, usuario, password, captcha_bridge, stop_event, log_func)
+        if not ok or (stop_event and stop_event.is_set()):
+            log_func("❌ Re-login falló.")
             return False
 
-        # 3. Navegar a MejoraBasica
-        log_func("  ✅ Re-login exitoso. Navegando a MejoraBasica...")
-        page.goto(MEJORA_URL, wait_until="domcontentloaded", timeout=60_000)
-        if stop_event and stop_event.is_set():
-            return False
-        page.wait_for_load_state("networkidle", timeout=30_000)
-        time.sleep(2)
+        # 2. Retroceso y navegación garantizada a MejoraBasica
+        saltar_verificacion(page, log_func)
         return True
     except Exception as e:
-        log_func(f"  ❌ Re-login falló: {e}")
+        log_func(f"❌ Re-login falló con excepción: {e}")
         return False
 
 
