@@ -1017,45 +1017,59 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
             if stop_event and stop_event.is_set():
                 return False, "Detenido por usuario"
 
-        # 4b. Esperar a que el modal de edición de existencias esté visible
+        # 4b. Esperar a que el modal de edición de existencias esté visible y cargado
         try:
             page.wait_for_selector(
-                ".modal:visible, [role='dialog']:visible, #MensajeModal:visible",
-                timeout=10_000,
+                ".modal.in, .modal.show, .modal:visible, [role='dialog']:visible, #MensajeModal:visible, #div_Modal_Existencias:visible",
+                timeout=15_000,
             )
         except Exception:
             pass
-        time.sleep(1)
+
         if stop_event and stop_event.is_set():
             return False, "Detenido por usuario"
 
-        # 5. Buscar input de stock EDITABLE (excluir readonly y N_StockAnt)
-        # ponytail: input[name='N_StockAnt'] es readonly con el stock viejo;
-        # el campo editable suele ser #N_Stock, input[name='N_Stock'] sin sufijo Ant.
-        # Si no se encuentra, buscar cualquier input editable con id/name que contenga "stock" o "existencia".
-        stock_input = page.locator(
-            "#N_Stock:not([readonly]), input[name='N_Stock']:not([readonly])"
-        ).first
-        if stock_input.count() == 0:
-            # fallback: cualquier input editable (no readonly) con id/name que matchee stock/exist
-            stock_input = page.locator(
+        # 5. Esperar activamente (hasta 20 segundos) a que el input de stock EDITABLE aparezca en el DOM
+        stock_input = None
+        for _ in range(20):
+            if stop_event and stop_event.is_set():
+                return False, "Detenido por usuario"
+
+            # Intentar localizar #N_Stock no readonly
+            inp = page.locator(
+                "#N_Stock:not([readonly]), input[name='N_Stock']:not([readonly]), #txtStock:not([readonly]), input[name='txtStock']:not([readonly])"
+            ).first
+
+            if inp.count() > 0 and inp.is_visible():
+                stock_input = inp
+                break
+
+            # Fallback: cualquier input editable (no readonly) con id/name que matchee stock/exist
+            inp_fallback = page.locator(
                 "input:not([readonly])[id*='tock' i]:not([id$='Ant']):not([name$='Ant']),"
                 "input:not([readonly])[name*='tock' i]:not([id$='Ant']):not([name$='Ant']),"
                 "input:not([readonly])[id*='xist' i],"
                 "input:not([readonly])[name*='xist' i]"
             ).first
-        if stock_input.count() == 0:
-            # Diagnóstico: loguear qué inputs hay en el modal
+
+            if inp_fallback.count() > 0 and inp_fallback.is_visible():
+                stock_input = inp_fallback
+                break
+
+            time.sleep(1.0)
+
+        if not stock_input or stock_input.count() == 0:
+            # Diagnóstico: loguear qué inputs hay en el modal si falló tras 20s
             try:
                 all_inputs = page.locator("input").all()
                 diag = []
-                for inp in all_inputs[:15]:
-                    attrs = inp.evaluate(
+                for inp_d in all_inputs[:15]:
+                    attrs = inp_d.evaluate(
                         "el => ({id: el.id, name: el.name, readonly: el.readOnly, "
                         "value: el.value, type: el.type, visible: el.offsetParent !== null})"
                     )
                     diag.append(str(attrs))
-                log_func(f"   🔍 Inputs visibles en modal: {diag}")
+                log(f"   🔍 Inputs visibles en modal tras 20s: {diag}")
             except Exception:
                 pass
             return False, "Campo de stock editable no encontrado"

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-06 08:39:48",
+  "generated_at": "2026-08-06 08:45:06",
   "total_files": 64,
-  "total_lines": 24251,
+  "total_lines": 24265,
   "files": [
     {
       "rel_path": "automation/__init__.py",
@@ -487,8 +487,8 @@
       "rel_path": "modulo_subir_pdf/automation_otro_bot/stock.py",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\automation_otro_bot\\stock.py",
       "language": "python",
-      "lines": 1469,
-      "hash": "2c8ec913a5f9ae4cce41241a3747cd9e686083c31c44003d899cd4c44c23ab22",
+      "lines": 1483,
+      "hash": "5288387b4aa7f58f6dd5842fb2decfde4dd3e0602fdb2d7949f02f9b6fc9ecce",
       "ext": ".py"
     },
     {
