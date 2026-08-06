@@ -93,15 +93,15 @@ def _ocr_captcha(image_bytes: bytes) -> str:
 
 
 def _solve_captcha(page: Page, log: LogWriter, stop_event: threading.Event, captcha_bridge=None) -> str | None:
-    """Intenta OCR con reintentos. Si falla, pide al usuario vía CaptchaBridge."""
-    for attempt in range(1, 5):
-        if stop_event.is_set():
-            return None
-
+    """Intenta OCR con reintentos continuos e ilimitados hasta lograr 6 caracteres válidos o ser detenido."""
+    attempt = 0
+    while not stop_event.is_set():
+        attempt += 1
         img = page.locator("#imgCaptcha").first
         if img.count() == 0:
-            log.error("#imgCaptcha no encontrado")
-            return None
+            log.error("#imgCaptcha no encontrado, esperando...")
+            time.sleep(2)
+            continue
 
         try:
             img_bytes = img.screenshot()
@@ -111,52 +111,39 @@ def _solve_captcha(page: Page, log: LogWriter, stop_event: threading.Event, capt
                 if bbox:
                     img_bytes = page.screenshot(clip=bbox)
                 else:
+                    time.sleep(1)
                     continue
             except Exception:
+                time.sleep(1)
                 continue
 
         if not img_bytes:
+            time.sleep(1)
             continue
 
         code = _ocr_captcha(img_bytes)
-        log.info(f"OCR intento {attempt}: detectado '{code}' ({len(code)} chars)")
+        log.info(f"OCR intento #{attempt}: detectado '{code}' ({len(code)} chars)")
 
         if len(code) == 6:
             return code
 
-        log.error(f"OCR no detectó exactamente 6 caracteres ({len(code)}), refrescando CAPTCHA...")
+        log.warning(f"OCR no detectó exactamente 6 caracteres ({len(code)}), refrescando CAPTCHA...")
+
+        if attempt % 8 == 0 and captcha_bridge is not None:
+            log.info("OCR solicitando entrada manual alternativa en la UI...")
+            try:
+                code_manual = captcha_bridge.request(img_bytes)
+                if code_manual and len(code_manual) >= 4:
+                    log.info(f"Código manual recibido: {code_manual}")
+                    return code_manual
+            except Exception:
+                pass
+
         try:
             page.locator("#spnActualizarCaptcha").first.click(force=True)
             time.sleep(2)
         except Exception:
-            pass
-
-    # OCR falló en todos los intentos → pedir al usuario
-    if captcha_bridge is not None:
-        log.info("OCR no pudo resolver el CAPTCHA. Solicitando entrada manual en la UI...")
-        log.info("Mirá la imagen del CAPTCHA en la pantalla e ingresá el código.")
-
-        for manual_attempt in range(1, 4):
-            if stop_event.is_set():
-                return None
-
-            img = page.locator("#imgCaptcha").first
-            try:
-                img_bytes = img.screenshot()
-            except Exception:
-                continue
-
-            code = captcha_bridge.request(img_bytes)
-            if code and len(code) >= 4:
-                log.info(f"Código manual recibido: {code}")
-                return code
-
-            log.error(f"Código manual inválido ({len(code) if code else 0} chars), refrescando...")
-            try:
-                page.locator("#spnActualizarCaptcha").first.click(force=True)
-                time.sleep(2)
-            except Exception:
-                pass
+            time.sleep(1)
 
     return None
 
@@ -169,12 +156,13 @@ def do_login(
     log: LogWriter,
     stop_event: threading.Event,
     captcha_bridge=None,
-    max_retries: int = 99,
+    max_retries: int = 999999,
 ) -> bool:
-    """Intenta login repetidamente (por defecto hasta 99 intentos) hasta ingresar o ser detenido."""
+    """Intenta login continuamente hasta ingresar o ser detenido por el usuario."""
     if stop_event is None:
         import threading
         stop_event = threading.Event()
+
     log.info(f"Navegando a {LOGIN_URL}")
     try:
         page.goto(LOGIN_URL, wait_until="networkidle")
@@ -183,11 +171,9 @@ def do_login(
     except Exception as e:
         log.warning(f"Advertencia al cargar página de login: {e}")
 
-    for retry in range(1, max_retries + 1):
-        if stop_event and stop_event.is_set():
-            log.info("⏹ Login cancelado por el usuario.")
-            return False
-
+    retry = 0
+    while not stop_event.is_set():
+        retry += 1
         log.info(f"🔑 Intento de login #{retry}")
 
         ok, is_fatal_credentials = _attempt_login_once(
@@ -196,7 +182,6 @@ def do_login(
         )
 
         if ok:
-            # Navegar directo al catálogo de ofertas (evita modales del dashboard)
             current = page.url
             if "t_ProductoOfertadoAmp" not in current:
                 log.info("Navegando al catálogo de ofertas...")
@@ -208,18 +193,17 @@ def do_login(
             return True
 
         if is_fatal_credentials:
-            log.error("❌ Se detienen los reintentos debido a credenciales inválidas o rechazadas por el portal.")
+            log.error("❌ Se detienen los reintentos debido a credenciales rechazadas por el portal.")
             return False
 
-        if retry < max_retries and not stop_event.is_set():
-            log.info(f"Reintentando login (intento #{retry + 1})...")
-            try:
-                page.goto(LOGIN_URL, wait_until="networkidle")
-                time.sleep(2)
-            except Exception:
-                pass
+        log.info(f"Reintentando login (intento #{retry + 1})...")
+        try:
+            page.goto(LOGIN_URL, wait_until="networkidle")
+            time.sleep(2)
+        except Exception:
+            time.sleep(2)
 
-    log.error(f"Login falló tras {max_retries} intentos.")
+    log.info("⏹ Login detenido por el usuario.")
     return False
 
 

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-05 18:59:16",
+  "generated_at": "2026-08-06 08:14:15",
   "total_files": 64,
-  "total_lines": 24206,
+  "total_lines": 24190,
   "files": [
     {
       "rel_path": "automation/__init__.py",
@@ -380,19 +380,19 @@
       "ext": ".py"
     },
     {
+      "rel_path": "automation/login.py",
+      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\login.py",
+      "language": "python",
+      "lines": 332,
+      "hash": "270b735e4719073671a5f30b83d30beaff6e0a669633eef933501c0f5c6929bd",
+      "ext": ".py"
+    },
+    {
       "rel_path": "modulo_subir_pdf/utils_mod/excel_parser_mod.py",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\utils_mod\\excel_parser_mod.py",
       "language": "python",
       "lines": 339,
       "hash": "90eee74139a3a8b7c40e46fa42e0af0f87d38c69d964e5a043aab64e94bdceee",
-      "ext": ".py"
-    },
-    {
-      "rel_path": "automation/login.py",
-      "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\login.py",
-      "language": "python",
-      "lines": 348,
-      "hash": "253252881fe5214925dee48cb78d75db7922d88fcbed3b10a8e833ffb07213cb",
       "ext": ".py"
     },
     {

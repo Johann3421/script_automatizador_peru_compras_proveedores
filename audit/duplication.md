@@ -218,7 +218,7 @@
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
 
 ### Función `do_login` (3 ocurrencias)
-- `automation/login.py` (Línea 164)
+- `automation/login.py` (Línea 151)
 - `modulo_subir_pdf/discovery_perucompras.py` (Línea 161)
 - `modulo_subir_pdf/discovery_v2_perucompras.py` (Línea 130)
 

@@ -1,8 +1,8 @@
 # Auditoría de Funciones: `automation/login.py`
 
 - **Lenguaje:** `python`
-- **Líneas de código:** 348
-- **Hash SHA256:** `253252881fe5`
+- **Líneas de código:** 332
+- **Hash SHA256:** `270b735e4719`
 - **Estrategia de Análisis:** Pasada directa
 
 ---
@@ -22,7 +22,7 @@
 - **Firma completa:** `def _eliminar_modales(page)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `is_visible, count, click, sleep, locator`
+- **Dependencias / Invocaciones:** `locator, click, count, sleep, is_visible`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def _trigger_materialize_validation(page, input_id)`
@@ -38,29 +38,29 @@
 - **Firma completa:** `def _ocr_captcha(image_bytes)`
 - **Propósito:** OCR del CAPTCHA con preprocesamiento mejorado.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `point, resize, open, image_to_string, BytesIO, convert, sub`
+- **Dependencias / Invocaciones:** `BytesIO, sub, convert, image_to_string, resize, open, point`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _solve_captcha(page, log, stop_event, captcha_bridge)`
-- **Línea inicial:** 95 | **Línea final:** 161
+- **Línea inicial:** 95 | **Línea final:** 148
 - **Firma completa:** `def _solve_captcha(page, log, stop_event, captcha_bridge)`
-- **Propósito:** Intenta OCR con reintentos. Si falla, pide al usuario vía CaptchaBridge.
+- **Propósito:** Intenta OCR con reintentos continuos e ilimitados hasta lograr 6 caracteres válidos o ser detenido.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `info, range, count, request, _ocr_captcha, click, bounding_box, error, sleep, is_set`
-- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 21)
+- **Dependencias / Invocaciones:** `locator, click, count, warning, error, sleep, info, _ocr_captcha, request, bounding_box`
+- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 17)
 
 ### `def do_login(page, usuario, password, captcha_key, log, stop_event, captcha_bridge, max_retries)`
-- **Línea inicial:** 164 | **Línea final:** 223
+- **Línea inicial:** 151 | **Línea final:** 207
 - **Firma completa:** `def do_login(page, usuario, password, captcha_key, log, stop_event, captcha_bridge, max_retries)`
-- **Propósito:** Intenta login repetidamente (por defecto hasta 99 intentos) hasta ingresar o ser detenido.
+- **Propósito:** Intenta login continuamente hasta ingresar o ser detenido por el usuario.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `info, range, _attempt_login_once, goto, Event, error, sleep, is_set, warning, wait_for_load_state`
-- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 15)
+- **Dependencias / Invocaciones:** `Event, warning, error, sleep, _attempt_login_once, info, wait_for_load_state, is_set, goto`
+- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 11)
 
 ### `def _attempt_login_once(page, usuario, password, captcha_key, log, stop_event, captcha_bridge)`
-- **Línea inicial:** 226 | **Línea final:** 347
+- **Línea inicial:** 210 | **Línea final:** 331
 - **Firma completa:** `def _attempt_login_once(page, usuario, password, captcha_key, log, stop_event, captcha_bridge)`
 - **Propósito:** Un solo intento de login. Retorna (éxito: bool, es_error_credenciales_fatal: bool).
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `click, is_set, info, _solve_captcha, lower, inner_text, sleep, go_back, rstrip, any`
+- **Dependencias / Invocaciones:** `_solve_captcha, locator, inner_text, rstrip, click, sleep, info, wait_for_load_state, lower, any`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 21)

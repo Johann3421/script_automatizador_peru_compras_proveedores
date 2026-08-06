@@ -34,8 +34,7 @@
 | `modulo_subir_pdf/tab_precios_json.py` | `_load_and_populate_catalog_menu` | 456 | 22 | **ALTA** |
 | `modulo_subir_pdf/automation_otro_bot/stock.py` | `analizar_excel_stock` | 1418 | 22 | **ALTA** |
 | `modulo_subir_pdf/automation_mod/navegacion_productos.py` | `agregar_caracteristica_texto` | 1464 | 22 | **ALTA** |
-| `automation/login.py` | `_solve_captcha` | 348 | 21 | **ALTA** |
-| `automation/login.py` | `_attempt_login_once` | 348 | 21 | **ALTA** |
+| `automation/login.py` | `_attempt_login_once` | 332 | 21 | **ALTA** |
 | `modulo_modificar_productos/main_modificar.py` | `_execute` | 1076 | 21 | **ALTA** |
 | `modulo_subir_pdf/workers.py` | `execute` | 2154 | 21 | **ALTA** |
 | `modulo_modificar_productos/intercept_modificar.py` | `on_request` | 238 | 20 | **ALTA** |
@@ -50,6 +49,7 @@
 | `modulo_subir_pdf/main_subir_pdf.py` | `_ui_done` | 3323 | 18 | **ALTA** |
 | `modulo_subir_pdf/test_ficha_endpoint.py` | `main` | 78 | 17 | **ALTA** |
 | `modulo_modificar_productos/automation_mod/bulk_modificar.py` | `run_bulk_modificar` | 195 | 17 | **ALTA** |
+| `automation/login.py` | `_solve_captcha` | 332 | 17 | **ALTA** |
 | `modulo_subir_pdf/utils_mod/excel_parser_mod.py` | `detect_columns` | 339 | 17 | **ALTA** |
 | `install_perucombras.py` | `create_launcher` | 745 | 16 | **ALTA** |
 | `modulo_modificar_productos/automation_mod/navegacion_productos.py` | `click_editar` | 756 | 16 | **ALTA** |
@@ -59,7 +59,6 @@
 | `modulo_subir_pdf/main_subir_pdf.py` | `start_stock_process` | 3323 | 16 | **ALTA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `start_stock_audit` | 3323 | 16 | **ALTA** |
 | `modulo_subir_pdf/utils_mod/audit_reporter.py` | `export_pdf_report` | 293 | 15 | **ALTA** |
-| `automation/login.py` | `do_login` | 348 | 15 | **ALTA** |
 | `modulo_modificar_productos/main_modificar.py` | `poll_queue` | 1076 | 15 | **ALTA** |
 | `modulo_subir_pdf/automation_otro_bot/stock.py` | `_relogin` | 1418 | 15 | **ALTA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `poll_queue` | 3323 | 15 | **ALTA** |
@@ -84,6 +83,7 @@
 | `modulo_subir_pdf/automation_mod/navegacion_productos.py` | `guardar_cambios` | 1464 | 12 | **ALTA** |
 | `build_installer.py` | `build` | 218 | 11 | **ALTA** |
 | `intercept_payload.py` | `on_request` | 229 | 11 | **ALTA** |
+| `automation/login.py` | `do_login` | 332 | 11 | **ALTA** |
 | `automation/bulk_upload.py` | `insertar_precios_masivo` | 411 | 11 | **ALTA** |
 | `modulo_subir_pdf/discovery_perucompras.py` | `clasificar_respuesta` | 489 | 11 | **ALTA** |
 | `install_perucombras.py` | `request_admin` | 745 | 11 | **ALTA** |
