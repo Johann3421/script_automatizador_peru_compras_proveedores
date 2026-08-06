@@ -900,12 +900,7 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
             except Exception:
                 pass
 
-            # ── PASO 1: Vaciar #C_Descripcion ANTES de que la tabla cargue
-            # CRITICAL: si el campo superior tiene texto, el portal filtra la tabla
-            # a 1 solo resultado. DataTables entonces solo ve ese 1 item y la búsqueda
-            # de abajo no encuentra nada. Limpiar via JS directo (sin .fill ni click).
-            search_input = page.locator("#C_Descripcion, input[name='C_Descripcion']").first
-            buscar_btn   = page.locator("#btnBuscar, button[name='btnBuscar'], .btn-primary:has-text('Buscar'), button:has-text('Iniciar Búsqueda')").first
+            # ── PASO 1: Garantizar que #C_Descripcion esté VACÍO (el cuadro de arriba jamás se debe usar)
             try:
                 page.evaluate("""() => {
                     const el = document.querySelector('#C_Descripcion, input[name="C_Descripcion"]');
@@ -918,68 +913,44 @@ def actualizar_producto(page, parte: str, stock: int, ficha: str = "", stop_even
             except Exception:
                 pass
 
-            # ── PASO 2: Esperar a que DataTables cargue la tabla COMPLETA (>1 fila)
-            # Si la tabla tiene solo 1 fila, es señal de que #C_Descripcion filtró.
-            # Esperamos hasta 15s para que el buscador de DataTables sea visible
-            # y la tabla tenga más de 1 fila.
+            # ── PASO 2: Esperar al buscador dinámico de DataTables (cuadro inferior)
             dynamic_search = page.locator(
-                "input[type='search'][aria-controls='TablaProductos'], #TablaProductos_filter input"
+                "input[type='search'][aria-controls='TablaProductos'], #TablaProductos_filter input, .dataTables_filter input"
             ).first
             has_dynamic = False
-            for _ in range(30):
+            for _ in range(25):
                 if stop_event and stop_event.is_set():
                     return False, "Detenido por usuario"
                 try:
                     if dynamic_search.count() > 0 and dynamic_search.is_visible():
-                        n_rows = page.locator("#TablaProductos tbody tr").count()
-                        if n_rows > 1:
-                            has_dynamic = True
-                            break
-                        # Solo 1 fila visible: intentar limpiar el campo superior de nuevo
-                        if n_rows == 1:
-                            try:
-                                page.evaluate("""() => {
-                                    const el = document.querySelector('#C_Descripcion, input[name="C_Descripcion"]');
-                                    if (el) { el.value = ''; el.dispatchEvent(new Event('input', {bubbles:true})); }
-                                }""")
-                            except Exception:
-                                pass
+                        has_dynamic = True
+                        break
                 except Exception:
                     pass
-                time.sleep(0.5)
-
-            if stop_event and stop_event.is_set():
-                return False, "Detenido por usuario"
-
-            # ── PASO 3: Buscar el número de parte en el buscador correcto
-            if has_dynamic:
-                # Usar DataTables search (cuadro de ABAJO) — no toca #C_Descripcion
-                try:
-                    dynamic_search.click(force=True)
-                    dynamic_search.fill("")
-                    dynamic_search.fill(str(parte))
-                    dynamic_search.press("Enter")
-                    dynamic_search.dispatch_event("input")
-                    time.sleep(1.0)
-                except Exception:
-                    has_dynamic = False
+                time.sleep(0.4)
 
             if not has_dynamic:
-                # Fallback: usar #C_Descripcion + btnBuscar (solo si DataTables no existe)
-                try:
-                    if search_input.count() > 0:
-                        search_input.fill("")
-                        search_input.fill(str(parte))
-                        time.sleep(0.5)
-                    if buscar_btn.count() > 0:
-                        buscar_btn.click(force=True, timeout=5_000)
-                    elif search_input.count() > 0:
-                        search_input.press("Enter")
-                except Exception as e:
-                    return False, f"No se pudo escribir en #C_Descripcion o buscar: {e}"
-                time.sleep(2)
+                return False, "Buscador de la tabla no disponible"
 
-            # 4. Verificar que la fila encontrada contiene EXACTAMENTE la parte buscada
+            # ── PASO 3: Buscar EXCLUSIVAMENTE en el buscador de la tabla de abajo
+            try:
+                dynamic_search.click(force=True)
+                dynamic_search.fill("")
+                dynamic_search.fill(str(parte))
+                dynamic_search.press("Enter")
+                dynamic_search.dispatch_event("input")
+                time.sleep(0.8)
+            except Exception as e:
+                return False, f"Error al interactuar con el buscador de la tabla: {e}"
+
+            # ── PASO 4: Verificar resultado de la búsqueda
+            try:
+                empty = page.locator(".dataTables_empty, td:has-text('Ningún dato disponible'), td:has-text('No se encontraron')").first
+                if empty.count() > 0 and empty.is_visible():
+                    return False, f"No se encontraron resultados para {parte}"
+            except Exception:
+                pass
+
             row = _find_exact_matching_row(page, parte)
             if not row or row.count() == 0:
                 return False, f"No se encontraron resultados para {parte}"
@@ -1251,9 +1222,10 @@ def paso4_actualizar_stock(page, df: list, pausa: float = PAUSA_ENTRE_PRODUCTOS,
                 log_func("   ⏹ Navegador cerrado, cancelando reintentos...")
                 break
 
+            tipo_fallo_tmp = clasificar_error(error_msg)
             # SI EL PRODUCTO NO EXISTE EN EL PORTAL, OMITIR REINTENTOS E IR AL SIGUIENTE INMEDIATAMENTE
-            if _es_sin_resultados(error_msg):
-                log_func(f"   ℹ️ {error_msg} (Sin coincidencias en el portal, omitiendo reintentos)")
+            if _es_sin_resultados(error_msg) or _es_sin_resultados(tipo_fallo_tmp):
+                log_func(f"   ℹ️ {error_msg} (Sin coincidencia en el portal, omitiendo reintentos)")
                 break
 
             log_func(f"   ⚠ Reintento {reintento}/{MAX_REINTENTOS}: {error_msg}")
