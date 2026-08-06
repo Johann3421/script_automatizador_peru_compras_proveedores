@@ -744,9 +744,24 @@ def paso3_filtros_stock(page, acuerdo=ACUERDO_TEXTO, catalogo=CATALOGO_TEXTO, ca
             log(f"⚠ No se encontró Categoría: {categoria}")
             return False
 
-        # Esperar a que la tabla y el buscador dinamico carguen (el portal es lento)
+        # 4. CRÍTICO: Clic en el botón "Iniciar Búsqueda" (#btnBuscar) para que el portal cargue la tabla
+        log("🚀 Clic en 'Iniciar Búsqueda' (#btnBuscar) para cargar la tabla del portal...")
+        time.sleep(1)
+        btn_buscar = page.locator("#btnBuscar, button[name='btnBuscar'], button:has-text('Iniciar Búsqueda')").first
+        if btn_buscar.count() > 0:
+            try:
+                btn_buscar.click(force=True)
+            except Exception:
+                pass
+        
+        page.evaluate("""() => {
+            const btn = document.getElementById('btnBuscar') || document.querySelector('button[name="btnBuscar"]');
+            if (btn) btn.click();
+        }""")
+
+        # 5. Esperar a que la tabla y el buscador dinámico de DataTables carguen
         log("⏳ Esperando carga de tabla de productos...")
-        time.sleep(3)
+        time.sleep(2)
         try:
             page.wait_for_selector(
                 ".loading, .spinner, .fa-spinner, .progress, .ajax-loading",
@@ -756,8 +771,8 @@ def paso3_filtros_stock(page, acuerdo=ACUERDO_TEXTO, catalogo=CATALOGO_TEXTO, ca
         except Exception:
             pass
         try:
-            page.locator("input[type='search'][aria-controls='TablaProductos']").first.wait_for(
-                state="visible", timeout=30_000
+            page.locator("input[type='search'][aria-controls='TablaProductos'], #TablaProductos_filter input, .dataTables_filter input, #TablaProductos tbody tr").first.wait_for(
+                state="visible", timeout=45_000
             )
         except Exception:
             pass
