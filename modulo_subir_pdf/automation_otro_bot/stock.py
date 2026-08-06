@@ -800,6 +800,20 @@ def _browser_cerrado(mensaje: str) -> bool:
     ])
 
 
+def _es_sin_resultados(mensaje: str) -> bool:
+    """Detecta si la respuesta indica explicitamente que el producto no existe en el portal."""
+    msg = str(mensaje).lower()
+    return any(p in msg for p in [
+        "no se encontraron resultados",
+        "ningún dato disponible",
+        "ningun dato disponible",
+        "sin resultados",
+        "0 registros",
+        "no coincide",
+        "producto no encontrado"
+    ])
+
+
 def _find_exact_matching_row(page, parte: str):
     """
     Busca en la tabla de productos la fila que contenga EXACTAMENTE el número de parte.
@@ -1236,6 +1250,12 @@ def paso4_actualizar_stock(page, df: list, pausa: float = PAUSA_ENTRE_PRODUCTOS,
             if _browser_cerrado(error_msg):
                 log_func("   ⏹ Navegador cerrado, cancelando reintentos...")
                 break
+
+            # SI EL PRODUCTO NO EXISTE EN EL PORTAL, OMITIR REINTENTOS E IR AL SIGUIENTE INMEDIATAMENTE
+            if _es_sin_resultados(error_msg):
+                log_func(f"   ℹ️ {error_msg} (Sin coincidencias en el portal, omitiendo reintentos)")
+                break
+
             log_func(f"   ⚠ Reintento {reintento}/{MAX_REINTENTOS}: {error_msg}")
             # Sleep interrumpible por STOP_EVENT
             for _ in range(4):
