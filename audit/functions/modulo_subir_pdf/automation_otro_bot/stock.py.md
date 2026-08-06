@@ -1,8 +1,8 @@
 # Auditoría de Funciones: `modulo_subir_pdf/automation_otro_bot/stock.py`
 
 - **Lenguaje:** `python`
-- **Líneas de código:** 1450
-- **Hash SHA256:** `8ec98635fbe0`
+- **Líneas de código:** 1469
+- **Hash SHA256:** `2c8ec913a5f9`
 - **Estrategia de Análisis:** Bloques por funciones (ast)
 
 ---
@@ -14,7 +14,7 @@
 - **Firma completa:** `def _is_logged_in(page)`
 - **Propósito:** Verifica si seguimos logueados: URL + ausencia de formulario login visible.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `locator, wait_for, lower`
+- **Dependencias / Invocaciones:** `lower, locator, wait_for`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _esta_en_mejorabasica(page)`
@@ -30,7 +30,7 @@
 - **Firma completa:** `def _tiene_campos_login(page)`
 - **Propósito:** Verifica si la página actual tiene los campos de login visibles.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `is_visible, locator, count`
+- **Dependencias / Invocaciones:** `is_visible, count, locator`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def _relogin(page, usuario, password, log_func, stop_event, captcha_bridge)`
@@ -41,7 +41,7 @@
 Usa automation.login.do_login (la misma funcion del login inicial) porque
 cierra mejor los modales del portal PeruCompras.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `_LogAdapter, goto, wait_for_load_state, do_login, dirname, abspath, is_set, Event, insert, sleep`
+- **Dependencias / Invocaciones:** `sleep, is_set, abspath, goto, log_func, wait_for_load_state, dirname, do_login, Event, _LogAdapter`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 15)
 
 ### `def log(msg)`
@@ -49,7 +49,7 @@ cierra mejor los modales del portal PeruCompras.
 - **Firma completa:** `def log(msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `getattr, encode, print, strftime, decode, now`
+- **Dependencias / Invocaciones:** `print, strftime, decode, getattr, now, encode`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def clear_modals(page)`
@@ -57,7 +57,7 @@ cierra mejor los modales del portal PeruCompras.
 - **Firma completa:** `def clear_modals(page)`
 - **Propósito:** Limpia todos los modales colgados.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `evaluate, log`
+- **Dependencias / Invocaciones:** `log, evaluate`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _trigger_materialize(page, input_id)`
@@ -65,7 +65,7 @@ cierra mejor los modales del portal PeruCompras.
 - **Firma completa:** `def _trigger_materialize(page, input_id)`
 - **Propósito:** Dispara eventos input/change/blur en un input para Materialize CSS.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `evaluate, log`
+- **Dependencias / Invocaciones:** `log, evaluate`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _solve_captcha(page)`
@@ -73,7 +73,7 @@ cierra mejor los modales del portal PeruCompras.
 - **Firma completa:** `def _solve_captcha(page)`
 - **Propósito:** OCR del CAPTCHA con 4 thresholds.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `log, resize, open, point, len, wait_for, screenshot, locator, convert, sub`
+- **Dependencias / Invocaciones:** `screenshot, open, sub, BytesIO, point, upper, resize, image_to_string, log, len`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _type_field(page, selector_list, value, materialize_id)`
@@ -81,7 +81,7 @@ cierra mejor los modales del portal PeruCompras.
 - **Firma completa:** `def _type_field(page, selector_list, value, materialize_id)`
 - **Propósito:** Escribe value en el primer selector que funcione.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, _trigger_materialize, count, fill, locator, click`
+- **Dependencias / Invocaciones:** `fill, count, str, click, _trigger_materialize, locator`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def login_with_ocr(page, usuario, password, captcha_bridge, max_intentos, skip_goto)`
@@ -92,7 +92,7 @@ cierra mejor los modales del portal PeruCompras.
 Si el OCR no está disponible, retorna False (caller debe caer a login manual).
 skip_goto: si True, asume que ya estamos en LOGIN_URL y no navega de nuevo.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `clear_modals, _type_field, evaluate, click, request, sub, upper, is_set, lower, goto`
+- **Dependencias / Invocaciones:** `request, evaluate, sub, upper, is_set, goto, wait_for_load_state, _type_field, clear_modals, lower`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 26)
 
 ### `def _normalizar_parte(valor)`
@@ -100,7 +100,7 @@ skip_goto: si True, asume que ya estamos en LOGIN_URL y no navega de nuevo.
 - **Firma completa:** `def _normalizar_parte(valor)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, isnan, strip, isinstance`
+- **Dependencias / Invocaciones:** `strip, isnan, isinstance, str`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _normalizar_stock(valor)`
@@ -108,7 +108,7 @@ skip_goto: si True, asume que ya estamos en LOGIN_URL y no navega de nuevo.
 - **Firma completa:** `def _normalizar_stock(valor)`
 - **Propósito:** Convierte a int, retorna None si es inválido.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, float, isnan, isinstance, int, strip`
+- **Dependencias / Invocaciones:** `int, isinstance, float, isnan, str, strip`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 8)
 
 ### `def analizar_excel_stock(excel_path)`
@@ -116,7 +116,7 @@ skip_goto: si True, asume que ya estamos en LOGIN_URL y no navega de nuevo.
 - **Firma completa:** `def analizar_excel_stock(excel_path)`
 - **Propósito:** Analiza el Excel de stock. Retorna {valido: bool, df: [...], errores: [...]}
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, load_workbook, log, list, len, isfile, iter_rows, append, close, enumerate`
+- **Dependencias / Invocaciones:** `_normalizar_parte, list, enumerate, lower, close, append, isfile, load_workbook, _normalizar_stock, any`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 22)
 
 ### `def paso2_navegacion_stock(page)`
@@ -124,19 +124,19 @@ skip_goto: si True, asume que ya estamos en LOGIN_URL y no navega de nuevo.
 - **Firma completa:** `def paso2_navegacion_stock(page)`
 - **Propósito:** Truco de retroceso + ir a MejoraBasica.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, go_back, log, sleep`
+- **Dependencias / Invocaciones:** `log, go_back, goto, sleep`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def seleccionar_por_texto_flexible(page, select_id, texto_objetivo, retries, delay)`
-- **Línea inicial:** 593 | **Línea final:** 683
+- **Línea inicial:** 593 | **Línea final:** 702
 - **Firma completa:** `def seleccionar_por_texto_flexible(page, select_id, texto_objetivo, retries, delay)`
-- **Propósito:** Selecciona option por match flexible, reintenta peticiones AJAX y dispara eventos 'change' en el DOM.
+- **Propósito:** Selecciona option por match flexible en Playwright disparando eventos jQuery/DOM.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, replace, range, len, normalizar, items, evaluate, strip, sleep, lower`
-- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 18)
+- **Dependencias / Invocaciones:** `evaluate, items, sleep, lower, str, split, replace, range, normalizar, strip`
+- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 24)
 
 ### `def _wait_for_select_options(page, select_id, timeout_ms)`
-- **Línea inicial:** 688 | **Línea final:** 701
+- **Línea inicial:** 707 | **Línea final:** 720
 - **Firma completa:** `def _wait_for_select_options(page, select_id, timeout_ms)`
 - **Propósito:** Espera a que un <select> tenga opciones con value no vacio.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -144,76 +144,76 @@ skip_goto: si True, asume que ya estamos en LOGIN_URL y no navega de nuevo.
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def paso3_filtros_stock(page, acuerdo, catalogo, categoria)`
-- **Línea inicial:** 704 | **Línea final:** 749
+- **Línea inicial:** 723 | **Línea final:** 768
 - **Firma completa:** `def paso3_filtros_stock(page, acuerdo, catalogo, categoria)`
 - **Propósito:** Selecciona Acuerdo > Catálogo > Categoría y espera que cargue la tabla.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `log, _wait_for_select_options, wait_for_selector, wait_for, locator, seleccionar_por_texto_flexible, sleep`
+- **Dependencias / Invocaciones:** `seleccionar_por_texto_flexible, sleep, _wait_for_select_options, wait_for_selector, log, locator, wait_for`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 9)
 
 ### `def clasificar_error(mensaje)`
-- **Línea inicial:** 756 | **Línea final:** 770
+- **Línea inicial:** 775 | **Línea final:** 789
 - **Firma completa:** `def clasificar_error(mensaje)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, lower`
+- **Dependencias / Invocaciones:** `lower, str`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 9)
 
 ### `def _browser_cerrado(mensaje)`
-- **Línea inicial:** 773 | **Línea final:** 781
+- **Línea inicial:** 792 | **Línea final:** 800
 - **Firma completa:** `def _browser_cerrado(mensaje)`
 - **Propósito:** Detecta si el error se debe a que el usuario cerró el navegador.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, any, lower`
+- **Dependencias / Invocaciones:** `lower, any, str`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _find_exact_matching_row(page, parte)`
-- **Línea inicial:** 784 | **Línea final:** 827
+- **Línea inicial:** 803 | **Línea final:** 846
 - **Firma completa:** `def _find_exact_matching_row(page, parte)`
 - **Propósito:** Busca en la tabla de productos la fila que contenga EXACTAMENTE el número de parte.
 Evita seleccionar por error 'PARTE-1' cuando se busca 'PARTE'.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `join, str, inner_text, count, split, search, locator, escape, upper, compile`
+- **Dependencias / Invocaciones:** `search, escape, all, split, join, compile, count, str, strip, inner_text`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 14)
 
 ### `def actualizar_producto(page, parte, stock, ficha, stop_event)`
-- **Línea inicial:** 830 | **Línea final:** 1123
+- **Línea inicial:** 849 | **Línea final:** 1142
 - **Firma completa:** `def actualizar_producto(page, parte, stock, ficha, stop_event)`
 - **Propósito:** Actualiza el stock de un producto. Retorna (éxito, mensaje_error).
-- **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `replace, dispatch_event, evaluate, click, all, inner_text, is_visible, press, inner_html, upper`
+- **Efectos Secundarios:** Navegación / Red HTTP
+- **Dependencias / Invocaciones:** `int, evaluate, append, is_visible, log_func, replace, wait_for_selector, upper, is_set, goto`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 84)
 
 ### `def _get_field(row, keys, default)`
-- **Línea inicial:** 1126 | **Línea final:** 1136
+- **Línea inicial:** 1145 | **Línea final:** 1155
 - **Firma completa:** `def _get_field(row, keys, default)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, items, isinstance, strip, lower`
+- **Dependencias / Invocaciones:** `items, isinstance, lower, str, strip`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 7)
 
 ### `def paso4_actualizar_stock(page, df, pausa, log_func, usuario, password, captcha_bridge, acuerdo, catalogo, categoria)`
-- **Línea inicial:** 1139 | **Línea final:** 1246
+- **Línea inicial:** 1158 | **Línea final:** 1265
 - **Firma completa:** `def paso4_actualizar_stock(page, df, pausa, log_func, usuario, password, captcha_bridge, acuerdo, catalogo, categoria)`
 - **Propósito:** Itera el DataFrame y actualiza cada producto. Retorna cantidad de éxitos.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `clasificar_error, _esta_en_mejorabasica, _get_field, round, paso3_filtros_stock, len, is_set, log_func, lower, sleep`
+- **Dependencias / Invocaciones:** `append, time, log_func, _relogin, _is_logged_in, len, is_set, _get_field, enumerate, _browser_cerrado`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 35)
 
 ### `def generar_reporte_excel(output_path, acuerdo, catalogo, categoria)`
-- **Línea inicial:** 1259 | **Línea final:** 1391
+- **Línea inicial:** 1278 | **Línea final:** 1410
 - **Firma completa:** `def generar_reporte_excel(output_path, acuerdo, catalogo, categoria)`
 - **Propósito:** Genera el reporte Excel con 3 hojas.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, Alignment, get_column_letter, PieChart, set_categories, makedirs, len, items, sum, cell`
+- **Dependencias / Invocaciones:** `abspath, add_data, dirname, cell, len, sorted, enumerate, now, PieChart, Font`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 14)
 
 ### `def ejecutar_stock(page, excel_path, usuario, password, acuerdo, catalogo, categoria, pausa, captcha_bridge, log_func)`
-- **Línea inicial:** 1398 | **Línea final:** 1450
+- **Línea inicial:** 1417 | **Línea final:** 1469
 - **Firma completa:** `def ejecutar_stock(page, excel_path, usuario, password, acuerdo, catalogo, categoria, pausa, captcha_bridge, log_func)`
 - **Propósito:** Ejecuta el flujo completo de stock. Retorna path del reporte.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `join, login_with_ocr, len, generar_reporte_excel, analizar_excel_stock, strftime, dirname, now, paso4_actualizar_stock, paso3_filtros_stock`
+- **Dependencias / Invocaciones:** `paso3_filtros_stock, strftime, paso4_actualizar_stock, dirname, log_func, analizar_excel_stock, login_with_ocr, now, join, generar_reporte_excel`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def __init__(self, log_func)`
@@ -277,5 +277,5 @@ Evita seleccionar por error 'PARTE-1' cuando se busca 'PARTE'.
 - **Firma completa:** `def normalizar(s)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, replace, items, strip, lower`
+- **Dependencias / Invocaciones:** `items, lower, replace, str, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)

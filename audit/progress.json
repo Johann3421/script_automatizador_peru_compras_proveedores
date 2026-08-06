@@ -351,9 +351,9 @@
     },
     "modulo_subir_pdf/automation_otro_bot/stock.py": {
       "status": "done",
-      "lines": 1450,
-      "hash": "8ec98635fbe0c4871894a065efbbec90567822c415171d333c03a8abbca77421",
-      "updated_at": "2026-08-06 08:18:11"
+      "lines": 1469,
+      "hash": "2c8ec913a5f9ae4cce41241a3747cd9e686083c31c44003d899cd4c44c23ab22",
+      "updated_at": "2026-08-06 08:39:48"
     },
     "modulo_subir_pdf/automation_mod/navegacion_productos.py": {
       "status": "done",

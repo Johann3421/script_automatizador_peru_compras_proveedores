@@ -591,7 +591,7 @@ def paso2_navegacion_stock(page):
 
 
 def seleccionar_por_texto_flexible(page, select_id, texto_objetivo, retries=6, delay=1.5):
-    """Selecciona option por match flexible, reintenta peticiones AJAX y dispara eventos 'change' en el DOM."""
+    """Selecciona option por match flexible en Playwright disparando eventos jQuery/DOM."""
     def normalizar(s):
         if not s:
             return ""
@@ -608,8 +608,8 @@ def seleccionar_por_texto_flexible(page, select_id, texto_objetivo, retries=6, d
             () => {{
                 let sel = document.querySelector('{select_id}');
                 if (!sel) {{
-                    const candidates = document.querySelectorAll('select');
                     const key = '{select_id}'.replace('#', '').toLowerCase();
+                    const candidates = document.querySelectorAll('select');
                     for (let s of candidates) {{
                         if (s.id.toLowerCase().includes(key) || s.name.toLowerCase().includes(key)) {{
                             sel = s;
@@ -619,48 +619,64 @@ def seleccionar_por_texto_flexible(page, select_id, texto_objetivo, retries=6, d
                 }}
                 if (!sel) return [];
                 return Array.from(sel.options).map(o => ({{
-                    value: o.value, text: o.text, norm: o.text.toLowerCase()
+                    value: o.value, text: o.text
                 }}));
             }}
         """)
 
-        if options and len(options) > 1:
+        if options and len(options) > 0:
             selected_val = None
 
-            # 1. Match exacto (normalizado)
+            # a. Match exacto (normalizado)
             for opt in options:
                 if normalizar(opt["text"]) == target:
                     selected_val = opt["value"]
                     break
 
-            # 2. Contiene al target
+            # b. Contiene el target
             if not selected_val:
                 for opt in options:
                     if target in normalizar(opt["text"]):
                         selected_val = opt["value"]
                         break
 
-            # 3. El target contiene al option
+            # c. El target contiene al option text
             if not selected_val:
                 for opt in options:
-                    if normalizar(opt["text"]) in target and len(opt["text"].strip()) >= 3:
+                    norm_opt = normalizar(opt["text"])
+                    if norm_opt and norm_opt in target and len(norm_opt) >= 3:
                         selected_val = opt["value"]
                         break
 
-            # 4. Match por código o ID de valor
+            # d. Coincidencia por primera palabra/código relevante (p.ej. "EXT-CE-2022-5")
+            if not selected_val:
+                words = [w for w in target.split() if len(w) >= 3]
+                if words:
+                    first_code = words[0]
+                    for opt in options:
+                        if first_code in normalizar(opt["text"]):
+                            selected_val = opt["value"]
+                            break
+
+            # e. Match por value exacto
             if not selected_val:
                 for opt in options:
                     if str(opt["value"]).strip() == str(texto_objetivo).strip():
                         selected_val = opt["value"]
                         break
 
-            if selected_val:
+            if selected_val is not None:
+                try:
+                    page.select_option(select_id, value=selected_val)
+                except Exception:
+                    pass
+
                 page.evaluate(f"""
                     (val) => {{
                         let sel = document.querySelector('{select_id}');
                         if (!sel) {{
-                            const candidates = document.querySelectorAll('select');
                             const key = '{select_id}'.replace('#', '').toLowerCase();
+                            const candidates = document.querySelectorAll('select');
                             for (let s of candidates) {{
                                 if (s.id.toLowerCase().includes(key) || s.name.toLowerCase().includes(key)) {{
                                     sel = s;
@@ -672,6 +688,9 @@ def seleccionar_por_texto_flexible(page, select_id, texto_objetivo, retries=6, d
                             sel.value = val;
                             sel.dispatchEvent(new Event('change', {{ bubbles: true }}));
                             sel.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                            if (window.jQuery && window.jQuery(sel)) {{
+                                window.jQuery(sel).trigger('change');
+                            }}
                         }}
                     }}
                 """, selected_val)
