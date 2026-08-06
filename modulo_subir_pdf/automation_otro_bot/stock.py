@@ -590,9 +590,8 @@ def paso2_navegacion_stock(page):
         log(f"⚠ Error navegando a MejoraBasica: {e}")
 
 
-def seleccionar_por_texto_flexible(page, select_id, texto_objetivo):
-    """Selecciona option que matchea exacto, contiene, o está contenido."""
-    # Normalizar acentos
+def seleccionar_por_texto_flexible(page, select_id, texto_objetivo, retries=6, delay=1.5):
+    """Selecciona option por match flexible, reintenta peticiones AJAX y dispara eventos 'change' en el DOM."""
     def normalizar(s):
         if not s:
             return ""
@@ -603,50 +602,83 @@ def seleccionar_por_texto_flexible(page, select_id, texto_objetivo):
         return s
 
     target = normalizar(texto_objetivo)
-    options = page.evaluate(f"""
-        () => {{
-            const sel = document.querySelector('{select_id}');
-            if (!sel) return [];
-            return Array.from(sel.options).map(o => ({{
-                value: o.value, text: o.text, norm: o.text.toLowerCase()
-            }}));
-        }}
-    """)
-    if not options:
-        return False
 
-    # 1. Match exacto (normalizado)
-    for opt in options:
-        if normalizar(opt["text"]) == target:
-            page.select_option(select_id, value=opt["value"])
-            return True
+    for attempt in range(retries):
+        options = page.evaluate(f"""
+            () => {{
+                let sel = document.querySelector('{select_id}');
+                if (!sel) {{
+                    const candidates = document.querySelectorAll('select');
+                    const key = '{select_id}'.replace('#', '').toLowerCase();
+                    for (let s of candidates) {{
+                        if (s.id.toLowerCase().includes(key) || s.name.toLowerCase().includes(key)) {{
+                            sel = s;
+                            break;
+                        }}
+                    }}
+                }}
+                if (!sel) return [];
+                return Array.from(sel.options).map(o => ({{
+                    value: o.value, text: o.text, norm: o.text.toLowerCase()
+                }}));
+            }}
+        """)
 
-    # 2. Contiene al target
-    for opt in options:
-        if target in normalizar(opt["text"]):
-            page.select_option(select_id, value=opt["value"])
-            return True
+        if options and len(options) > 1:
+            selected_val = None
 
-    # 3. El target contiene al option
-    for opt in options:
-        if normalizar(opt["text"]) in target:
-            page.select_option(select_id, value=opt["value"])
-            return True
+            # 1. Match exacto (normalizado)
+            for opt in options:
+                if normalizar(opt["text"]) == target:
+                    selected_val = opt["value"]
+                    break
 
-    # 4. Coincidencia por código o palabra principal (p.ej. "EXT-CE-2022-5")
-    words = [w for w in target.split() if len(w) >= 3]
-    if words:
-        first_code = words[0]
-        for opt in options:
-            if first_code in normalizar(opt["text"]):
-                page.select_option(select_id, value=opt["value"])
+            # 2. Contiene al target
+            if not selected_val:
+                for opt in options:
+                    if target in normalizar(opt["text"]):
+                        selected_val = opt["value"]
+                        break
+
+            # 3. El target contiene al option
+            if not selected_val:
+                for opt in options:
+                    if normalizar(opt["text"]) in target and len(opt["text"].strip()) >= 3:
+                        selected_val = opt["value"]
+                        break
+
+            # 4. Match por código o ID de valor
+            if not selected_val:
+                for opt in options:
+                    if str(opt["value"]).strip() == str(texto_objetivo).strip():
+                        selected_val = opt["value"]
+                        break
+
+            if selected_val:
+                page.evaluate(f"""
+                    (val) => {{
+                        let sel = document.querySelector('{select_id}');
+                        if (!sel) {{
+                            const candidates = document.querySelectorAll('select');
+                            const key = '{select_id}'.replace('#', '').toLowerCase();
+                            for (let s of candidates) {{
+                                if (s.id.toLowerCase().includes(key) || s.name.toLowerCase().includes(key)) {{
+                                    sel = s;
+                                    break;
+                                }}
+                            }}
+                        }}
+                        if (sel) {{
+                            sel.value = val;
+                            sel.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                            sel.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                        }}
+                    }}
+                """, selected_val)
+                time.sleep(delay)
                 return True
 
-    # 5. Coincidencia directa por ID de value (p.ej. "252" o "11740")
-    for opt in options:
-        if str(opt["value"]).strip() == str(texto_objetivo).strip():
-            page.select_option(select_id, value=opt["value"])
-            return True
+        time.sleep(delay)
 
     return False
 

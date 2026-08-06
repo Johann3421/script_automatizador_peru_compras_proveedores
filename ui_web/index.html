@@ -701,13 +701,23 @@
     function loadCatalogOptions() {
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.get_catalog_options().then(res => {
-          if (res && res.combinaciones) {
+          if (res && res.combinaciones && res.combinaciones.length > 0) {
             catalogData = res;
             populateCatalogoDropdowns();
+          } else {
+            setTimeout(loadCatalogOptions, 400);
           }
+        }).catch(() => {
+          setTimeout(loadCatalogOptions, 400);
         });
+      } else {
+        setTimeout(loadCatalogOptions, 400);
       }
     }
+
+    window.addEventListener('pywebviewready', () => {
+      loadCatalogOptions();
+    });
 
     function populateCatalogoDropdowns() {
       const comboCat = document.getElementById('comboCat');

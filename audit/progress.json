@@ -339,9 +339,9 @@
     },
     "ui_web/index.html": {
       "status": "done",
-      "lines": 1047,
-      "hash": "5a98ef0c4971a2ad7d1c8e6696820ba0db2ae51401341f7ac223d9c5da8a125b",
-      "updated_at": "2026-08-05 18:40:50"
+      "lines": 1057,
+      "hash": "31d41181f07944de6c001cbcc279c85e6665e3ac89e5198e2aeff6f5cae543b6",
+      "updated_at": "2026-08-06 08:18:11"
     },
     "modulo_modificar_productos/main_modificar.py": {
       "status": "done",
@@ -351,9 +351,9 @@
     },
     "modulo_subir_pdf/automation_otro_bot/stock.py": {
       "status": "done",
-      "lines": 1418,
-      "hash": "eb5b85a3065c5b50d49ee3073731623a2a5aa861831841e8ad1af23fbeadfcb5",
-      "updated_at": "2026-08-05 18:40:50"
+      "lines": 1450,
+      "hash": "8ec98635fbe0c4871894a065efbbec90567822c415171d333c03a8abbca77421",
+      "updated_at": "2026-08-06 08:18:11"
     },
     "modulo_subir_pdf/automation_mod/navegacion_productos.py": {
       "status": "done",
