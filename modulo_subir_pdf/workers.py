@@ -1451,19 +1451,26 @@ def execute_test_precios(app, usuario, password, headless, log_func,
 #  TRABAJADORES DE SUBIDA DE PRECIOS REAL
 # ═══════════════════════════════════════════════════════════════════
 
+def _clean_match_str(s):
+    return re.sub(r'[^A-Z0-9]', '', (s or "").upper().strip())
+
 def _buscar_match_pc(rec_local, all_products):
-    nro_local = (rec_local.get("nro_parte_o_cdigo_nico_de_identificacin") or rec_local.get("nro_parte") or rec_local.get("ID_CatalogoProducto") or rec_local.get("ID_ProductoOfertado") or "").upper().strip()
-    desc_local = (rec_local.get("descripcin_fichaproducto") or rec_local.get("descripcion_fichaproducto") or rec_local.get("C_Descripcion") or rec_local.get("parte") or "").upper().strip()
+    nro_local = str(rec_local.get("nro_parte_o_cdigo_nico_de_identificacin") or rec_local.get("nro_parte") or rec_local.get("ID_CatalogoProducto") or rec_local.get("ID_ProductoOfertado") or "").strip()
+    desc_local = str(rec_local.get("descripcin_fichaproducto") or rec_local.get("descripcion_fichaproducto") or rec_local.get("C_Descripcion") or rec_local.get("parte") or "").strip()
     
+    clean_nro = _clean_match_str(nro_local)
+    clean_desc = _clean_match_str(desc_local)
+
     for p in all_products:
-        desc_pc = (p.get("C_Descripcion") or "").upper().strip()
-        nro_pc = (str(p.get("N_CatalogoProducto") or "")).upper().strip()
-        
+        desc_pc = str(p.get("C_Descripcion") or "").strip()
+        nro_pc = str(p.get("N_CatalogoProducto") or "").strip()
+        clean_pc = _clean_match_str(desc_pc)
+
         if nro_local and nro_pc and nro_local == nro_pc:
             return p
-        if desc_local and desc_pc and desc_local == desc_pc:
+        if clean_nro and len(clean_nro) >= 4 and clean_nro in clean_pc:
             return p
-        if nro_local and desc_pc and nro_local in desc_pc:
+        if clean_desc and len(clean_desc) >= 10 and clean_desc in clean_pc:
             return p
     return None
 
@@ -1819,30 +1826,54 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
         if oks > 0:
             log_func(app, f"💾 Confirmando y enviando {oks} ofertas ingresadas exitosamente...")
             try:
-                log_func(app, "🔄 Recargando página de Perú Compras para refrescar la tabla...")
-                page.reload(wait_until="domcontentloaded")
-                time.sleep(3)
+                # 1. Click en el botón Enviar Oferta (físico + JS)
+                log_func(app, "🖱 Haciendo click en 'Enviar oferta'...")
+                page.evaluate("""() => {
+                    const btn = document.querySelector('#btn_enviarOferta2, #btn_enviarOferta, #btnEnviarOferta, [onclick*="EnviarOferta"]');
+                    if (btn) btn.click();
+                }""")
+                time.sleep(2.5)
                 
-                # Buscamos el botón de enviar
-                btn = page.locator("#btn_enviarOferta2, #btn_enviarOferta, button:text('Enviar oferta')").first
-                if btn.is_visible():
-                    log_func(app, "🖱 Haciendo click físico en el botón 'Enviar oferta' en la página...")
-                    btn.click()
-                    time.sleep(4)
-                    
-                    # Aceptar cuadro de diálogo SweetAlert o de confirmación si aparece
-                    try:
-                        confirm_btn = page.locator(".swal2-confirm, button:text('Aceptar'), button:text('Confirmar')").first
-                        confirm_btn.wait_for(state="visible", timeout=5000)
-                        confirm_btn.click()
-                        log_func(app, "✅ Diálogo de confirmación aceptado en pantalla.")
-                        time.sleep(3)
-                    except Exception as ex:
-                        log_func(app, f"ℹ No se detectó o no apareció popup de confirmación: {ex}")
-                    log_func(app, "✅ Confirmación física completada.")
-                else:
-                    log_func(app, "⚠ Botón de enviar no visible en la página. Intentando fallback por API...")
-                    _enviar_oferta_precios(page, log_func, app)
+                # 2. Hacer click en el botón de confirmación del modal custom del portal (._wModal_btn_ok / ._wModal_btn_blue)
+                log_func(app, "🖱 Confirmando diálogo modal de Perú Compras (Aceptar / Sí)...")
+                confirm_selector = "._wModal_btn_ok, ._wModal_btn_blue, ._wModal_btn:has-text('Aceptar'), ._wModal_btn:has-text('Sí'), ._wModal_btn:has-text('Si'), .swal2-confirm, button:has-text('Aceptar'), a:has-text('Aceptar')"
+                
+                modal_ok = False
+                try:
+                    confirm_el = page.locator(confirm_selector).first
+                    if confirm_el.is_visible(timeout=4000):
+                        confirm_el.click(force=True)
+                        modal_ok = True
+                        log_func(app, "✅ Diálogo de confirmación aceptado (._wModal_btn_ok).")
+                        time.sleep(4)
+                except Exception as modal_ex:
+                    pass
+
+                if not modal_ok:
+                    log_func(app, "ℹ Intentando click por evaluación JS DOM en modal _wModal_btn_ok...")
+                    eval_ok = page.evaluate("""() => {
+                        const target = document.querySelector('._wModal_btn_ok, ._wModal_btn_blue, ._wModal_btn');
+                        if (target) {
+                            target.click();
+                            return true;
+                        }
+                        const allDivs = Array.from(document.querySelectorAll('div, button, a'));
+                        const okDiv = allDivs.find(d => {
+                            const t = (d.textContent || '').trim().toLowerCase();
+                            return (t === 'aceptar' || t === 'sí' || t === 'si') && d.offsetWidth > 0;
+                        });
+                        if (okDiv) {
+                            okDiv.click();
+                            return true;
+                        }
+                        return false;
+                    }""")
+                    if eval_ok:
+                        log_func(app, "✅ Diálogo de confirmación aceptado vía JS DOM.")
+                        time.sleep(4)
+                    else:
+                        log_func(app, "⚠️ Falló confirmación de modal UI. Ejecutando fallback API...")
+                        _enviar_oferta_precios(page, log_func, app)
             except Exception as e:
                 log_func(app, f"❌ Error confirmando en UI ({e}). Intentando fallback por API...")
                 _enviar_oferta_precios(page, log_func, app)
