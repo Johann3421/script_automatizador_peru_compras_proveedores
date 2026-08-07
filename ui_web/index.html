@@ -472,12 +472,12 @@
               <thead>
                 <tr>
                   <th style="width: 35px;">#</th>
-                  <th>ID Ficha</th>
-                  <th>Número de Parte</th>
-                  <th style="width: 90px; text-align: right;">Precio Base</th>
-                  <th style="width: 80px; text-align: center;">Desc. %</th>
-                  <th style="width: 90px; text-align: right;">Precio JSON</th>
-                  <th style="width: 100px; text-align: center;">Estado Envío</th>
+                  <th style="width: 140px;">N° Parte / ID</th>
+                  <th>Descripción / Marca</th>
+                  <th style="width: 90px; text-align: right;">Precio Mín</th>
+                  <th style="width: 90px; text-align: right;">Precio Máx</th>
+                  <th style="width: 105px; text-align: right;">Precio Aplicado</th>
+                  <th style="width: 100px; text-align: center;">Estado</th>
                 </tr>
               </thead>
               <tbody id="jsonGridBody">
@@ -490,6 +490,15 @@
         <div class="right-col">
           <div class="sec-header" style="background: var(--azul-pc); color: white;">PARÁMETROS SUBIDA JSON</div>
           <div class="inspector-body">
+            <div class="form-group">
+              <label style="color: var(--azul-pc); font-weight: bold;">Estrategia de Precio (CEAM Auditor):</label>
+              <select id="jsonPriceStrategy" class="form-control" onchange="if(window._lastLoadedJsonRows) renderJsonTable(window._lastLoadedJsonRows)">
+                <option value="min">Precio Mínimo de Mercado (Más Bajo)</option>
+                <option value="max">Precio Máximo de Mercado (Más Alto)</option>
+                <option value="ref" selected>Precio Referencial (P. Ref)</option>
+                <option value="med">Precio Mediana (Equilibrado)</option>
+              </select>
+            </div>
             <div class="form-group">
               <label>Tipo de Oferta:</label>
               <select class="form-control">
@@ -894,6 +903,7 @@
             badge.className = "status-badge ok";
             badge.innerText = `✓ JSON/Excel cargado: ${res.name} (${res.rows.length} ofertas)`;
             
+            window._lastLoadedJsonRows = res.rows;
             renderJsonTable(res.rows);
             logJsonConsole(`[JSON OK] Archivo cargado: ${res.name} (${res.rows.length} ofertas)`, 'log-ok');
           }
@@ -903,6 +913,7 @@
 
     function clearJsonFile() {
       document.getElementById('jsonFilePath').value = "";
+      window._lastLoadedJsonRows = null;
       const badge = document.getElementById('jsonBadge');
       badge.className = "status-badge warn";
       badge.innerText = "⚠️ Cargar JSON o generar oferta desde catálogo";
@@ -916,21 +927,44 @@
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay archivo JSON cargado</td></tr>';
         return;
       }
+
+      window._lastLoadedJsonRows = rows;
+      const priceStrategy = document.getElementById('jsonPriceStrategy') ? document.getElementById('jsonPriceStrategy').value : 'ref';
+
       tbody.innerHTML = rows.map((r, i) => {
-        const idFicha = r.ID_CatalogoProducto || r.ID_ProductoOfertado || `FICHA-${10000+i}`;
-        const desc = r.C_Descripcion || r.parte || r.nro_parte || `Producto ${i+1}`;
+        // N° Parte o ID Ficha
+        const nroParte = r.nro_parte_o_cdigo_nico_de_identificacin || r.nro_parte || r.ID_CatalogoProducto || r.ID_ProductoOfertado || `FICHA-${10000+i}`;
+        
+        // Descripción
+        const desc = r.descripcin_fichaproducto || r.descripcion_fichaproducto || r.C_Descripcion || r.parte || `Producto ${i+1}`;
+        
+        // Precios CEAM Auditor
+        const pRef = r.precio_referencia !== undefined ? r.precio_referencia : null;
+        const pMin = r.precio_min !== undefined ? r.precio_min : null;
+        const pMax = r.precio_max !== undefined ? r.precio_max : null;
+        const pMed = r.precio_mediana !== undefined ? r.precio_mediana : null;
+
+        // Determinar precio final según estrategia o valor directo del portal/excel
+        let precioFinal = 0.0;
+        if (priceStrategy === 'min' && pMin !== null) precioFinal = pMin;
+        else if (priceStrategy === 'max' && pMax !== null) precioFinal = pMax;
+        else if (priceStrategy === 'med' && pMed !== null) precioFinal = pMed;
+        else if (pRef !== null) precioFinal = pRef;
+        else if (r.N_PrecioOfertado !== undefined) precioFinal = r.N_PrecioOfertado;
+        else if (r.precio !== undefined) precioFinal = r.precio;
+
         const moneda = r.C_MonedaOfertada ? (r.C_MonedaOfertada === 'USD' ? '$' : 'S/') : 'S/';
-        const precio = r.N_PrecioOfertado !== undefined ? r.N_PrecioOfertado : (r.precio || '0.00');
-        const estado = r.C_Estado || 'Pendiente API';
+        const estado = r.estado_ficha_producto || r.C_Estado || 'Pendiente API';
+        const marca = r.marca ? ` [${r.marca}]` : '';
 
         return `
           <tr>
             <td style="text-align: center;">${i+1}</td>
-            <td>${idFicha}</td>
-            <td><strong title="${desc}">${desc.length > 50 ? desc.substring(0,47)+'...' : desc}</strong></td>
-            <td style="text-align: right;">${moneda} ${precio}</td>
-            <td style="text-align: center;">0.0%</td>
-            <td style="text-align: right; font-weight: bold; color: var(--azul-pc);">${moneda} ${precio}</td>
+            <td><strong>${nroParte}</strong></td>
+            <td><strong title="${desc}">${desc.length > 50 ? desc.substring(0,47)+'...' : desc}${marca}</strong></td>
+            <td style="text-align: right; color: var(--text-sec);">${pMin !== null ? moneda + ' ' + pMin : 'N/A'}</td>
+            <td style="text-align: right; color: var(--text-sec);">${pMax !== null ? moneda + ' ' + pMax : 'N/A'}</td>
+            <td style="text-align: right; font-weight: bold; color: var(--azul-pc);">${moneda} ${precioFinal}</td>
             <td style="text-align: center; color: var(--ok-text); font-weight: bold;">${estado}</td>
           </tr>
         `;

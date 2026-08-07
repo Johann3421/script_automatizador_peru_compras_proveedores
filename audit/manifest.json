@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-07 10:12:34",
+  "generated_at": "2026-08-07 10:17:42",
   "total_files": 64,
-  "total_lines": 24535,
+  "total_lines": 24569,
   "files": [
     {
       "rel_path": "automation/__init__.py",
@@ -471,8 +471,8 @@
       "rel_path": "ui_web/index.html",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui_web\\index.html",
       "language": "html",
-      "lines": 1103,
-      "hash": "2ca3e06a67879ae71c19ec1909d1675aab86fa7fcb653fc561c4e5ac46d0de19",
+      "lines": 1137,
+      "hash": "833c17e2eea40a340faa57c064cbd02a1f907b5a510881795d6d892bfb295ce6",
       "ext": ".html"
     },
     {
