@@ -2209,6 +2209,41 @@ class SubirPdfApp(ctk.CTk):
                         return
         self.combo_estado.configure(values=["Sin estados"])
 
+    def _on_extract_json_portal(self):
+        usuario = self.entry_stock_user.get().strip() if hasattr(self, 'entry_stock_user') and hasattr(self.entry_stock_user, 'get') else "estalin.huamali01"
+        password = self.entry_stock_pass.get().strip() if hasattr(self, 'entry_stock_pass') and hasattr(self.entry_stock_pass, 'get') else ""
+        acuerdo = self.option_stock_acuerdo.get().strip() if hasattr(self, 'option_stock_acuerdo') and hasattr(self.option_stock_acuerdo, 'get') else "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES"
+        catalogo = self.option_stock_catalogo.get().strip() if hasattr(self, 'option_stock_catalogo') and hasattr(self.option_stock_catalogo, 'get') else "COMPUTADORAS DE ESCRITORIO"
+        categoria = self.option_stock_categoria.get().strip() if hasattr(self, 'option_stock_categoria') and hasattr(self.option_stock_categoria, 'get') else "COMPUTADORA TODO EN UNO"
+        visible = bool(getattr(getattr(self, 'check_stock_visible', None), 'get', lambda: False)())
+
+        def _log(msg):
+            print(f"[JSON EXTRACTOR] {msg}")
+            if hasattr(self, '_api_bridge') and self._api_bridge and getattr(self._api_bridge, '_window', None):
+                try:
+                    js_msg = json.dumps(msg)
+                    self._api_bridge._window.evaluate_js(f"logJsonConsole({js_msg});")
+                except Exception:
+                    pass
+
+        def _on_done(fichas, filepath):
+            if hasattr(self, '_api_bridge') and self._api_bridge and getattr(self._api_bridge, '_window', None):
+                try:
+                    js_data = json.dumps(fichas)
+                    js_file = json.dumps(os.path.basename(filepath) if filepath else "")
+                    self._api_bridge._window.evaluate_js(f"renderJsonTable({js_data});")
+                    if filepath:
+                        self._api_bridge._window.evaluate_js(f"logJsonConsole('[JSON OK] Dataset guardado: ' + {js_file} + ' (' + {len(fichas)} + ' fichas)', 'log-ok');")
+                except Exception:
+                    pass
+
+        from workers import execute_json_extractor
+        threading.Thread(
+            target=execute_json_extractor,
+            args=(self, usuario, password, acuerdo, catalogo, categoria, _on_done, _log, not visible),
+            daemon=True
+        ).start()
+
     # ── Opciones Section ──────────────────────────────────────────
 
     def _build_opciones_section(self, parent):
@@ -3129,6 +3164,23 @@ class SubirPdfWebApi:
         except Exception as e:
             return {"status": "error", "msg": str(e)}
 
+    def extract_json_portal(self, params=None, *a):
+        try:
+            params = params or {}
+            user_val = str(params.get("user") or "").strip()
+            pass_val = str(params.get("pass") or "").strip()
+            self._app.entry_stock_user = _DummyWidget(user_val)
+            self._app.entry_stock_pass = _DummyWidget(pass_val)
+            self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES")
+            self._app.option_stock_catalogo = _DummyWidget(params.get("cat") or "COMPUTADORAS DE ESCRITORIO")
+            self._app.option_stock_categoria = _DummyWidget(params.get("catg") or "COMPUTADORA TODO EN UNO")
+            self._app.check_stock_visible = _DummyWidget(params.get("visible", False))
+
+            self._app._on_extract_json_portal()
+            return {"status": "started"}
+        except Exception as e:
+            return {"status": "error", "msg": str(e)}
+
 
     def stop_stock_process(self, *a):
         try:
@@ -3230,7 +3282,7 @@ def run_app():
         "_load_dropdown_json", "_on_launch", "_on_stop", "_export_audit_report",
         "_on_stock_start", "_on_stock_stop", "_execute_stock",
         "_on_download_stock_template", "_execute", "_reset_after_stop",
-        "_on_stock_audit_start", "_on_audit_done"
+        "_on_stock_audit_start", "_on_audit_done", "_on_extract_json_portal"
     )
 
     for _m in _methods_to_bind:

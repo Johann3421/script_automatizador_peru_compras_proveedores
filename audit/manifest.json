@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-07 08:22:13",
+  "generated_at": "2026-08-07 08:25:36",
   "total_files": 64,
-  "total_lines": 24197,
+  "total_lines": 24301,
   "files": [
     {
       "rel_path": "automation/__init__.py",
@@ -463,8 +463,8 @@
       "rel_path": "ui_web/index.html",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui_web\\index.html",
       "language": "html",
-      "lines": 1057,
-      "hash": "31d41181f07944de6c001cbcc279c85e6665e3ac89e5198e2aeff6f5cae543b6",
+      "lines": 1070,
+      "hash": "592bd8bf8495b6f2fd395c0a9237a19658d4f59aabfce621c6198a3b4e90684c",
       "ext": ".html"
     },
     {
@@ -495,8 +495,8 @@
       "rel_path": "modulo_subir_pdf/workers.py",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\workers.py",
       "language": "python",
-      "lines": 2154,
-      "hash": "f0045cf290da298675f7078a709ab142776b38de146defb1957650d84130f6e5",
+      "lines": 2193,
+      "hash": "95d584a647ae21515979a31adc327b239dab5340957bf81716eb76451425d780",
       "ext": ".py"
     },
     {
@@ -511,8 +511,8 @@
       "rel_path": "modulo_subir_pdf/main_subir_pdf.py",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\main_subir_pdf.py",
       "language": "python",
-      "lines": 3323,
-      "hash": "4e4cbefdb2bd8ffd4361bac792734986f4f5eb3f9f1b3ced96a7b5121dd87778",
+      "lines": 3375,
+      "hash": "a1a44c3ec4958f042523a2722699402fe8401630082d74a9f20c4887a5a094ac",
       "ext": ".py"
     }
   ]

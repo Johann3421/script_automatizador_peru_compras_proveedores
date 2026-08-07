@@ -463,6 +463,7 @@
               <input type="text" id="jsonFilePath" class="file-input" readonly placeholder="Seleccionar archivo JSON de Precios...">
               <button class="btn-sys" onclick="selectJsonFile()">Examinar...</button>
               <button class="btn-sys" onclick="clearJsonFile()">Limpiar</button>
+              <button class="btn-sys" style="background: #1B6B1B; color: white; font-weight: bold;" onclick="extractJsonFromPortal()">📡 EXTRAER JSON DESDE PORTAL</button>
             </div>
             <div id="jsonBadge" class="status-badge warn">⚠️ Cargar JSON o generar oferta desde catálogo</div>
           </div>
@@ -1043,6 +1044,18 @@
     function stopJsonProcess() {
       logJsonConsole("[JSON] Envío masivo JSON detenido.");
       pyapi('stop_process');
+    }
+
+    function extractJsonFromPortal() {
+      const user = document.getElementById('stockUser') ? document.getElementById('stockUser').value : "estalin.huamali01";
+      const pass = document.getElementById('stockPass') ? document.getElementById('stockPass').value : "";
+      const acuerdo = getSelectText('stockAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
+      const cat = getSelectText('stockCat') || "COMPUTADORAS DE ESCRITORIO";
+      const catg = getSelectText('stockCategoria') || "COMPUTADORA TODO EN UNO";
+      const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
+
+      logJsonConsole(`[JSON PORTAL] Iniciando extracción masiva del dataset JSON desde el portal...`, "log-ok");
+      pyapi('extract_json_portal', { user, pass, acuerdo, cat, catg, visible });
     }
 
     function runToolTest(testName) {

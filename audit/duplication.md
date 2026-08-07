@@ -128,51 +128,51 @@
 
 ### Función `set_window` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 26)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2960)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2995)
 
 ### Función `minimize` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 30)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2968)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3003)
 
 ### Función `maximize` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 34)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2971)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3006)
 
 ### Función `close` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 38)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2974)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3009)
 
 ### Función `select_file` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 43)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2978)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3013)
 
 ### Función `load_sheet` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 71)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3037)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3072)
 
 ### Función `start_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 80)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3046)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3081)
 
 ### Función `stop_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 84)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3062)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3097)
 
 ### Función `start_stock_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 88)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3070)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3105)
 
 ### Función `stop_stock_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 92)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3133)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3185)
 
 ### Función `start_stock_audit` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 96)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3102)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3137)
 
 ### Función `export_audit` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 102)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3151)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3203)
 
 ### Función `detect_columns` (2 ocurrencias)
 - `modulo_modificar_productos/utils_mod/excel_parser_mod.py` (Línea 58)
@@ -221,7 +221,7 @@
 ### Función `poll_queue` (3 ocurrencias)
 - `ui/screen_run.py` (Línea 275)
 - `modulo_modificar_productos/main_modificar.py` (Línea 1007)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2832)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2867)
 
 ### Función `configure` (12 ocurrencias)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 77)
@@ -235,18 +235,18 @@
 - `modulo_subir_pdf/ctk_compat.py` (Línea 389)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 424)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 441)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2938)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2973)
 
 ### Función `set` (4 ocurrencias)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 272)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 358)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 386)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2935)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2970)
 
 ### Función `get` (3 ocurrencias)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 299)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 362)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2933)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2968)
 
 ### Función `log` (3 ocurrencias)
 - `modulo_subir_pdf/discovery_perucompras.py` (Línea 153)

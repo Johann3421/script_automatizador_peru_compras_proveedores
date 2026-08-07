@@ -2147,8 +2147,47 @@ def _detect_key(d: dict, candidates: list) -> str:
             return k
     # Búsqueda insensible a mayúsculas
     d_lower = {k2.lower(): k2 for k2 in d}
-    for c in candidates:
-        found = d_lower.get(c.lower())
-        if found:
-            return found
     return ""
+
+
+def execute_json_extractor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log, headless=True):
+    """Ejecuta la extracción masiva E2E del dataset JSON del portal utilizando perucompras_core."""
+    from automation.perucompras_core import extraer_json_catalogo
+
+    usuario = usuario or "estalin.huamali01"
+    on_log(f"🔍 [EXTRACTOR] Conectando a Perú Compras con usuario '{usuario}'...")
+
+    n_acuerdo = 249
+    n_catalogo = 252
+    n_categoria = 11736
+
+    out_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reportes_auditoria")
+    os.makedirs(out_folder, exist_ok=True)
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    out_file = os.path.join(out_folder, f"Fichas_Portal_{ts}.json")
+
+    stop_evt = getattr(app, "stop_event", None)
+
+    fichas = extraer_json_catalogo(
+        usuario=usuario,
+        password=password,
+        n_acuerdo=n_acuerdo,
+        n_catalogo=n_catalogo,
+        n_categoria=n_categoria,
+        acuerdo_texto=acuerdo,
+        catalogo_texto=catalogo,
+        categoria_texto=categoria,
+        output_path=out_file,
+        captcha_bridge=getattr(app, "captcha_bridge", None),
+        stop_event=stop_evt,
+        log_func=on_log,
+        headless=headless
+    )
+
+    if fichas:
+        on_log(f"✅ Extracción completada exitosamente. Total: {len(fichas)} fichas.")
+        on_log(f"💾 Guardado en: {out_file}")
+        on_done(fichas, out_file)
+    else:
+        on_log("❌ No se pudieron extraer fichas del portal.")
+        on_done([], "")
