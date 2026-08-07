@@ -42,7 +42,7 @@
 | `modulo_subir_pdf/workers.py` | `execute_nro_parte` | 2194 | 20 | **ALTA** |
 | `modulo_subir_pdf/workers.py` | `execute_auditor` | 2194 | 20 | **ALTA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_audit_done` | 3380 | 20 | **ALTA** |
-| `automation/perucompras_core.py` | `consultar_json_productos` | 354 | 19 | **ALTA** |
+| `automation/perucompras_core.py` | `consultar_json_productos` | 349 | 19 | **ALTA** |
 | `modulo_subir_pdf/discovery_v2_perucompras.py` | `probe` | 603 | 19 | **ALTA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `run_app` | 3380 | 19 | **ALTA** |
 | `modulo_subir_pdf/test_1_ficha.py` | `main` | 132 | 18 | **ALTA** |
@@ -95,7 +95,7 @@
 | `build_installer.py` | `find_usable_python` | 218 | 10 | **ALTA** |
 | `modulo_subir_pdf/utils_mod/audit_portal_excel.py` | `_build_detail_sheet` | 251 | 10 | **ALTA** |
 | `modulo_modificar_productos/extract_dropdowns_modificar.py` | `main` | 315 | 10 | **ALTA** |
-| `automation/perucompras_core.py` | `extraer_json_catalogo` | 354 | 10 | **ALTA** |
+| `automation/perucompras_core.py` | `extraer_json_catalogo` | 349 | 10 | **ALTA** |
 | `ui/screen_run.py` | `_run_automation` | 359 | 10 | **ALTA** |
 | `ui/screen_run.py` | `poll_queue` | 359 | 10 | **ALTA** |
 | `automation/bulk_upload.py` | `_match_parte_in_results` | 411 | 10 | **ALTA** |

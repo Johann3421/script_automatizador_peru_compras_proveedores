@@ -1047,15 +1047,23 @@
       pyapi('stop_process');
     }
 
+    function getValOrFallback(ids, defVal) {
+      for (let id of ids) {
+        let el = document.getElementById(id);
+        if (el && el.value && el.value.trim() !== '') return el.value.trim();
+      }
+      return defVal;
+    }
+
     function extractJsonFromPortal() {
-      const user = document.getElementById('stockUser') ? document.getElementById('stockUser').value : "estalin.huamali01";
-      const pass = document.getElementById('stockPass') ? document.getElementById('stockPass').value : "";
-      const acuerdo = getSelectText('stockAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
-      const cat = getSelectText('stockCat') || "COMPUTADORAS DE ESCRITORIO";
-      const catg = getSelectText('stockCategoria') || "COMPUTADORA TODO EN UNO";
+      const user = getValOrFallback(['stockUser', 'user', 'entryUser', 'jsonUser'], "estalin.huamali01");
+      const pass = getValOrFallback(['stockPass', 'pass', 'entryPass', 'jsonPass'], "");
+      const acuerdo = getSelectText('stockAcuerdo') || getSelectText('jsonAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
+      const cat = getSelectText('stockCat') || getSelectText('jsonCat') || "COMPUTADORAS DE ESCRITORIO";
+      const catg = getSelectText('stockCategoria') || getSelectText('jsonCategoria') || "COMPUTADORA TODO EN UNO";
       const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
 
-      logJsonConsole(`[JSON PORTAL] Iniciando extracción masiva del dataset JSON desde el portal...`, "log-ok");
+      logJsonConsole(`[JSON PORTAL] Iniciando extracción masiva del dataset JSON desde el portal (Usuario: ${user})...`, "log-ok");
       pyapi('extract_json_portal', { user, pass, acuerdo, cat, catg, visible });
     }
 

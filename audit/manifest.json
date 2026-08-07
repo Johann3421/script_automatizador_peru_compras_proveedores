@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-07 08:46:00",
+  "generated_at": "2026-08-07 08:51:24",
   "total_files": 64,
-  "total_lines": 24348,
+  "total_lines": 24351,
   "files": [
     {
       "rel_path": "automation/__init__.py",
@@ -391,8 +391,8 @@
       "rel_path": "automation/perucompras_core.py",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\automation\\perucompras_core.py",
       "language": "python",
-      "lines": 354,
-      "hash": "e3cb1fcddcb7360c991e7eb953adc8b741f257f5df7cfeec3ab37ed837b5a772",
+      "lines": 349,
+      "hash": "ad83a55e55af6cd628968da1e7bfb1485fdb89dfe7057f35b14ed733ffde14ad",
       "ext": ".py"
     },
     {
@@ -471,8 +471,8 @@
       "rel_path": "ui_web/index.html",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\ui_web\\index.html",
       "language": "html",
-      "lines": 1087,
-      "hash": "31deeb814cc5869c8077a31c4a486a767dc02bff88b3ea3fa0d0d3b24b8b202e",
+      "lines": 1095,
+      "hash": "1c6d502af44922c035afa825054ed55c5daeee27f39212c3bf6a62d0af575447",
       "ext": ".html"
     },
     {

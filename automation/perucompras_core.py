@@ -217,12 +217,12 @@ def consultar_json_productos(
     """
     FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
     
-    Obtiene dinámicamente los IDs activos del DOM (#ajaxAcuerdo, #ajaxCatalogo, #ajaxCategoria)
-    para evitar inconsistencias entre las categorías seleccionadas y el endpoint.
+    Utiliza page.request.get de Playwright (petición HTTP directa de red compartiendo cookies)
+    para garantizar la respuesta sin bloqueos de CORS ni errores 'Failed to fetch'.
     """
     _log(log_func, "📡 Solicitando dataset JSON crudo del portal...")
     
-    # Extraer IDs dinámicos reales del DOM activo en pantalla
+    # Extraer IDs dinámicos reales del DOM si están en la pantalla activa
     try:
         dom_ids = page.evaluate("""() => {
             const ac = document.querySelector('#ajaxAcuerdo, #N_Acuerdo, select[name*="cuerdo"]')?.value;
@@ -252,41 +252,36 @@ def consultar_json_productos(
         f"&N_Categoria={n_categoria}&C_Descripcion=&_={ts}"
     )
 
-    for intento in range(1, 4):
-        try:
-            raw = page.evaluate(f"""
-                async () => {{
-                    try {{
-                        const r = await fetch('{endpoint}', {{
-                            method: 'GET',
-                            headers: {{ 'X-Requested-With': 'XMLHttpRequest' }},
-                            credentials: 'include'
-                        }});
-                        if (!r.ok) return '__HTTP_' + r.status;
-                        return await r.text();
-                    }} catch(e) {{
-                        return '__ERR_' + e.toString();
-                    }}
-                }}
-            """)
+    try:
+        # Petición de red nativa mediante Playwright (page.request) compartiendo cookies de la sesión
+        resp = page.request.get(
+            endpoint,
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": f"{BASE_URL}/MejoraBasica",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            },
+            timeout=35000
+        )
 
-            if raw and not str(raw).startswith("__"):
-                parsed = json.loads(raw)
+        if resp.status == 200:
+            try:
+                parsed = resp.json()
                 data = parsed.get("data", []) if isinstance(parsed, dict) else parsed
                 if isinstance(data, list) and len(data) > 0:
                     _log(log_func, f"✅ Dataset extraído exitosamente ({len(data)} fichas).")
                     return data
                 elif isinstance(data, list):
-                    _log(log_func, f"ℹ️ El dataset retornó 0 fichas (Intento {intento}/3).")
-            else:
-                _log(log_func, f"⚠️ Intento {intento}/3 falló con respuesta: {raw}")
+                    _log(log_func, "ℹ️ El portal respondió correctamente pero el dataset retornó 0 fichas.")
+                    return []
+            except Exception as pe:
+                _log(log_func, f"❌ Error parseando JSON devuelto: {pe}")
+        else:
+            _log(log_func, f"❌ Servidor respondió con estado HTTP {resp.status}")
 
-        except Exception as e:
-            _log(log_func, f"⚠️ Error en intento {intento}/3: {e}")
+    except Exception as e:
+        _log(log_func, f"❌ Error ejecutando solicitud de red en Playwright: {e}")
 
-        time.sleep(1.5)
-
-    _log(log_func, "❌ No se pudieron extraer fichas tras 3 intentos.")
     return []
 
 
