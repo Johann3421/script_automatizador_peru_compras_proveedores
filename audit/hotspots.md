@@ -10,7 +10,6 @@
 | `modulo_subir_pdf/automation_otro_bot/stock.py` | `paso4_actualizar_stock` | 1462 | 37 | **ALTA** |
 | `modulo_subir_pdf/automation_mod/navegacion_productos.py` | `corregir_caracteristica` | 1464 | 36 | **ALTA** |
 | `automation/navigation.py` | `setup_catalog_search` | 289 | 34 | **ALTA** |
-| `automation/perucompras_core.py` | `consultar_json_productos` | 406 | 34 | **ALTA** |
 | `modulo_modificar_productos/automation_mod/navegacion_productos.py` | `agregar_caracteristicas` | 756 | 34 | **ALTA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_stock_audit_start` | 3380 | 34 | **ALTA** |
 | `modulo_subir_pdf/workers.py` | `execute_compare` | 2194 | 33 | **ALTA** |
@@ -19,6 +18,7 @@
 | `modulo_subir_pdf/workers.py` | `execute_test_precios` | 2194 | 31 | **ALTA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_sheet_changed` | 3380 | 31 | **ALTA** |
 | `modulo_subir_pdf/automation_mod/bulk_subir_pdf.py` | `run_bulk_subir_pdf` | 311 | 30 | **ALTA** |
+| `automation/perucompras_core.py` | `consultar_json_productos` | 409 | 29 | **ALTA** |
 | `install_perucombras.py` | `install_playwright_browsers` | 745 | 29 | **ALTA** |
 | `modulo_modificar_productos/main_modificar.py` | `_execute_test` | 1076 | 29 | **ALTA** |
 | `modulo_modificar_productos/main_modificar.py` | `_on_sheet_changed` | 1076 | 28 | **ALTA** |
@@ -97,7 +97,7 @@
 | `modulo_modificar_productos/extract_dropdowns_modificar.py` | `main` | 315 | 10 | **ALTA** |
 | `ui/screen_run.py` | `_run_automation` | 359 | 10 | **ALTA** |
 | `ui/screen_run.py` | `poll_queue` | 359 | 10 | **ALTA** |
-| `automation/perucompras_core.py` | `extraer_json_catalogo` | 406 | 10 | **ALTA** |
+| `automation/perucompras_core.py` | `extraer_json_catalogo` | 409 | 10 | **ALTA** |
 | `automation/bulk_upload.py` | `_match_parte_in_results` | 411 | 10 | **ALTA** |
 | `modulo_subir_pdf/discovery_perucompras.py` | `do_login` | 489 | 10 | **ALTA** |
 | `modulo_subir_pdf/discovery_v2_perucompras.py` | `main` | 603 | 10 | **ALTA** |
@@ -141,14 +141,14 @@
 | `modulo_subir_pdf/workers.py` | `_buscar_match_local` | 2194 | 8 | **MEDIA** |
 | `modulo_subir_pdf/workers.py` | `_buscar_match_pc` | 2194 | 8 | **MEDIA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `extract_json_portal` | 3380 | 8 | **MEDIA** |
-| `automation/perucompras_core.py` | `insertar_stock_item` | 406 | 7 | **MEDIA** |
+| `automation/perucompras_core.py` | `insertar_stock_item` | 409 | 7 | **MEDIA** |
 | `modulo_subir_pdf/ctk_compat.py` | `configure` | 452 | 7 | **MEDIA** |
 | `modulo_modificar_productos/automation_mod/navegacion_productos.py` | `process_single_product` | 756 | 7 | **MEDIA** |
 | `modulo_modificar_productos/main_modificar.py` | `_on_launch` | 1076 | 7 | **MEDIA** |
 | `modulo_subir_pdf/automation_otro_bot/stock.py` | `_get_field` | 1462 | 7 | **MEDIA** |
 | `modulo_subir_pdf/automation_mod/navegacion_productos.py` | `process_single_product` | 1464 | 7 | **MEDIA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_toggle_maximize` | 3380 | 7 | **MEDIA** |
-| `automation/perucompras_core.py` | `saltar_verificacion` | 406 | 6 | **MEDIA** |
+| `automation/perucompras_core.py` | `saltar_verificacion` | 409 | 6 | **MEDIA** |
 | `modulo_subir_pdf/ctk_compat.py` | `configure` | 452 | 6 | **MEDIA** |
 | `modulo_subir_pdf/ctk_compat.py` | `configure` | 452 | 6 | **MEDIA** |
 | `modulo_subir_pdf/ctk_compat.py` | `configure` | 452 | 6 | **MEDIA** |
@@ -172,7 +172,7 @@
 | `modulo_subir_pdf/main_subir_pdf.py` | `select_stock_file` | 3380 | 6 | **MEDIA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_log` | 3380 | 6 | **MEDIA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_append_stock_log` | 3380 | 6 | **MEDIA** |
-| `automation/perucompras_core.py` | `completar_menu_dinamico` | 406 | 5 | **MEDIA** |
+| `automation/perucompras_core.py` | `completar_menu_dinamico` | 409 | 5 | **MEDIA** |
 | `automation/bulk_upload.py` | `_build_index` | 411 | 5 | **MEDIA** |
 | `modulo_subir_pdf/ctk_compat.py` | `__init__` | 452 | 5 | **MEDIA** |
 | `modulo_subir_pdf/ctk_compat.py` | `configure` | 452 | 5 | **MEDIA** |
@@ -202,7 +202,7 @@
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_discovery2` | 3380 | 5 | **MEDIA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_launch` | 3380 | 5 | **MEDIA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_done` | 3380 | 5 | **MEDIA** |
-| `automation/perucompras_core.py` | `login_automatico` | 406 | 4 | **MEDIA** |
+| `automation/perucompras_core.py` | `login_automatico` | 409 | 4 | **MEDIA** |
 | `automation/bulk_upload.py` | `fetch_catalogo_completo` | 411 | 4 | **MEDIA** |
 | `automation/bulk_upload.py` | `_enviar_oferta` | 411 | 4 | **MEDIA** |
 | `modulo_subir_pdf/ctk_compat.py` | `__init__` | 452 | 4 | **MEDIA** |
@@ -224,7 +224,7 @@
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_test` | 3380 | 4 | **MEDIA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_nro_parte` | 3380 | 4 | **MEDIA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_log` | 3380 | 4 | **MEDIA** |
-| `automation/perucompras_core.py` | `_log` | 406 | 3 | **BAJA** |
+| `automation/perucompras_core.py` | `_log` | 409 | 3 | **BAJA** |
 | `automation/bulk_upload.py` | `_interpret_response` | 411 | 3 | **BAJA** |
 | `modulo_subir_pdf/ctk_compat.py` | `__init__` | 452 | 3 | **BAJA** |
 | `modulo_subir_pdf/ctk_compat.py` | `configure` | 452 | 3 | **BAJA** |
@@ -256,7 +256,7 @@
 | `modulo_subir_pdf/main_subir_pdf.py` | `start_process` | 3380 | 3 | **BAJA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `stop_stock_process` | 3380 | 3 | **BAJA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `download_stock_template` | 3380 | 3 | **BAJA** |
-| `automation/perucompras_core.py` | `navegar_mejora_basica` | 406 | 2 | **BAJA** |
+| `automation/perucompras_core.py` | `navegar_mejora_basica` | 409 | 2 | **BAJA** |
 | `automation/bulk_upload.py` | `_build_datatable_payload` | 411 | 2 | **BAJA** |
 | `automation/bulk_upload.py` | `buscar_producto_por_parte` | 411 | 2 | **BAJA** |
 | `automation/bulk_upload.py` | `_insert_one` | 411 | 2 | **BAJA** |
@@ -292,7 +292,7 @@
 | `modulo_subir_pdf/main_subir_pdf.py` | `load_sheet` | 3380 | 2 | **BAJA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `stop_process` | 3380 | 2 | **BAJA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `export_audit` | 3380 | 2 | **BAJA** |
-| `automation/perucompras_core.py` | `write` | 406 | 1 | **BAJA** |
+| `automation/perucompras_core.py` | `write` | 409 | 1 | **BAJA** |
 | `automation/bulk_upload.py` | `_normalize` | 411 | 1 | **BAJA** |
 | `modulo_subir_pdf/ctk_compat.py` | `_patch_scrollable` | 452 | 1 | **BAJA** |
 | `modulo_subir_pdf/ctk_compat.py` | `__init__` | 452 | 1 | **BAJA** |
@@ -316,12 +316,12 @@
 | `modulo_subir_pdf/main_subir_pdf.py` | `select_file` | 3380 | 1 | **BAJA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `_on_canvas_cfg` | 3380 | 1 | **BAJA** |
 | `modulo_subir_pdf/main_subir_pdf.py` | `create_tool_card` | 3380 | 1 | **BAJA** |
-| `automation/perucompras_core.py` | `info` | 406 | 0 | **BAJA** |
-| `automation/perucompras_core.py` | `warning` | 406 | 0 | **BAJA** |
-| `automation/perucompras_core.py` | `error` | 406 | 0 | **BAJA** |
-| `automation/perucompras_core.py` | `success` | 406 | 0 | **BAJA** |
-| `automation/perucompras_core.py` | `ok` | 406 | 0 | **BAJA** |
-| `automation/perucompras_core.py` | `flush` | 406 | 0 | **BAJA** |
+| `automation/perucompras_core.py` | `info` | 409 | 0 | **BAJA** |
+| `automation/perucompras_core.py` | `warning` | 409 | 0 | **BAJA** |
+| `automation/perucompras_core.py` | `error` | 409 | 0 | **BAJA** |
+| `automation/perucompras_core.py` | `success` | 409 | 0 | **BAJA** |
+| `automation/perucompras_core.py` | `ok` | 409 | 0 | **BAJA** |
+| `automation/perucompras_core.py` | `flush` | 409 | 0 | **BAJA** |
 | `automation/bulk_upload.py` | `_cookies_from_page` | 411 | 0 | **BAJA** |
 | `modulo_subir_pdf/ctk_compat.py` | `_ignore` | 452 | 0 | **BAJA** |
 | `modulo_subir_pdf/ctk_compat.py` | `set_appearance_mode` | 452 | 0 | **BAJA** |

@@ -217,10 +217,10 @@ def consultar_json_productos(
     """
     FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
     
-    Implementa 3 estrategias progresivas de extracción:
-      1. Extracción en memoria desde la instancia DataTables/DOM del navegador.
-      2. Petición HTTP nativa `page.request.get` a `_ListaProductosOfertados` con descarte de BOM.
-      3. Petición POST DataTables a `_CatalogoProductoIndexJson`.
+    Estrategia de 3 Niveles:
+      1. Extracción desde la memoria DataTable/DOM en la página activa (`DataTable().rows().data()`).
+      2. Consulta AJAX contextual vía jQuery (`$.ajax`) en el navegador.
+      3. Petición POST DataTables nativa a `_CatalogoProductoIndexJson`.
     """
     _log(log_func, "📡 Solicitando dataset JSON crudo del portal...")
 
@@ -240,8 +240,8 @@ def consultar_json_productos(
         if isinstance(data_dom, list) and len(data_dom) > 0:
             _log(log_func, f"✅ Dataset extraído exitosamente desde la tabla en pantalla ({len(data_dom)} fichas).")
             return data_dom
-    except Exception as e:
-        _log(log_func, f"ℹ️ Extracción en memoria de tabla en pantalla omitida: {e}")
+    except Exception:
+        pass
 
     # Extraer IDs dinámicos del DOM si están en la pantalla activa
     try:
@@ -264,9 +264,9 @@ def consultar_json_productos(
     n_catalogo = n_catalogo or 252
     n_categoria = n_categoria or 11736
 
-    _log(log_func, f"  🔍 Parámetros finales de consulta: Acuerdo={n_acuerdo}, Catálogo={n_catalogo}, Categoría={n_categoria}")
+    _log(log_func, f"  🔍 Parámetros de consulta: Acuerdo={n_acuerdo}, Catálogo={n_catalogo}, Categoría={n_categoria}")
 
-    # ── ESTRATEGIA 2: GET Endpoint _ListaProductosOfertados con parseo seguro de texto
+    # ── ESTRATEGIA 2: Petición $.ajax de jQuery dentro del navegador
     ts = int(time.time() * 1000)
     endpoint_get = (
         f"{BASE_URL}/MejoraBasica/_ListaProductosOfertados"
@@ -275,37 +275,40 @@ def consultar_json_productos(
     )
 
     try:
-        resp = page.request.get(
-            endpoint_get,
-            headers={
-                "X-Requested-With": "XMLHttpRequest",
-                "Referer": f"{BASE_URL}/MejoraBasica",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            },
-            timeout=35000
-        )
+        raw_text = page.evaluate(f"""
+            async () => {{
+                try {{
+                    const res = await $.ajax({{
+                        url: '{endpoint_get}',
+                        type: 'GET',
+                        dataType: 'json'
+                    }});
+                    return JSON.stringify(res);
+                }} catch(e) {{
+                    try {{
+                        const r = await fetch('{endpoint_get}', {{ headers: {{ 'X-Requested-With': 'XMLHttpRequest' }} }});
+                        return await r.text();
+                    }} catch(err) {{
+                        return null;
+                    }}
+                }}
+            }}
+        """)
 
-        if resp.status == 200:
-            text = resp.text().strip().lstrip('\ufeff')
-            if text and (text.startswith('[') or text.startswith('{')):
-                try:
-                    parsed = json.loads(text)
-                    data = parsed.get("data", []) if isinstance(parsed, dict) else parsed
-                    if isinstance(data, list) and len(data) > 0:
-                        _log(log_func, f"✅ Dataset extraído exitosamente vía GET ({len(data)} fichas).")
-                        return data
-                    elif isinstance(data, list):
-                        _log(log_func, "ℹ️ El portal devolvió 0 registros para esta categoría.")
-                        return []
-                except Exception as pe:
-                    _log(log_func, f"⚠️ Respuesta no es JSON puro: {pe}")
-            else:
-                _log(log_func, f"⚠️ Respuesta del portal fue HTML/Texto en lugar de JSON (Primeros 100 chars: {text[:100]!r})")
+        if raw_text and not str(raw_text).startswith("<"):
+            parsed = json.loads(raw_text)
+            data = parsed.get("data", []) if isinstance(parsed, dict) else parsed
+            if isinstance(data, list) and len(data) > 0:
+                _log(log_func, f"✅ Dataset extraído exitosamente vía AJAX contextual ({len(data)} fichas).")
+                return data
+            elif isinstance(data, list):
+                _log(log_func, "ℹ️ El portal devolvió 0 registros para esta categoría.")
+                return []
 
     except Exception as e:
-        _log(log_func, f"⚠️ Error en Estrategia GET: {e}")
+        _log(log_func, f"⚠️ Error en Estrategia 2 (AJAX contextual): {e}")
 
-    # ── ESTRATEGIA 3: POST Endpoint DataTables _CatalogoProductoIndexJson
+    # ── ESTRATEGIA 3: POST Endpoint DataTables con page.request.post
     _log(log_func, "📡 Intentando Estrategia 3 (DataTables POST API)...")
     endpoint_post = f"{BASE_URL}/t_ProductoOfertadoAmp/_CatalogoProductoIndexJson"
     payload = {
@@ -328,7 +331,7 @@ def consultar_json_productos(
 
         if resp_post.status == 200:
             text_post = resp_post.text().strip().lstrip('\ufeff')
-            if text_post and (text_post.startswith('{') or text_post.startswith('[')):
+            if text_post and not text_post.startswith('<'):
                 parsed_post = json.loads(text_post)
                 data_post = parsed_post.get("data", []) if isinstance(parsed_post, dict) else parsed_post
                 if isinstance(data_post, list) and len(data_post) > 0:

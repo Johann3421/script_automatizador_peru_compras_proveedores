@@ -1,8 +1,8 @@
 # Auditoría de Funciones: `automation/perucompras_core.py`
 
 - **Lenguaje:** `python`
-- **Líneas de código:** 406
-- **Hash SHA256:** `576a736919c7`
+- **Líneas de código:** 409
+- **Hash SHA256:** `9d5ed8e1af54`
 - **Estrategia de Análisis:** Bloques por funciones (ast)
 
 ---
@@ -25,7 +25,7 @@
 Asegura la configuración del viewport (1920x1080), navega al portal de acceso,
 rellena credenciales y resuelve el CAPTCHA numérico con OCR Tesseract.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_LogAdapter, set_viewport_size, do_login, _log, str, strip`
+- **Dependencias / Invocaciones:** `do_login, strip, _log, set_viewport_size, str, _LogAdapter`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def saltar_verificacion(page, log_func)`
@@ -33,7 +33,7 @@ rellena credenciales y resuelve el CAPTCHA numérico con OCR Tesseract.
 - **Firma completa:** `def saltar_verificacion(page, log_func)`
 - **Propósito:** FUNCION PADRE 2: Saltar Verificación y Navegación a MejoraBasica.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, go_back, sleep, _log`
+- **Dependencias / Invocaciones:** `sleep, go_back, _log, goto`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def navegar_mejora_basica(page, log_func)`
@@ -41,7 +41,7 @@ rellena credenciales y resuelve el CAPTCHA numérico con OCR Tesseract.
 - **Firma completa:** `def navegar_mejora_basica(page, log_func)`
 - **Propósito:** FUNCION PADRE 3: Navegación Garantizada a MejoraBasica.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, sleep, _log`
+- **Dependencias / Invocaciones:** `sleep, _log, goto`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def completar_menu_dinamico(page, acuerdo, catalogo, categoria, log_func)`
@@ -52,7 +52,7 @@ rellena credenciales y resuelve el CAPTCHA numérico con OCR Tesseract.
 Asegura que el navegador esté en MejoraBasica, selecciona los 3 dropdowns
 del catálogo y hace clic explícito en 'Iniciar Búsqueda' (#btnBuscar).
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, sleep, _log, paso3_filtros_stock, query_selector`
+- **Dependencias / Invocaciones:** `sleep, goto, query_selector, _log, paso3_filtros_stock`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def insertar_stock_item(page, nro_parte, nuevo_stock, pausa, log_func)`
@@ -60,24 +60,24 @@ del catálogo y hace clic explícito en 'Iniciar Búsqueda' (#btnBuscar).
 - **Firma completa:** `def insertar_stock_item(page, nro_parte, nuevo_stock, pausa, log_func)`
 - **Propósito:** FUNCION PADRE 5: Insertar / Actualizar Stock de Producto.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `sleep, click, press, _log, len, fill, query_selector_all, str, wait_for_selector, query_selector`
+- **Dependencias / Invocaciones:** `sleep, query_selector_all, fill, wait_for_selector, query_selector, _log, press, str, click, len`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 7)
 
 ### `def consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, log_func)`
-- **Línea inicial:** 210 | **Línea final:** 342
+- **Línea inicial:** 210 | **Línea final:** 345
 - **Firma completa:** `def consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, log_func)`
 - **Propósito:** FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
 
-Implementa 3 estrategias progresivas de extracción:
-  1. Extracción en memoria desde la instancia DataTables/DOM del navegador.
-  2. Petición HTTP nativa `page.request.get` a `_ListaProductosOfertados` con descarte de BOM.
-  3. Petición POST DataTables a `_CatalogoProductoIndexJson`.
+Estrategia de 3 Niveles:
+  1. Extracción desde la memoria DataTable/DOM en la página activa (`DataTable().rows().data()`).
+  2. Consulta AJAX contextual vía jQuery (`$.ajax`) en el navegador.
+  3. Petición POST DataTables nativa a `_CatalogoProductoIndexJson`.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `evaluate, post, strip, startswith, time, _log, isdigit, isinstance, loads, int`
-- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 34)
+- **Dependencias / Invocaciones:** `evaluate, get, len, strip, post, loads, text, startswith, int, _log`
+- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 29)
 
 ### `def extraer_json_catalogo(usuario, password, n_acuerdo, n_catalogo, n_categoria, acuerdo_texto, catalogo_texto, categoria_texto, output_path, captcha_bridge, stop_event, log_func, headless)`
-- **Línea inicial:** 345 | **Línea final:** 406
+- **Línea inicial:** 348 | **Línea final:** 409
 - **Firma completa:** `def extraer_json_catalogo(usuario, password, n_acuerdo, n_catalogo, n_categoria, acuerdo_texto, catalogo_texto, categoria_texto, output_path, captcha_bridge, stop_event, log_func, headless)`
 - **Propósito:** FUNCION PADRE 7: Extracción Completa de JSON a Disco/Memoria.
 
@@ -89,7 +89,7 @@ Flujo E2E completo:
   5. Ejecuta `consultar_json_productos` para extraer el dataset completo.
   6. Guarda opcionalmente el archivo JSON en `output_path`.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `close_browser, saltar_verificacion, open, dirname, completar_menu_dinamico, consultar_json_productos, makedirs, _log, dump, abspath`
+- **Dependencias / Invocaciones:** `makedirs, dirname, completar_menu_dinamico, saltar_verificacion, open, login_automatico, abspath, _log, init_browser, consultar_json_productos`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 10)
 
 ### `def info(self, msg)`
@@ -97,7 +97,7 @@ Flujo E2E completo:
 - **Firma completa:** `def info(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `strip, str, _log`
+- **Dependencias / Invocaciones:** `str, _log, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def warning(self, msg)`
@@ -105,7 +105,7 @@ Flujo E2E completo:
 - **Firma completa:** `def warning(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `strip, str, _log`
+- **Dependencias / Invocaciones:** `str, _log, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def error(self, msg)`
@@ -113,7 +113,7 @@ Flujo E2E completo:
 - **Firma completa:** `def error(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `strip, str, _log`
+- **Dependencias / Invocaciones:** `str, _log, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def success(self, msg)`
@@ -121,7 +121,7 @@ Flujo E2E completo:
 - **Firma completa:** `def success(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `strip, str, _log`
+- **Dependencias / Invocaciones:** `str, _log, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def ok(self, msg)`
@@ -129,7 +129,7 @@ Flujo E2E completo:
 - **Firma completa:** `def ok(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `strip, str, _log`
+- **Dependencias / Invocaciones:** `str, _log, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def write(self, txt)`
@@ -137,7 +137,7 @@ Flujo E2E completo:
 - **Firma completa:** `def write(self, txt)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_log, str, strip`
+- **Dependencias / Invocaciones:** `str, _log, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def flush(self)`
