@@ -32,7 +32,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 14)
 - `modulo_subir_pdf/workers.py` (Línea 1110)
 - `modulo_subir_pdf/workers.py` (Línea 1247)
-- `modulo_subir_pdf/workers.py` (Línea 1514)
+- `modulo_subir_pdf/workers.py` (Línea 1517)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 178)
 
 ### Función `error` (14 ocurrencias)
@@ -48,10 +48,10 @@
 - `modulo_subir_pdf/workers.py` (Línea 12)
 - `modulo_subir_pdf/workers.py` (Línea 1112)
 - `modulo_subir_pdf/workers.py` (Línea 1249)
-- `modulo_subir_pdf/workers.py` (Línea 1516)
+- `modulo_subir_pdf/workers.py` (Línea 1515)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 176)
 
-### Función `warn` (11 ocurrencias)
+### Función `warn` (10 ocurrencias)
 - `utils/logger.py` (Línea 17)
 - `modulo_modificar_productos/utils_mod/logger_mod.py` (Línea 26)
 - `modulo_subir_pdf/utils_mod/logger_mod.py` (Línea 26)
@@ -62,7 +62,6 @@
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 96)
 - `modulo_subir_pdf/workers.py` (Línea 1111)
 - `modulo_subir_pdf/workers.py` (Línea 1248)
-- `modulo_subir_pdf/workers.py` (Línea 1515)
 
 ### Función `progress` (2 ocurrencias)
 - `utils/logger.py` (Línea 20)
@@ -164,7 +163,7 @@
 
 ### Función `stop_stock_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 92)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3273)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3284)
 
 ### Función `start_stock_audit` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 96)
@@ -172,7 +171,7 @@
 
 ### Función `export_audit` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 102)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3291)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3304)
 
 ### Función `detect_columns` (2 ocurrencias)
 - `modulo_modificar_productos/utils_mod/excel_parser_mod.py` (Línea 58)
@@ -243,15 +242,25 @@
 - `modulo_subir_pdf/discovery_v2_perucompras.py` (Línea 122)
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 194)
 
-### Función `warning` (3 ocurrencias)
+### Función `warning` (4 ocurrencias)
 - `automation/perucompras_core.py` (Línea 62)
 - `modulo_subir_pdf/workers.py` (Línea 11)
+- `modulo_subir_pdf/workers.py` (Línea 1514)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 175)
 
-### Función `success` (3 ocurrencias)
+### Función `success` (4 ocurrencias)
 - `automation/perucompras_core.py` (Línea 64)
 - `modulo_subir_pdf/workers.py` (Línea 13)
+- `modulo_subir_pdf/workers.py` (Línea 1516)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
+
+### Función `write` (2 ocurrencias)
+- `automation/perucompras_core.py` (Línea 66)
+- `modulo_subir_pdf/workers.py` (Línea 1518)
+
+### Función `flush` (2 ocurrencias)
+- `automation/perucompras_core.py` (Línea 70)
+- `modulo_subir_pdf/workers.py` (Línea 1521)
 
 ### Función `apply_dropdowns_and_search` (2 ocurrencias)
 - `modulo_modificar_productos/automation_mod/navegacion_productos.py` (Línea 112)
@@ -299,9 +308,9 @@
 
 ### Función `handle_request` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1323)
-- `modulo_subir_pdf/workers.py` (Línea 1590)
+- `modulo_subir_pdf/workers.py` (Línea 1596)
 
 ### Función `handle_response` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1328)
-- `modulo_subir_pdf/workers.py` (Línea 1595)
+- `modulo_subir_pdf/workers.py` (Línea 1601)
 

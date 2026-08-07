@@ -1484,7 +1484,7 @@ def _enviar_oferta_precios(page, log_func, app):
     return False
 
 def execute_iniciar_precios(app, usuario, password, headless, log_func,
-                            precios_data, acuerdo_val, catalogo_val, categoria_val):
+                            precios_data, acuerdo_val, catalogo_val, categoria_val, stop_event=None):
     from automation.browser import init_browser, close_browser
     from automation.login import do_login
     from urllib.parse import parse_qs, urlencode
@@ -1509,16 +1509,22 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
 
         log_func(app, "✅ Navegador listo, iniciando login...")
 
-        class DummyLog:
-            def info(self, m): pass
-            def ok(self, m): pass
-            def warn(self, m): pass
-            def error(self, m): pass
+        class _LogAdapter:
+            def info(self, msg): log_func(app, str(msg).strip())
+            def warning(self, msg): log_func(app, f"⚠️ {str(msg).strip()}")
+            def error(self, msg): log_func(app, f"❌ {str(msg).strip()}")
+            def success(self, msg): log_func(app, f"✅ {str(msg).strip()}")
+            def ok(self, msg): log_func(app, f"✅ {str(msg).strip()}")
+            def write(self, txt):
+                clean = str(txt).strip()
+                if clean: log_func(app, clean)
+            def flush(self): pass
 
-        stop = type('S', (), {'is_set': lambda self: False})()
+        log_adapter = _LogAdapter()
+        captcha_b = getattr(app, 'captcha_bridge', None)
 
-        if not do_login(page, usuario, password, "", DummyLog(), stop, getattr(app, 'captcha_bridge', None)):
-            log_func(app, "❌ Falló el login.")
+        if not do_login(page, usuario, password, "", log_adapter, stop_event, captcha_b):
+            log_func(app, "❌ Falló el login en Perú Compras.")
             re_enable()
             return
 
@@ -1680,63 +1686,11 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
 
         url_insert = "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP"
 
-
-        log_func(app, "📡 Descargando catálogo completo de Perú Compras...")
-        parsed_params = parse_qs(raw_body)
-        total = total_records[0]
-        log_func(app, f"📊 Total registros en Perú Compras: {total}")
-
-        all_products = []
-        PAGE_SIZE = 100
-        start = 0
-        draw = 1
-
-        while start < total:
-            parsed_params['start'] = [str(start)]
-            parsed_params['length'] = [str(PAGE_SIZE)]
-            parsed_params['draw'] = [str(draw)]
-            new_body = urlencode(parsed_params, doseq=True)
-
-            resp = page.request.post(
-                url_endpoint,
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Referer": "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
-                },
-                data=new_body,
-                timeout=20000
-            )
-
-            if resp.status == 200:
-                try:
-                    data = resp.json()
-                    records = data.get("data", [])
-                    all_products.extend(records)
-                except Exception as je:
-                    log_func(app, f"   ❌ Error parseando JSON en lote {start}: {je}")
-                    break
-            else:
-                log_func(app, f"   ❌ Error de red en lote {start}: Status {resp.status}")
+        for idx, rec in enumerate(precios_data, 1):
+            if stop_event and stop_event.is_set():
+                log_func(app, "🛑 Inserción de precios detenida por el usuario.")
                 break
 
-            start += PAGE_SIZE
-            draw += 1
-            time.sleep(0.3)
-
-        log_func(app, f"✅ Catálogo descargado: {len(all_products)} productos")
-
-        # ── 7. Bucle de Subida de Precios ──────────────────────────────────
-        log_func(app, f"🚀 Iniciando inserción de precios en paralelo para {len(precios_data)} fichas locales...")
-        
-        report_rows = []
-        oks = 0
-        errors = 0
-        no_matches = 0
-
-        url_insert = "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP"
-
-        for idx, rec in enumerate(precios_data, 1):
             desc_local = rec.get("descripcin_fichaproducto") or rec.get("descripcion_fichaproducto") or rec.get("C_Descripcion") or rec.get("parte") or ""
             nro_local = rec.get("nro_parte_o_cdigo_nico_de_identificacin") or rec.get("nro_parte") or rec.get("ID_CatalogoProducto") or rec.get("ID_ProductoOfertado") or ""
             

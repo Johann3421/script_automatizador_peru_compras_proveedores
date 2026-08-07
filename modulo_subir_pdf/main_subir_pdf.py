@@ -3219,8 +3219,7 @@ class SubirPdfWebApi:
     def start_json_process(self, params=None, *a):
         try:
             params = params or {}
-            user_val = str(params.get("user") or "").strip()
-            pass_val = str(params.get("pass") or "").strip()
+            user_val, pass_val = _get_user_pass(self._app, params)
             acuerdo_val = str(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES").strip()
             catalogo_val = str(params.get("cat") or "COMPUTADORAS DE ESCRITORIO").strip()
             categoria_val = str(params.get("catg") or "COMPUTADORA TODO EN UNO").strip()
@@ -3232,6 +3231,11 @@ class SubirPdfWebApi:
             precios_data = getattr(self._app, "_precios_json_data", None)
             if not precios_data:
                 return {"status": "error", "msg": "No hay datos de precios JSON cargados"}
+
+            import threading
+            import workers
+
+            self._app._json_stop_event = threading.Event()
 
             self._app.entry_stock_user = _DummyWidget(user_val)
             self._app.entry_stock_pass = _DummyWidget(pass_val)
@@ -3247,9 +3251,6 @@ class SubirPdfWebApi:
                     except Exception:
                         pass
 
-            import threading
-            import workers
-
             combos = getattr(self._app, "_stock_combos_data", {})
             n_acuerdo = workers._get_id_acuerdo(combos, acuerdo_val) if hasattr(workers, '_get_id_acuerdo') else "249"
             n_catalogo = workers._get_id_catalogo(combos, acuerdo_val, catalogo_val) if hasattr(workers, '_get_id_catalogo') else "252"
@@ -3258,11 +3259,21 @@ class SubirPdfWebApi:
             threading.Thread(
                 target=workers.execute_iniciar_precios,
                 args=(self._app, user_val, pass_val, not visible, _log,
-                      precios_data, n_acuerdo, n_catalogo, n_categoria),
+                      precios_data, n_acuerdo, n_catalogo, n_categoria,
+                      self._app._json_stop_event),
                 daemon=True
             ).start()
 
             return {"status": "started"}
+        except Exception as e:
+            return {"status": "error", "msg": str(e)}
+
+    def stop_json_process(self, *a):
+        try:
+            if hasattr(self._app, "_json_stop_event") and self._app._json_stop_event:
+                self._app._json_stop_event.set()
+                print("[SUBIDA PRECIOS JSON] Detención solicitada por el usuario.")
+            return {"status": "stopped"}
         except Exception as e:
             return {"status": "error", "msg": str(e)}
 
@@ -3272,6 +3283,8 @@ class SubirPdfWebApi:
 
     def stop_stock_process(self, *a):
         try:
+            if hasattr(self._app, "_stock_stop_event") and self._app._stock_stop_event:
+                self._app._stock_stop_event.set()
             if hasattr(self._app, "_on_stock_stop"):
                 self._app._on_stock_stop()
             return {"status": "stopped"}
