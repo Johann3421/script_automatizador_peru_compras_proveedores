@@ -1468,9 +1468,11 @@ def _buscar_match_pc(rec_local, all_products):
 
         if nro_local and nro_pc and nro_local == nro_pc:
             return p
-        if clean_nro and len(clean_nro) >= 4 and clean_nro in clean_pc:
+        if clean_nro and len(clean_nro) >= 4 and (clean_nro in clean_pc or clean_pc in clean_nro):
             return p
-        if clean_desc and len(clean_desc) >= 10 and clean_desc in clean_pc:
+        if clean_nro and len(clean_nro) >= 6 and clean_nro[:8] in clean_pc:
+            return p
+        if clean_desc and len(clean_desc) >= 10 and (clean_desc in clean_pc or clean_pc in clean_desc):
             return p
     return None
 
@@ -1829,53 +1831,65 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
                 # 1. Click en el botón Enviar Oferta (físico + JS)
                 log_func(app, "🖱 Haciendo click en 'Enviar oferta'...")
                 page.evaluate("""() => {
+                    if (typeof EnviarOferta === 'function') EnviarOferta();
+                    else if (typeof fn_EnviarOferta === 'function') fn_EnviarOferta();
                     const btn = document.querySelector('#btn_enviarOferta2, #btn_enviarOferta, #btnEnviarOferta, [onclick*="EnviarOferta"]');
                     if (btn) btn.click();
                 }""")
-                time.sleep(2.5)
+                time.sleep(3.0)
                 
-                # 2. Hacer click en el botón de confirmación del modal custom del portal (._wModal_btn_ok / ._wModal_btn_blue)
-                log_func(app, "🖱 Confirmando diálogo modal de Perú Compras (Aceptar / Sí)...")
-                confirm_selector = "._wModal_btn_ok, ._wModal_btn_blue, ._wModal_btn:has-text('Aceptar'), ._wModal_btn:has-text('Sí'), ._wModal_btn:has-text('Si'), .swal2-confirm, button:has-text('Aceptar'), a:has-text('Aceptar')"
+                # 2. Confirmar modal de notificación (click en "OK" / ._wModal_btn_ok / ocultarMensajeCantidadUnidadesPresentacion)
+                log_func(app, "🖱 Confirmando diálogo modal 'OK' de notificación en Perú Compras...")
                 
-                modal_ok = False
-                try:
-                    confirm_el = page.locator(confirm_selector).first
-                    if confirm_el.is_visible(timeout=4000):
-                        confirm_el.click(force=True)
-                        modal_ok = True
-                        log_func(app, "✅ Diálogo de confirmación aceptado (._wModal_btn_ok).")
-                        time.sleep(4)
-                except Exception as modal_ex:
-                    pass
-
-                if not modal_ok:
-                    log_func(app, "ℹ Intentando click por evaluación JS DOM en modal _wModal_btn_ok...")
-                    eval_ok = page.evaluate("""() => {
-                        const target = document.querySelector('._wModal_btn_ok, ._wModal_btn_blue, ._wModal_btn');
-                        if (target) {
-                            target.click();
-                            return true;
-                        }
-                        const allDivs = Array.from(document.querySelectorAll('div, button, a'));
-                        const okDiv = allDivs.find(d => {
-                            const t = (d.textContent || '').trim().toLowerCase();
-                            return (t === 'aceptar' || t === 'sí' || t === 'si') && d.offsetWidth > 0;
-                        });
-                        if (okDiv) {
-                            okDiv.click();
-                            return true;
-                        }
-                        return false;
-                    }""")
-                    if eval_ok:
-                        log_func(app, "✅ Diálogo de confirmación aceptado vía JS DOM.")
-                        time.sleep(4)
-                    else:
-                        log_func(app, "⚠️ Falló confirmación de modal UI. Ejecutando fallback API...")
-                        _enviar_oferta_precios(page, log_func, app)
+                modal_closed = page.evaluate("""() => {
+                    let done = false;
+                    // a) Ejecutar función JS nativa del modal si está disponible
+                    if (typeof ocultarMensajeCantidadUnidadesPresentacion === 'function') {
+                        try { ocultarMensajeCantidadUnidadesPresentacion(); done = true; } catch(e){}
+                    }
+                    
+                    // b) Buscar y presionar el botón OK de ._wModal_holder
+                    const okBtn = document.querySelector('._wModal_btn_ok, ._wModal_btn_blue, ._wModal_btn');
+                    if (okBtn) {
+                        try { okBtn.click(); done = true; } catch(e){}
+                    }
+                    
+                    // c) Buscar cualquier elemento visible con texto 'OK'
+                    const allElems = Array.from(document.querySelectorAll('div._wModal_btn, button, a, div'));
+                    const target = allElems.find(el => {
+                        const t = (el.textContent || '').trim().toUpperCase();
+                        return (t === 'OK' || t === 'ACEPTAR' || t === 'SÍ' || t === 'SI') && el.offsetWidth > 0;
+                    });
+                    if (target) {
+                        try { target.click(); done = true; } catch(e){}
+                    }
+                    
+                    // d) Limpiar backdrops flotantes
+                    document.querySelectorAll('.modal-backdrop, #_wModal_bg, ._wModal_bg, ._wModal_holder').forEach(el => el.remove());
+                    document.body.style.overflow = '';
+                    document.body.classList.remove('modal-open');
+                    
+                    return done;
+                }""")
+                
+                if modal_closed:
+                    log_func(app, "✅ Ofertas enviadas y confirmadas en el portal (ocultarMensajeCantidadUnidadesPresentacion / OK).")
+                else:
+                    log_func(app, "⚠️ No se detectó modal UI. Ejecutando confirmación fallback por API...")
+                    _enviar_oferta_precios(page, log_func, app)
+                
+                time.sleep(3.0)
+                
+                # 3. Refrescar la tabla en la interfaz para mostrar las ofertas enviadas
+                log_func(app, "🔄 Refrescando tabla de ofertas en la pantalla...")
+                page.evaluate("""() => {
+                    if (typeof BuscarCatProducto === 'function') BuscarCatProducto();
+                    else if (typeof Buscar_CatProducto === 'function') Buscar_CatProducto();
+                }""")
+                time.sleep(3.0)
+                
             except Exception as e:
-                log_func(app, f"❌ Error confirmando en UI ({e}). Intentando fallback por API...")
+                log_func(app, f"❌ Error en confirmación final ({e}). Intentando fallback por API...")
                 _enviar_oferta_precios(page, log_func, app)
         else:
             log_func(app, "⚠ No se insertó ningún precio exitosamente. Saltando confirmación final.")

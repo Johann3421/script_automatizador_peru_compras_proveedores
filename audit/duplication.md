@@ -16,7 +16,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 23)
 - `modulo_subir_pdf/workers.py` (Línea 1122)
 - `modulo_subir_pdf/workers.py` (Línea 1259)
-- `modulo_subir_pdf/workers.py` (Línea 1534)
+- `modulo_subir_pdf/workers.py` (Línea 1536)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 179)
 
 ### Función `ok` (14 ocurrencias)
@@ -32,7 +32,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 27)
 - `modulo_subir_pdf/workers.py` (Línea 1123)
 - `modulo_subir_pdf/workers.py` (Línea 1260)
-- `modulo_subir_pdf/workers.py` (Línea 1538)
+- `modulo_subir_pdf/workers.py` (Línea 1540)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 183)
 
 ### Función `error` (14 ocurrencias)
@@ -48,7 +48,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 25)
 - `modulo_subir_pdf/workers.py` (Línea 1125)
 - `modulo_subir_pdf/workers.py` (Línea 1262)
-- `modulo_subir_pdf/workers.py` (Línea 1536)
+- `modulo_subir_pdf/workers.py` (Línea 1538)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 181)
 
 ### Función `warn` (10 ocurrencias)
@@ -245,22 +245,22 @@
 ### Función `warning` (4 ocurrencias)
 - `automation/perucompras_core.py` (Línea 62)
 - `modulo_subir_pdf/workers.py` (Línea 24)
-- `modulo_subir_pdf/workers.py` (Línea 1535)
+- `modulo_subir_pdf/workers.py` (Línea 1537)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 180)
 
 ### Función `success` (4 ocurrencias)
 - `automation/perucompras_core.py` (Línea 64)
 - `modulo_subir_pdf/workers.py` (Línea 26)
-- `modulo_subir_pdf/workers.py` (Línea 1537)
+- `modulo_subir_pdf/workers.py` (Línea 1539)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 182)
 
 ### Función `write` (2 ocurrencias)
 - `automation/perucompras_core.py` (Línea 66)
-- `modulo_subir_pdf/workers.py` (Línea 1539)
+- `modulo_subir_pdf/workers.py` (Línea 1541)
 
 ### Función `flush` (2 ocurrencias)
 - `automation/perucompras_core.py` (Línea 70)
-- `modulo_subir_pdf/workers.py` (Línea 1542)
+- `modulo_subir_pdf/workers.py` (Línea 1544)
 
 ### Función `apply_dropdowns_and_search` (2 ocurrencias)
 - `modulo_modificar_productos/automation_mod/navegacion_productos.py` (Línea 112)
@@ -304,13 +304,13 @@
 
 ### Función `re_enable` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1246)
-- `modulo_subir_pdf/workers.py` (Línea 1518)
+- `modulo_subir_pdf/workers.py` (Línea 1520)
 
 ### Función `handle_request` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1336)
-- `modulo_subir_pdf/workers.py` (Línea 1617)
+- `modulo_subir_pdf/workers.py` (Línea 1619)
 
 ### Función `handle_response` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1341)
-- `modulo_subir_pdf/workers.py` (Línea 1622)
+- `modulo_subir_pdf/workers.py` (Línea 1624)
 

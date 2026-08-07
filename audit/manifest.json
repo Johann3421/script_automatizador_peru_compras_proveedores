@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-07 12:35:05",
+  "generated_at": "2026-08-07 12:52:37",
   "total_files": 64,
-  "total_lines": 24763,
+  "total_lines": 24777,
   "files": [
     {
       "rel_path": "automation/__init__.py",
@@ -495,8 +495,8 @@
       "rel_path": "modulo_subir_pdf/workers.py",
       "abs_path": "D:\\SISTEMAS 02\\Desktop\\Proyectos_generales\\script_automatizador_peru_compras_proveedores\\modulo_subir_pdf\\workers.py",
       "language": "python",
-      "lines": 2273,
-      "hash": "54ae389398817365795469fdecdd8cddb5861ef38d39d39fc76480ed4de5b258",
+      "lines": 2287,
+      "hash": "56f592b3218d0014ef72c41c92d482a3e7b04e3536b8aa068b1a7c18c1a0558b",
       "ext": ".py"
     },
     {
