@@ -217,12 +217,33 @@ def consultar_json_productos(
     """
     FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
     
-    Utiliza page.request.get de Playwright (petición HTTP directa de red compartiendo cookies)
-    para garantizar la respuesta sin bloqueos de CORS ni errores 'Failed to fetch'.
+    Implementa 3 estrategias progresivas de extracción:
+      1. Extracción en memoria desde la instancia DataTables/DOM del navegador.
+      2. Petición HTTP nativa `page.request.get` a `_ListaProductosOfertados` con descarte de BOM.
+      3. Petición POST DataTables a `_CatalogoProductoIndexJson`.
     """
     _log(log_func, "📡 Solicitando dataset JSON crudo del portal...")
-    
-    # Extraer IDs dinámicos reales del DOM si están en la pantalla activa
+
+    # ── ESTRATEGIA 1: Extraer directamente de la memoria DataTables / DOM del navegador
+    try:
+        data_dom = page.evaluate("""() => {
+            try {
+                if (window.jQuery && window.jQuery.fn.DataTable && window.jQuery('#TablaProductos').length) {
+                    const table = window.jQuery('#TablaProductos').DataTable();
+                    if (table && table.rows().data().length > 0) {
+                        return table.rows().data().toArray();
+                    }
+                }
+            } catch(e) {}
+            return null;
+        }""")
+        if isinstance(data_dom, list) and len(data_dom) > 0:
+            _log(log_func, f"✅ Dataset extraído exitosamente desde la tabla en pantalla ({len(data_dom)} fichas).")
+            return data_dom
+    except Exception as e:
+        _log(log_func, f"ℹ️ Extracción en memoria de tabla en pantalla omitida: {e}")
+
+    # Extraer IDs dinámicos del DOM si están en la pantalla activa
     try:
         dom_ids = page.evaluate("""() => {
             const ac = document.querySelector('#ajaxAcuerdo, #N_Acuerdo, select[name*="cuerdo"]')?.value;
@@ -236,8 +257,8 @@ def consultar_json_productos(
             n_catalogo = int(dom_ids["cat"])
         if dom_ids.get("catg") and str(dom_ids["catg"]).isdigit():
             n_categoria = int(dom_ids["catg"])
-    except Exception as e:
-        _log(log_func, f"⚠️ No se pudieron obtener IDs del DOM, usando parámetros: {e}")
+    except Exception:
+        pass
 
     n_acuerdo = n_acuerdo or 249
     n_catalogo = n_catalogo or 252
@@ -245,17 +266,17 @@ def consultar_json_productos(
 
     _log(log_func, f"  🔍 Parámetros finales de consulta: Acuerdo={n_acuerdo}, Catálogo={n_catalogo}, Categoría={n_categoria}")
 
+    # ── ESTRATEGIA 2: GET Endpoint _ListaProductosOfertados con parseo seguro de texto
     ts = int(time.time() * 1000)
-    endpoint = (
+    endpoint_get = (
         f"{BASE_URL}/MejoraBasica/_ListaProductosOfertados"
         f"?N_Acuerdo={n_acuerdo}&N_Catalogo={n_catalogo}"
         f"&N_Categoria={n_categoria}&C_Descripcion=&_={ts}"
     )
 
     try:
-        # Petición de red nativa mediante Playwright (page.request) compartiendo cookies de la sesión
         resp = page.request.get(
-            endpoint,
+            endpoint_get,
             headers={
                 "X-Requested-With": "XMLHttpRequest",
                 "Referer": f"{BASE_URL}/MejoraBasica",
@@ -265,23 +286,59 @@ def consultar_json_productos(
         )
 
         if resp.status == 200:
-            try:
-                parsed = resp.json()
-                data = parsed.get("data", []) if isinstance(parsed, dict) else parsed
-                if isinstance(data, list) and len(data) > 0:
-                    _log(log_func, f"✅ Dataset extraído exitosamente ({len(data)} fichas).")
-                    return data
-                elif isinstance(data, list):
-                    _log(log_func, "ℹ️ El portal respondió correctamente pero el dataset retornó 0 fichas.")
-                    return []
-            except Exception as pe:
-                _log(log_func, f"❌ Error parseando JSON devuelto: {pe}")
-        else:
-            _log(log_func, f"❌ Servidor respondió con estado HTTP {resp.status}")
+            text = resp.text().strip().lstrip('\ufeff')
+            if text and (text.startswith('[') or text.startswith('{')):
+                try:
+                    parsed = json.loads(text)
+                    data = parsed.get("data", []) if isinstance(parsed, dict) else parsed
+                    if isinstance(data, list) and len(data) > 0:
+                        _log(log_func, f"✅ Dataset extraído exitosamente vía GET ({len(data)} fichas).")
+                        return data
+                    elif isinstance(data, list):
+                        _log(log_func, "ℹ️ El portal devolvió 0 registros para esta categoría.")
+                        return []
+                except Exception as pe:
+                    _log(log_func, f"⚠️ Respuesta no es JSON puro: {pe}")
+            else:
+                _log(log_func, f"⚠️ Respuesta del portal fue HTML/Texto en lugar de JSON (Primeros 100 chars: {text[:100]!r})")
 
     except Exception as e:
-        _log(log_func, f"❌ Error ejecutando solicitud de red en Playwright: {e}")
+        _log(log_func, f"⚠️ Error en Estrategia GET: {e}")
 
+    # ── ESTRATEGIA 3: POST Endpoint DataTables _CatalogoProductoIndexJson
+    _log(log_func, "📡 Intentando Estrategia 3 (DataTables POST API)...")
+    endpoint_post = f"{BASE_URL}/t_ProductoOfertadoAmp/_CatalogoProductoIndexJson"
+    payload = {
+        "draw": "1", "start": "0", "length": "5000",
+        "search[value]": "", "search[regex]": "false",
+        "N_Acuerdo": str(n_acuerdo), "N_Catalogo": str(n_catalogo), "N_Categoria": str(n_categoria)
+    }
+
+    try:
+        resp_post = page.request.post(
+            endpoint_post,
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": f"{BASE_URL}/t_ProductoOfertadoAmp/CatalogoProductoIndex"
+            },
+            data=payload,
+            timeout=35000
+        )
+
+        if resp_post.status == 200:
+            text_post = resp_post.text().strip().lstrip('\ufeff')
+            if text_post and (text_post.startswith('{') or text_post.startswith('[')):
+                parsed_post = json.loads(text_post)
+                data_post = parsed_post.get("data", []) if isinstance(parsed_post, dict) else parsed_post
+                if isinstance(data_post, list) and len(data_post) > 0:
+                    _log(log_func, f"✅ Dataset extraído exitosamente vía POST DataTables ({len(data_post)} fichas).")
+                    return data_post
+
+    except Exception as e:
+        _log(log_func, f"❌ Error en Estrategia POST: {e}")
+
+    _log(log_func, "❌ No se pudieron extraer fichas con ninguna de las 3 estrategias.")
     return []
 
 

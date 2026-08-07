@@ -208,6 +208,11 @@
 - `modulo_subir_pdf/discovery_perucompras.py` (Línea 161)
 - `modulo_subir_pdf/discovery_v2_perucompras.py` (Línea 130)
 
+### Función `poll_queue` (3 ocurrencias)
+- `ui/screen_run.py` (Línea 275)
+- `modulo_modificar_productos/main_modificar.py` (Línea 1007)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2869)
+
 ### Función `warning` (3 ocurrencias)
 - `automation/perucompras_core.py` (Línea 62)
 - `modulo_subir_pdf/workers.py` (Línea 11)
@@ -217,11 +222,6 @@
 - `automation/perucompras_core.py` (Línea 64)
 - `modulo_subir_pdf/workers.py` (Línea 13)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
-
-### Función `poll_queue` (3 ocurrencias)
-- `ui/screen_run.py` (Línea 275)
-- `modulo_modificar_productos/main_modificar.py` (Línea 1007)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 2869)
 
 ### Función `configure` (12 ocurrencias)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 77)
