@@ -1726,11 +1726,11 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
                 catalogo_id = str(cat_match.get("N_CatalogoProducto") or "")
                 moneda = str(cat_match.get("C_MonedaOfertada") or "USD")
 
-                # Realizar POST de inserción con reintentos automáticos (Evasión de error 500 temporal)
-                payload_insert = {
-                    "N_CatalogoProducto": catalogo_id,
-                    "C_MonedaOfertada": moneda,
-                    "N_PrecioOfertado": str(precio_usd),
+                # Realizar POST de inserción ejecutando $.ajax/fetch dentro del contexto del navegador activo (Sesión 100% válida)
+                payload_params = {
+                    "catalogo_id": catalogo_id,
+                    "moneda": moneda,
+                    "precio_usd": str(precio_usd),
                 }
 
                 max_post_retries = 3
@@ -1738,19 +1738,39 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
                     if stop_event and stop_event.is_set():
                         break
                     try:
-                        resp_ins = page.request.post(
-                            url_insert,
-                            headers={
-                                "Content-Type": "application/x-www-form-urlencoded",
-                                "X-Requested-With": "XMLHttpRequest",
-                                "Referer": "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
-                            },
-                            data=urlencode(payload_insert),
-                            timeout=15000
-                        )
-                        
-                        if resp_ins.status == 200:
-                            server_response = resp_ins.text()
+                        resp_eval = page.evaluate("""(params) => {
+                            return new Promise((resolve) => {
+                                if (typeof $ !== 'undefined') {
+                                    $.ajax({
+                                        url: '/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP',
+                                        type: 'POST',
+                                        data: {
+                                            N_CatalogoProducto: params.catalogo_id,
+                                            C_MonedaOfertada: params.moneda,
+                                            N_PrecioOfertado: params.precio_usd
+                                        },
+                                        success: function(r) { resolve({ status: 200, text: String(r || 'OK') }); },
+                                        error: function(xhr) { resolve({ status: xhr.status || 500, text: xhr.responseText || 'Error de red' }); }
+                                    });
+                                } else {
+                                    fetch('/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest' },
+                                        body: new URLSearchParams({
+                                            N_CatalogoProducto: params.catalogo_id,
+                                            C_MonedaOfertada: params.moneda,
+                                            N_PrecioOfertado: params.precio_usd
+                                        })
+                                    }).then(r => r.text().then(t => resolve({ status: r.status, text: t })))
+                                      .catch(e => resolve({ status: 0, text: String(e) }));
+                                }
+                            });
+                        }""", payload_params)
+
+                        status_code = resp_eval.get("status", 0)
+                        server_response = resp_eval.get("text", "")
+
+                        if status_code == 200:
                             status = _interpret_response_precios(server_response)
                             if status == "OK":
                                 oks += 1
@@ -1759,19 +1779,18 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
                                 errors += 1
                                 log_func(app, f"   [{idx}/{len(precios_data)}] ⚠ {nro_local} -> Rechazado: {server_response[:100]}")
                             break
-                        elif resp_ins.status == 500 and post_attempt < max_post_retries:
-                            log_func(app, f"   [{idx}/{len(precios_data)}] ⚠️ Error 500 temporal en {nro_local}. Reintentando ({post_attempt}/{max_post_retries})...")
-                            time.sleep(1.2)
+                        elif status_code == 500 and post_attempt < max_post_retries:
+                            log_func(app, f"   [{idx}/{len(precios_data)}] ⚠️ Reintentando inserción en {nro_local} ({post_attempt}/{max_post_retries})...")
+                            time.sleep(1.0)
                             continue
                         else:
                             status = "ERROR"
-                            server_response = f"HTTP Error Status {resp_ins.status}"
                             errors += 1
-                            log_func(app, f"   [{idx}/{len(precios_data)}] ❌ {nro_local} -> Error de red: {resp_ins.status}")
+                            log_func(app, f"   [{idx}/{len(precios_data)}] ❌ {nro_local} -> Error de red: {status_code} ({server_response[:60]})")
                             break
                     except Exception as ex:
                         if post_attempt < max_post_retries:
-                            time.sleep(1.2)
+                            time.sleep(1.0)
                             continue
                         status = "ERROR"
                         server_response = str(ex)
