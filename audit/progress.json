@@ -351,9 +351,9 @@
     },
     "modulo_subir_pdf/automation_otro_bot/stock.py": {
       "status": "done",
-      "lines": 1486,
-      "hash": "a84c265f47cbfbc940fed4738a8cf3f0c1efea89d11ade0a737707b43c90f214",
-      "updated_at": "2026-08-07 09:17:37"
+      "lines": 1462,
+      "hash": "4ff47189b21e038b31b82fd5c21c1f3d5d4fe92924a0486ed389c10d3448fdf2",
+      "updated_at": "2026-08-07 09:26:51"
     },
     "modulo_subir_pdf/automation_mod/navegacion_productos.py": {
       "status": "done",
@@ -381,9 +381,9 @@
     },
     "automation/perucompras_core.py": {
       "status": "done",
-      "lines": 409,
-      "hash": "9d5ed8e1af54f5fabc2a8bf128693be398cb0aad1a356ab1604690ff355c86eb",
-      "updated_at": "2026-08-07 09:01:55"
+      "lines": 492,
+      "hash": "3fad20d28beed3a7fac25cd2028dca95d359b6034e50d11121d5975c36b6e954",
+      "updated_at": "2026-08-07 09:26:51"
     }
   }
 }

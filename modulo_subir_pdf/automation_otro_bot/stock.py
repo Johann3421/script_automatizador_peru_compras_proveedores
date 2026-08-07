@@ -732,31 +732,8 @@ def paso3_filtros_stock(page, acuerdo=ACUERDO_TEXTO, catalogo=CATALOGO_TEXTO, ca
         }""")
 
         # 5. Esperar a que la tabla y el buscador dinámico de DataTables carguen
-        log("⏳ Esperando carga de tabla de productos o modales de confirmación...")
+        log("⏳ Esperando carga de tabla de productos...")
         time.sleep(2)
-        
-        # 5.1 Auto-Aceptar Modal de Términos de Mejora Básica (wModal_confirmacion) si aparece
-        try:
-            modal_aceptado = page.evaluate("""() => {
-                const modales = document.querySelectorAll('#wModal_confirmacion, .bootbox.modal, .modal.show, div[id*="Modal"]');
-                let accepted = false;
-                modales.forEach(m => {
-                    if (window.getComputedStyle(m).display !== 'none') {
-                        const btn = m.querySelector('#btnConfirma_Mejora, #btnAceptarMejora, .btn-primary, button.btn-success, button[data-bb-handler="confirm"]');
-                        if (btn) {
-                            btn.click();
-                            accepted = true;
-                        }
-                    }
-                });
-                return accepted;
-            }""")
-            if modal_aceptado:
-                log("⚠️ Modal de Confirmación de Mejora detectado. Términos aceptados automáticamente.")
-                time.sleep(3)
-        except Exception as e:
-            pass
-            
         try:
             page.wait_for_selector(
                 ".loading, .spinner, .fa-spinner, .progress, .ajax-loading",
@@ -765,7 +742,6 @@ def paso3_filtros_stock(page, acuerdo=ACUERDO_TEXTO, catalogo=CATALOGO_TEXTO, ca
             )
         except Exception:
             pass
-            
         try:
             page.locator("input[type='search'][aria-controls='TablaProductos'], #TablaProductos_filter input, .dataTables_filter input, #TablaProductos tbody tr").first.wait_for(
                 state="visible", timeout=45_000

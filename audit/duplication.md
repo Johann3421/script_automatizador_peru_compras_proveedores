@@ -213,16 +213,6 @@
 - `modulo_modificar_productos/main_modificar.py` (Línea 1007)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 2869)
 
-### Función `warning` (3 ocurrencias)
-- `automation/perucompras_core.py` (Línea 62)
-- `modulo_subir_pdf/workers.py` (Línea 11)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 175)
-
-### Función `success` (3 ocurrencias)
-- `automation/perucompras_core.py` (Línea 64)
-- `modulo_subir_pdf/workers.py` (Línea 13)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
-
 ### Función `configure` (12 ocurrencias)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 77)
 - `modulo_subir_pdf/ctk_compat.py` (Línea 146)
@@ -252,6 +242,16 @@
 - `modulo_subir_pdf/discovery_perucompras.py` (Línea 153)
 - `modulo_subir_pdf/discovery_v2_perucompras.py` (Línea 122)
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 194)
+
+### Función `warning` (3 ocurrencias)
+- `automation/perucompras_core.py` (Línea 62)
+- `modulo_subir_pdf/workers.py` (Línea 11)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 175)
+
+### Función `success` (3 ocurrencias)
+- `automation/perucompras_core.py` (Línea 64)
+- `modulo_subir_pdf/workers.py` (Línea 13)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
 
 ### Función `apply_dropdowns_and_search` (2 ocurrencias)
 - `modulo_modificar_productos/automation_mod/navegacion_productos.py` (Línea 112)

@@ -217,33 +217,79 @@ def consultar_json_productos(
     """
     FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
     
-    Estrategia de 3 Niveles:
-      1. Extracción desde la memoria DataTable/DOM en la página activa (`DataTable().rows().data()`).
-      2. Consulta AJAX contextual vía jQuery (`$.ajax`) en el navegador.
-      3. Petición POST DataTables nativa a `_CatalogoProductoIndexJson`.
+    Extrae y parsea el dataset de productos/fichas desde la tabla `#TablaProductos`
+    del portal Perú Compras (MejoraBasica) convirtiendo las filas HTML en objetos JSON.
     """
     _log(log_func, "📡 Solicitando dataset JSON crudo del portal...")
 
-    # ── ESTRATEGIA 1: Extraer directamente de la memoria DataTables / DOM del navegador
+    # ── ESTRATEGIA 1: Extraer y parsear directamente la tabla #TablaProductos del DOM activo
     try:
         data_dom = page.evaluate("""() => {
             try {
+                let rows = [];
                 if (window.jQuery && window.jQuery.fn.DataTable && window.jQuery('#TablaProductos').length) {
-                    const table = window.jQuery('#TablaProductos').DataTable();
-                    if (table && table.rows().data().length > 0) {
-                        return table.rows().data().toArray();
+                    const dt = window.jQuery('#TablaProductos').DataTable();
+                    if (dt && dt.rows().nodes().length > 0) {
+                        rows = Array.from(dt.rows().nodes());
                     }
                 }
-            } catch(e) {}
-            return null;
+                if (!rows || rows.length === 0) {
+                    rows = Array.from(document.querySelectorAll('#TablaProductos tbody tr'));
+                }
+
+                const items = [];
+                rows.forEach(tr => {
+                    const tds = tr.querySelectorAll('td');
+                    if (tds.length < 5) return;
+
+                    const desc = tds[1] ? tds[1].innerText.trim() : "";
+                    if (!desc || desc.includes("No se encontraron")) return;
+
+                    const estado = tds[2] ? tds[2].innerText.trim() : "";
+                    const moneda = tds[3] ? tds[3].innerText.trim() : "";
+                    const precioTxt = tds[4] ? tds[4].innerText.trim().replace(/,/g, '') : "0";
+                    const precioPubTxt = tds[5] ? tds[5].innerText.trim().replace(/,/g, '') : "0";
+                    const stockTxt = tds[6] ? tds[6].innerText.trim().replace(/,/g, '') : "0";
+                    const stockPubTxt = tds[7] ? tds[7].innerText.trim().replace(/,/g, '') : "0";
+                    
+                    const htmlTd8 = tds[8] ? tds[8].innerHTML : "";
+                    const htmlTd9 = tds[9] ? tds[9].innerHTML : "";
+                    
+                    let idOfertado = "";
+                    let idCatalogo = "";
+                    
+                    const matchOfertado = htmlTd9.match(/fnReducirPrecio\((\d+)\)/) || htmlTd9.match(/fnModificarStock\((\d+)\)/);
+                    if (matchOfertado) idOfertado = matchOfertado[1];
+
+                    const matchCatalogo = htmlTd8.match(/fnDetalleRegistro\((\d+)\)/);
+                    if (matchCatalogo) idCatalogo = matchCatalogo[1];
+
+                    items.push({
+                        "ID_ProductoOfertado": idOfertado,
+                        "ID_CatalogoProducto": idCatalogo,
+                        "C_Descripcion": desc,
+                        "C_Estado": estado,
+                        "C_MonedaOfertada": moneda,
+                        "N_PrecioOfertado": parseFloat(precioTxt) || 0.0,
+                        "N_PrecioOfertadoPorPublicar": parseFloat(precioPubTxt) || 0.0,
+                        "N_Stock": parseInt(stockTxt) || 0,
+                        "N_StockPorPublicar": parseInt(stockPubTxt) || 0
+                    });
+                });
+
+                return items;
+            } catch(e) {
+                return null;
+            }
         }""")
+
         if isinstance(data_dom, list) and len(data_dom) > 0:
             _log(log_func, f"✅ Dataset extraído exitosamente desde la tabla en pantalla ({len(data_dom)} fichas).")
             return data_dom
-    except Exception:
-        pass
+    except Exception as e:
+        _log(log_func, f"ℹ️ Extracción directa del DOM omitida: {e}")
 
-    # Extraer IDs dinámicos del DOM si están en la pantalla activa
+    # Extraer IDs dinámicos del DOM si están disponibles
     try:
         dom_ids = page.evaluate("""() => {
             const ac = document.querySelector('#ajaxAcuerdo, #N_Acuerdo, select[name*="cuerdo"]')?.value;
@@ -266,7 +312,7 @@ def consultar_json_productos(
 
     _log(log_func, f"  🔍 Parámetros de consulta: Acuerdo={n_acuerdo}, Catálogo={n_catalogo}, Categoría={n_categoria}")
 
-    # ── ESTRATEGIA 2: Petición $.ajax de jQuery dentro del navegador
+    # ── ESTRATEGIA 2: Fetch HTTP de _ListaProductosOfertados y parseo de HTML a JSON
     ts = int(time.time() * 1000)
     endpoint_get = (
         f"{BASE_URL}/MejoraBasica/_ListaProductosOfertados"
@@ -275,41 +321,78 @@ def consultar_json_productos(
     )
 
     try:
-        raw_text = page.evaluate(f"""
-            async () => {{
-                try {{
-                    const res = await $.ajax({{
-                        url: '{endpoint_get}',
-                        type: 'GET',
-                        dataType: 'json'
-                    }});
-                    return JSON.stringify(res);
-                }} catch(e) {{
-                    try {{
-                        const r = await fetch('{endpoint_get}', {{ headers: {{ 'X-Requested-With': 'XMLHttpRequest' }} }});
-                        return await r.text();
-                    }} catch(err) {{
-                        return null;
-                    }}
-                }}
-            }}
-        """)
+        resp = page.request.get(
+            endpoint_get,
+            headers={
+                "X-Requested-With": "XMLHttpRequest",
+                "Referer": f"{BASE_URL}/MejoraBasica",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            },
+            timeout=35000
+        )
 
-        if raw_text and not str(raw_text).startswith("<"):
-            parsed = json.loads(raw_text)
-            data = parsed.get("data", []) if isinstance(parsed, dict) else parsed
-            if isinstance(data, list) and len(data) > 0:
-                _log(log_func, f"✅ Dataset extraído exitosamente vía AJAX contextual ({len(data)} fichas).")
-                return data
-            elif isinstance(data, list):
-                _log(log_func, "ℹ️ El portal devolvió 0 registros para esta categoría.")
-                return []
+        if resp.status == 200:
+            html_text = resp.text()
+            data_parsed = page.evaluate("""(html) => {
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const rows = doc.querySelectorAll('#TablaProductos tbody tr, table tbody tr');
+                    const items = [];
+
+                    rows.forEach(tr => {
+                        const tds = tr.querySelectorAll('td');
+                        if (tds.length < 5) return;
+
+                        const desc = tds[1] ? tds[1].innerText.trim() : "";
+                        if (!desc || desc.includes("No se encontraron")) return;
+
+                        const estado = tds[2] ? tds[2].innerText.trim() : "";
+                        const moneda = tds[3] ? tds[3].innerText.trim() : "";
+                        const precioTxt = tds[4] ? tds[4].innerText.trim().replace(/,/g, '') : "0";
+                        const precioPubTxt = tds[5] ? tds[5].innerText.trim().replace(/,/g, '') : "0";
+                        const stockTxt = tds[6] ? tds[6].innerText.trim().replace(/,/g, '') : "0";
+                        const stockPubTxt = tds[7] ? tds[7].innerText.trim().replace(/,/g, '') : "0";
+
+                        const htmlTd8 = tds[8] ? tds[8].innerHTML : "";
+                        const htmlTd9 = tds[9] ? tds[9].innerHTML : "";
+                        
+                        let idOfertado = "";
+                        let idCatalogo = "";
+                        
+                        const matchOfertado = htmlTd9.match(/fnReducirPrecio\((\d+)\)/) || htmlTd9.match(/fnModificarStock\((\d+)\)/);
+                        if (matchOfertado) idOfertado = matchOfertado[1];
+
+                        const matchCatalogo = htmlTd8.match(/fnDetalleRegistro\((\d+)\)/);
+                        if (matchCatalogo) idCatalogo = matchCatalogo[1];
+
+                        items.push({
+                            "ID_ProductoOfertado": idOfertado,
+                            "ID_CatalogoProducto": idCatalogo,
+                            "C_Descripcion": desc,
+                            "C_Estado": estado,
+                            "C_MonedaOfertada": moneda,
+                            "N_PrecioOfertado": parseFloat(precioTxt) || 0.0,
+                            "N_PrecioOfertadoPorPublicar": parseFloat(precioPubTxt) || 0.0,
+                            "N_Stock": parseInt(stockTxt) || 0,
+                            "N_StockPorPublicar": parseInt(stockPubTxt) || 0
+                        });
+                    });
+
+                    return items;
+                } catch(e) {
+                    return [];
+                }
+            }""", html_text)
+
+            if isinstance(data_parsed, list) and len(data_parsed) > 0:
+                _log(log_func, f"✅ Dataset extraído y parseado exitosamente vía HTML Endpoint ({len(data_parsed)} fichas).")
+                return data_parsed
 
     except Exception as e:
-        _log(log_func, f"⚠️ Error en Estrategia 2 (AJAX contextual): {e}")
+        _log(log_func, f"⚠️ Error en Estrategia HTML Endpoint: {e}")
 
-    # ── ESTRATEGIA 3: POST Endpoint DataTables con page.request.post
-    _log(log_func, "📡 Intentando Estrategia 3 (DataTables POST API)...")
+    # ── ESTRATEGIA 3: POST Endpoint DataTables _CatalogoProductoIndexJson
     endpoint_post = f"{BASE_URL}/t_ProductoOfertadoAmp/_CatalogoProductoIndexJson"
     payload = {
         "draw": "1", "start": "0", "length": "5000",
@@ -331,7 +414,7 @@ def consultar_json_productos(
 
         if resp_post.status == 200:
             text_post = resp_post.text().strip().lstrip('\ufeff')
-            if text_post and not text_post.startswith('<'):
+            if text_post and text_post.startswith('{'):
                 parsed_post = json.loads(text_post)
                 data_post = parsed_post.get("data", []) if isinstance(parsed_post, dict) else parsed_post
                 if isinstance(data_post, list) and len(data_post) > 0:
@@ -341,7 +424,7 @@ def consultar_json_productos(
     except Exception as e:
         _log(log_func, f"❌ Error en Estrategia POST: {e}")
 
-    _log(log_func, "❌ No se pudieron extraer fichas con ninguna de las 3 estrategias.")
+    _log(log_func, "❌ No se pudieron extraer fichas del portal.")
     return []
 
 
