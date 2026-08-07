@@ -3216,6 +3216,25 @@ class SubirPdfWebApi:
         except Exception as e:
             return {"status": "error", "msg": str(e)}
 
+def _get_user_pass(app, params=None):
+    params = params or {}
+    user = str(params.get("user") or "").strip()
+    pwd = str(params.get("pass") or "").strip()
+
+    if not user and hasattr(app, "entry_stock_user") and hasattr(app.entry_stock_user, "get"):
+        user = str(app.entry_stock_user.get()).strip()
+    if not user and hasattr(app, "entry_user") and hasattr(app.entry_user, "get"):
+        user = str(app.entry_user.get()).strip()
+    if not user:
+        user = "estalin.huamali01"
+
+    if not pwd and hasattr(app, "entry_stock_pass") and hasattr(app.entry_stock_pass, "get"):
+        pwd = str(app.entry_stock_pass.get()).strip()
+    if not pwd and hasattr(app, "entry_pass") and hasattr(app.entry_pass, "get"):
+        pwd = str(app.entry_pass.get()).strip()
+    return user, pwd
+
+
     def start_json_process(self, params=None, *a):
         try:
             params = params or {}
@@ -3244,12 +3263,13 @@ class SubirPdfWebApi:
 
             def _log(app_inst, msg):
                 print(f"[SUBIDA PRECIOS JSON] {msg}")
-                if hasattr(self, '_window') and self._window:
+                win = getattr(self, '_window', None) or getattr(getattr(self, '_app', None), '_window', None)
+                if win:
                     try:
                         js_msg = json.dumps(str(msg))
-                        self._window.evaluate_js(f"logJsonConsole({js_msg});")
-                    except Exception:
-                        pass
+                        win.evaluate_js(f"logJsonConsole({js_msg});")
+                    except Exception as ex:
+                        print(f"Error evaluate_js: {ex}")
 
             combos = getattr(self._app, "_stock_combos_data", {})
             n_acuerdo = workers._get_id_acuerdo(combos, acuerdo_val) if hasattr(workers, '_get_id_acuerdo') else "249"
@@ -3266,6 +3286,7 @@ class SubirPdfWebApi:
 
             return {"status": "started"}
         except Exception as e:
+            print(f"[ERROR start_json_process] {e}")
             return {"status": "error", "msg": str(e)}
 
     def stop_json_process(self, *a):

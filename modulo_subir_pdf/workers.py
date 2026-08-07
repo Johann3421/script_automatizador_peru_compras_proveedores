@@ -1502,6 +1502,7 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
             app.after(0, lambda: app.btn_iniciar_precios.configure(state="normal"))
 
     try:
+        log_func(app, "🚀 Inicializando navegador Playwright en segundo plano...")
         pw, browser, page = init_browser(headless=headless)
         if not headless:
             try: page.set_viewport_size({"width": 1920, "height": 1080})

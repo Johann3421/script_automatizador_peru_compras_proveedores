@@ -1094,7 +1094,15 @@
       }
 
       logJsonConsole(`[SUBIDA PRECIOS] Iniciando inserción masiva de ${window._lastLoadedJsonRows.length} precios (Estrategia: ${priceStrategy.toUpperCase()})...`, "log-ok");
-      pyapi('start_json_process', { user, pass, acuerdo, cat, catg, visible, priceStrategy, data: window._lastLoadedJsonRows });
+      pyapi('start_json_process', { user, pass, acuerdo, cat, catg, visible, priceStrategy, data: window._lastLoadedJsonRows })
+        .then(res => {
+          if (res && res.status === "error") {
+            logJsonConsole(`❌ Error iniciando subida: ${res.msg}`, "log-err");
+          }
+        })
+        .catch(err => {
+          logJsonConsole(`❌ Error de comunicación JS-Python: ${err}`, "log-err");
+        });
     }
 
     function stopJsonProcess() {
