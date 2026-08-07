@@ -90,10 +90,10 @@
 | `modulo_modificar_productos/automation_mod/navegacion_productos.py` | `volver_a_lista` | 756 | 11 | **ALTA** |
 | `modulo_subir_pdf/automation_mod/navegacion_productos.py` | `volver_a_lista` | 1464 | 11 | **ALTA** |
 | `utils/excel_parser.py` | `parse_excel` | 84 | 10 | **ALTA** |
-| `modulo_subir_pdf/test_extraccion_json.py` | `extraer_json_crudo` | 196 | 10 | **ALTA** |
 | `build_installer.py` | `find_usable_python` | 218 | 10 | **ALTA** |
 | `modulo_subir_pdf/utils_mod/audit_portal_excel.py` | `_build_detail_sheet` | 251 | 10 | **ALTA** |
 | `modulo_modificar_productos/extract_dropdowns_modificar.py` | `main` | 315 | 10 | **ALTA** |
+| `automation/perucompras_core.py` | `extraer_json_catalogo` | 330 | 10 | **ALTA** |
 | `ui/screen_run.py` | `_run_automation` | 359 | 10 | **ALTA** |
 | `ui/screen_run.py` | `poll_queue` | 359 | 10 | **ALTA** |
 | `automation/bulk_upload.py` | `_match_parte_in_results` | 411 | 10 | **ALTA** |
@@ -121,8 +121,8 @@
 | `utils/excel_parser.py` | `find_header_row` | 84 | 8 | **MEDIA** |
 | `modulo_modificar_productos/automation_mod/bulk_modificar.py` | `buscar_producto_api` | 195 | 8 | **MEDIA** |
 | `automation/browser.py` | `find_chromium_browsers_path` | 251 | 8 | **MEDIA** |
-| `automation/perucompras_core.py` | `consultar_json_productos` | 274 | 8 | **MEDIA** |
 | `automation/navigation.py` | `_select2_choose` | 289 | 8 | **MEDIA** |
+| `automation/perucompras_core.py` | `consultar_json_productos` | 330 | 8 | **MEDIA** |
 | `automation/bulk_upload.py` | `_match_parte` | 411 | 8 | **MEDIA** |
 | `automation/bulk_upload.py` | `process_bulk_upload` | 411 | 8 | **MEDIA** |
 | `modulo_subir_pdf/ctk_compat.py` | `__init__` | 452 | 8 | **MEDIA** |

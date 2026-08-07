@@ -11,8 +11,10 @@ con el portal de Perú Compras, desacopladas al 100% de la interfaz de usuario (
   4. `completar_menu_dinamico`: Selección flexible de combos de catálogo.
   5. `insertar_stock_item`: Actualización atómica de stock de un producto.
   6. `consultar_json_productos`: Extracción del dataset JSON crudo.
+  7. `extraer_json_catalogo`: Extracción E2E completa del catálogo JSON a disco/memoria.
 """
 
+import os
 import time
 import json
 from typing import Callable, Optional, Dict, Any, List
@@ -82,11 +84,6 @@ def saltar_verificacion(
 ) -> bool:
     """
     FUNCION PADRE 2: Saltar Verificación y Navegación a MejoraBasica.
-    
-    Ejecuta la secuencia probada de navegación:
-    1) Retroceso seguro de historial (go_back)
-    2) Recarga de BASE_URL
-    3) Navegación final a MEJORA_URL (sección MejoraBasica)
     """
     _log(log_func, "🔄 Ejecutando maniobra de retroceso seguro y evasión...")
     try:
@@ -139,13 +136,12 @@ def completar_menu_dinamico(
     """
     FUNCION PADRE 4: Completar Menú Dinámico y Filtros.
     
-    Asegura que el navegador esté en MejoraBasica y selecciona de forma flexible
-    los 3 dropdowns del catálogo electrónico (Acuerdo, Catálogo y Categoría).
+    Asegura que el navegador esté en MejoraBasica, selecciona los 3 dropdowns
+    del catálogo y hace clic explícito en 'Iniciar Búsqueda' (#btnBuscar).
     """
     from modulo_subir_pdf.automation_otro_bot.stock import paso3_filtros_stock
     
-    # Verificar si estamos en la vista MejoraBasica, de lo contrario navegar
-    if "MejoraBasica" not in page.url or not page.query_selector("#N_Acuerdo"):
+    if "MejoraBasica" not in page.url or not page.query_selector("#N_Acuerdo, #ajaxAcuerdo"):
         _log(log_func, "📍 Redirigiendo a MejoraBasica antes de aplicar filtros...")
         try:
             page.goto(MEJORA_URL, wait_until="networkidle", timeout=60_000)
@@ -156,7 +152,7 @@ def completar_menu_dinamico(
     _log(log_func, f"📋 Aplicando filtros en menú dinámico: {acuerdo} > {catalogo} > {categoria}")
     ok = paso3_filtros_stock(page, acuerdo, catalogo, categoria)
     if ok:
-        _log(log_func, "✅ Menú dinámico configurado correctamente.")
+        _log(log_func, "✅ Menú dinámico configurado y búsqueda iniciada correctamente.")
     else:
         _log(log_func, "❌ Error al seleccionar opciones en el menú dinámico.")
     return ok
@@ -220,13 +216,9 @@ def consultar_json_productos(
 ) -> List[Dict[str, Any]]:
     """
     FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
-    
-    Consulta el endpoint JSON crudo `_ListaProductosOfertados` mediante `fetch`
-    utilizando las cookies activas de la sesión.
     """
     _log(log_func, f"📡 Solicitando dataset JSON crudo del portal (Acuerdo:{n_acuerdo}, Cat:{n_catalogo}, Catg:{n_categoria})...")
     
-    # Asegurar estar en MejoraBasica para contexto de cookies válido
     if "MejoraBasica" not in page.url:
         try:
             page.goto(MEJORA_URL, wait_until="networkidle", timeout=60_000)
@@ -272,3 +264,67 @@ def consultar_json_productos(
     except Exception as e:
         _log(log_func, f"❌ Error parseando JSON de productos: {e}")
         return []
+
+
+def extraer_json_catalogo(
+    usuario: str = "estalin.huamali01",
+    password: str = "",
+    n_acuerdo: int = 249,
+    n_catalogo: int = 252,
+    n_categoria: int = 11736,
+    acuerdo_texto: str = "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES",
+    catalogo_texto: str = "COMPUTADORAS DE ESCRITORIO",
+    categoria_texto: str = "COMPUTADORA TODO EN UNO",
+    output_path: Optional[str] = None,
+    captcha_bridge = None,
+    stop_event = None,
+    log_func: Optional[Callable[[str], None]] = None,
+    headless: bool = True
+) -> List[Dict[str, Any]]:
+    """
+    FUNCION PADRE 7: Extracción Completa de JSON a Disco/Memoria.
+    
+    Flujo E2E completo:
+      1. Inicia navegador Playwright (HD 1920x1080).
+      2. Ejecuta `login_automatico` con OCR Tesseract ilimitado.
+      3. Ejecuta `saltar_verificacion` hacia MejoraBasica.
+      4. Ejecuta `completar_menu_dinamico` + clic en #btnBuscar.
+      5. Ejecuta `consultar_json_productos` para extraer el dataset completo.
+      6. Guarda opcionalmente el archivo JSON en `output_path`.
+    """
+    from automation.browser import init_browser, close_browser
+
+    _log(log_func, f"🚀 [PADRE 7] Iniciando extracción masiva de JSON (Usuario: {usuario})...")
+    pw = browser = page = None
+    data = []
+
+    try:
+        pw, browser, page = init_browser(headless=headless)
+
+        if not login_automatico(page, usuario, password, captcha_bridge, stop_event, log_func):
+            _log(log_func, "❌ Login falló. Extracción JSON cancelada.")
+            return []
+
+        saltar_verificacion(page, log_func)
+        completar_menu_dinamico(page, acuerdo_texto, catalogo_texto, categoria_texto, log_func)
+        data = consultar_json_productos(page, n_acuerdo, n_catalogo, n_categoria, log_func)
+
+        if output_path and data:
+            try:
+                folder = os.path.dirname(os.path.abspath(output_path))
+                os.makedirs(folder, exist_ok=True)
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                _log(log_func, f"💾 Dataset guardado exitosamente en: {output_path}")
+            except Exception as e:
+                _log(log_func, f"⚠️ Error guardando archivo JSON: {e}")
+
+        return data
+
+    except Exception as e:
+        _log(log_func, f"❌ Error en extraer_json_catalogo: {e}")
+        return []
+
+    finally:
+        if pw and browser:
+            close_browser(pw, browser)

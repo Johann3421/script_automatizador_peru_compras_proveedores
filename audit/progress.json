@@ -207,9 +207,9 @@
     },
     "modulo_subir_pdf/test_extraccion_json.py": {
       "status": "done",
-      "lines": 196,
-      "hash": "54416a8e7d12b792660a3f399f3bac858bf2054fa1fc414ac40449f85d98dda2",
-      "updated_at": "2026-08-05 18:40:50"
+      "lines": 93,
+      "hash": "a8162bef577b58b6f968fc2f0bc1c1a30a80b591ac61a10d2a179f8abde4c112",
+      "updated_at": "2026-08-07 08:22:14"
     },
     "build_installer.py": {
       "status": "done",
@@ -381,9 +381,9 @@
     },
     "automation/perucompras_core.py": {
       "status": "done",
-      "lines": 274,
-      "hash": "1cbd436931a338c61858e356de9f93ad15db0287bc5dc23ef423aba2b3aba2b2",
-      "updated_at": "2026-08-05 18:59:16"
+      "lines": 330,
+      "hash": "9ba43a4bd296989273d8a655da20ee195339a0209d8e119723267f793938c385",
+      "updated_at": "2026-08-07 08:22:14"
     }
   }
 }
