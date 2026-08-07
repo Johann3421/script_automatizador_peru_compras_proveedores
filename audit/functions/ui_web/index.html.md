@@ -2,7 +2,7 @@
 
 - **Lenguaje:** `html`
 - **Líneas de código:** 1158
-- **Hash SHA256:** `fc1541c9c9bb`
+- **Hash SHA256:** `23f5d5d71b8e`
 - **Estrategia de Análisis:** Bloques por funciones (ast)
 
 ---

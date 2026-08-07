@@ -1726,44 +1726,58 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
                 catalogo_id = str(cat_match.get("N_CatalogoProducto") or "")
                 moneda = str(cat_match.get("C_MonedaOfertada") or "USD")
 
-                # Realizar POST de inserción
+                # Realizar POST de inserción con reintentos automáticos (Evasión de error 500 temporal)
                 payload_insert = {
                     "N_CatalogoProducto": catalogo_id,
                     "C_MonedaOfertada": moneda,
                     "N_PrecioOfertado": str(precio_usd),
                 }
 
-                try:
-                    resp_ins = page.request.post(
-                        url_insert,
-                        headers={
-                            "Content-Type": "application/x-www-form-urlencoded",
-                            "X-Requested-With": "XMLHttpRequest",
-                            "Referer": "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
-                        },
-                        data=urlencode(payload_insert),
-                        timeout=15000
-                    )
-                    
-                    if resp_ins.status == 200:
-                        server_response = resp_ins.text()
-                        status = _interpret_response_precios(server_response)
-                        if status == "OK":
-                            oks += 1
-                            log_func(app, f"   [{idx}/{len(precios_data)}] ✅ {nro_local} -> {precio_usd} USD (Insertado)")
+                max_post_retries = 3
+                for post_attempt in range(1, max_post_retries + 1):
+                    if stop_event and stop_event.is_set():
+                        break
+                    try:
+                        resp_ins = page.request.post(
+                            url_insert,
+                            headers={
+                                "Content-Type": "application/x-www-form-urlencoded",
+                                "X-Requested-With": "XMLHttpRequest",
+                                "Referer": "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
+                            },
+                            data=urlencode(payload_insert),
+                            timeout=15000
+                        )
+                        
+                        if resp_ins.status == 200:
+                            server_response = resp_ins.text()
+                            status = _interpret_response_precios(server_response)
+                            if status == "OK":
+                                oks += 1
+                                log_func(app, f"   [{idx}/{len(precios_data)}] ✅ {nro_local} -> {precio_usd} USD (Insertado)")
+                            else:
+                                errors += 1
+                                log_func(app, f"   [{idx}/{len(precios_data)}] ⚠ {nro_local} -> Rechazado: {server_response[:100]}")
+                            break
+                        elif resp_ins.status == 500 and post_attempt < max_post_retries:
+                            log_func(app, f"   [{idx}/{len(precios_data)}] ⚠️ Error 500 temporal en {nro_local}. Reintentando ({post_attempt}/{max_post_retries})...")
+                            time.sleep(1.2)
+                            continue
                         else:
+                            status = "ERROR"
+                            server_response = f"HTTP Error Status {resp_ins.status}"
                             errors += 1
-                            log_func(app, f"   [{idx}/{len(precios_data)}] ⚠ {nro_local} -> Rechazado: {server_response[:100]}")
-                    else:
+                            log_func(app, f"   [{idx}/{len(precios_data)}] ❌ {nro_local} -> Error de red: {resp_ins.status}")
+                            break
+                    except Exception as ex:
+                        if post_attempt < max_post_retries:
+                            time.sleep(1.2)
+                            continue
                         status = "ERROR"
-                        server_response = f"HTTP Error Status {resp_ins.status}"
+                        server_response = str(ex)
                         errors += 1
-                        log_func(app, f"   [{idx}/{len(precios_data)}] ❌ {nro_local} -> Error de red: {resp_ins.status}")
-                except Exception as ex:
-                    status = "ERROR"
-                    server_response = str(ex)
-                    errors += 1
-                    log_func(app, f"   [{idx}/{len(precios_data)}] ❌ {nro_local} -> Excepción: {ex}")
+                        log_func(app, f"   [{idx}/{len(precios_data)}] ❌ {nro_local} -> Excepción: {ex}")
+                        break
             else:
                 status = "NO ENCONTRADO"
                 server_response = "No se localizó descripción/número de parte en Perú Compras"
