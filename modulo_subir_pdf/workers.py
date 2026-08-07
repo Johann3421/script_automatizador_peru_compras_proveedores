@@ -1413,39 +1413,20 @@ def execute_test_precios(app, usuario, password, headless, log_func,
 
         matches_found = 0
         no_match = 0
-        sample_matches = []
 
         for producto_pc in all_products:
-            match = _buscar_match_local(producto_pc, precios_data)
+            match = _buscar_match_pc(producto_pc, precios_data)
             if match:
                 matches_found += 1
-                precio_max = match.get("precio_max", 0)
-                precio_usd = _calcular_precio_dolar(precio_max)
-                if len(sample_matches) < 3:
-                    sample_matches.append({
-                        "pc_desc": (producto_pc.get("C_Descripcion") or "")[:60],
-                        "precio_max": precio_max,
-                        "precio_usd": precio_usd,
-                    })
             else:
                 no_match += 1
 
         log_func(app, f"✅ Matches encontrados: {matches_found}/{len(all_products)}")
         log_func(app, f"⚠ Sin match:           {no_match}/{len(all_products)}")
-
-        if sample_matches:
-            log_func(app, "\n📋 Muestra de los primeros 3 matches:")
-            for s in sample_matches:
-                log_func(app, f"   [{s['pc_desc']}]")
-                log_func(app, f"   precio_max={s['precio_max']} S/ → {s['precio_usd']} USD")
-                log_func(app, "   ---")
-
         log_func(app, "\n✅ TEST completado. Revisa los logs.")
 
     except Exception as e:
-        import traceback
-        log_func(app, f"❌ Error fatal: {e}")
-        log_func(app, traceback.format_exc())
+        log_func(app, f"❌ Error en test: {e}")
     finally:
         if browser and pw:
             try: close_browser(pw, browser)
@@ -1453,17 +1434,20 @@ def execute_test_precios(app, usuario, password, headless, log_func,
         re_enable()
 
 
-
 # ═══════════════════════════════════════════════════════════════════
 #  TRABAJADORES DE SUBIDA DE PRECIOS REAL
 # ═══════════════════════════════════════════════════════════════════
 
 def _buscar_match_pc(rec_local, all_products):
-    nro_local = (rec_local.get("nro_parte_o_cdigo_nico_de_identificacin") or "").upper().strip()
-    desc_local = (rec_local.get("descripcin_fichaproducto") or "").upper().strip()
+    nro_local = (rec_local.get("nro_parte_o_cdigo_nico_de_identificacin") or rec_local.get("nro_parte") or rec_local.get("ID_CatalogoProducto") or rec_local.get("ID_ProductoOfertado") or "").upper().strip()
+    desc_local = (rec_local.get("descripcin_fichaproducto") or rec_local.get("descripcion_fichaproducto") or rec_local.get("C_Descripcion") or rec_local.get("parte") or "").upper().strip()
     
     for p in all_products:
         desc_pc = (p.get("C_Descripcion") or "").upper().strip()
+        nro_pc = (str(p.get("N_CatalogoProducto") or "")).upper().strip()
+        
+        if nro_local and nro_pc and nro_local == nro_pc:
+            return p
         if desc_local and desc_pc and desc_local == desc_pc:
             return p
         if nro_local and desc_pc and nro_local in desc_pc:
@@ -1512,8 +1496,10 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
     pw = browser = None
 
     def re_enable():
-        app.after(0, lambda: app.btn_test_precios.configure(state="normal"))
-        app.after(0, lambda: app.btn_iniciar_precios.configure(state="normal"))
+        if hasattr(app, "btn_test_precios") and hasattr(app.btn_test_precios, "configure"):
+            app.after(0, lambda: app.btn_test_precios.configure(state="normal"))
+        if hasattr(app, "btn_iniciar_precios") and hasattr(app.btn_iniciar_precios, "configure"):
+            app.after(0, lambda: app.btn_iniciar_precios.configure(state="normal"))
 
     try:
         pw, browser, page = init_browser(headless=headless)
@@ -1531,7 +1517,7 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
 
         stop = type('S', (), {'is_set': lambda self: False})()
 
-        if not do_login(page, usuario, password, "", DummyLog(), stop, app.captcha_bridge):
+        if not do_login(page, usuario, password, "", DummyLog(), stop, getattr(app, 'captcha_bridge', None)):
             log_func(app, "❌ Falló el login.")
             re_enable()
             return
@@ -1685,6 +1671,62 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
         log_func(app, f"✅ Catálogo descargado: {len(all_products)} productos")
 
         # ── 7. Bucle de Subida de Precios ──────────────────────────────────
+        log_func(app, f"🚀 Iniciando inserción de precios para {len(precios_data)} fichas locales...")
+        
+        report_rows = []
+        oks = 0
+        errors = 0
+        no_matches = 0
+
+        url_insert = "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP"
+
+
+        log_func(app, "📡 Descargando catálogo completo de Perú Compras...")
+        parsed_params = parse_qs(raw_body)
+        total = total_records[0]
+        log_func(app, f"📊 Total registros en Perú Compras: {total}")
+
+        all_products = []
+        PAGE_SIZE = 100
+        start = 0
+        draw = 1
+
+        while start < total:
+            parsed_params['start'] = [str(start)]
+            parsed_params['length'] = [str(PAGE_SIZE)]
+            parsed_params['draw'] = [str(draw)]
+            new_body = urlencode(parsed_params, doseq=True)
+
+            resp = page.request.post(
+                url_endpoint,
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Referer": "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
+                },
+                data=new_body,
+                timeout=20000
+            )
+
+            if resp.status == 200:
+                try:
+                    data = resp.json()
+                    records = data.get("data", [])
+                    all_products.extend(records)
+                except Exception as je:
+                    log_func(app, f"   ❌ Error parseando JSON en lote {start}: {je}")
+                    break
+            else:
+                log_func(app, f"   ❌ Error de red en lote {start}: Status {resp.status}")
+                break
+
+            start += PAGE_SIZE
+            draw += 1
+            time.sleep(0.3)
+
+        log_func(app, f"✅ Catálogo descargado: {len(all_products)} productos")
+
+        # ── 7. Bucle de Subida de Precios ──────────────────────────────────
         log_func(app, f"🚀 Iniciando inserción de precios en paralelo para {len(precios_data)} fichas locales...")
         
         report_rows = []
@@ -1695,9 +1737,14 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
         url_insert = "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP"
 
         for idx, rec in enumerate(precios_data, 1):
-            desc_local = rec.get("descripcin_fichaproducto", "")
-            nro_local = rec.get("nro_parte_o_cdigo_nico_de_identificacin", "")
-            precio_max = rec.get("precio_max", 0)
+            desc_local = rec.get("descripcin_fichaproducto") or rec.get("descripcion_fichaproducto") or rec.get("C_Descripcion") or rec.get("parte") or ""
+            nro_local = rec.get("nro_parte_o_cdigo_nico_de_identificacin") or rec.get("nro_parte") or rec.get("ID_CatalogoProducto") or rec.get("ID_ProductoOfertado") or ""
+            
+            # Prioridad de subida: precio_max > precio_referencia > N_PrecioOfertado > precio
+            precio_max = rec.get("precio_max")
+            if precio_max is None or precio_max == 0:
+                precio_max = rec.get("precio_referencia") or rec.get("N_PrecioOfertado") or rec.get("precio") or 0.0
+
             precio_usd = _calcular_precio_dolar(precio_max)
 
             # Buscar match en el catálogo descargado

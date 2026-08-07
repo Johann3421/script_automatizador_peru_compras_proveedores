@@ -339,9 +339,9 @@
     },
     "ui_web/index.html": {
       "status": "done",
-      "lines": 1137,
-      "hash": "833c17e2eea40a340faa57c064cbd02a1f907b5a510881795d6d892bfb295ce6",
-      "updated_at": "2026-08-07 10:17:42"
+      "lines": 1150,
+      "hash": "d69be786fbffe984f46ca898e9ca4d82a136f99dc1c4c88f68a9c2428075bbab",
+      "updated_at": "2026-08-07 10:23:34"
     },
     "modulo_modificar_productos/main_modificar.py": {
       "status": "done",
@@ -363,9 +363,9 @@
     },
     "modulo_subir_pdf/workers.py": {
       "status": "done",
-      "lines": 2194,
-      "hash": "9b300dfd1e9a7ed89d2ec6b3016299d79cc31f489af5f1e34f98d0aa3e7e0176",
-      "updated_at": "2026-08-07 08:46:00"
+      "lines": 2241,
+      "hash": "e4b649bf4d15762c54c3362a42535b7a04a9f2e82640537f0277561e9214e61b",
+      "updated_at": "2026-08-07 10:23:34"
     },
     "pagina_perucompras.html": {
       "status": "done",
@@ -375,9 +375,9 @@
     },
     "modulo_subir_pdf/main_subir_pdf.py": {
       "status": "done",
-      "lines": 3413,
-      "hash": "0007148891aa508b4170c61cd1bd5308f57d20469af800ab6ba3044e01db5ea4",
-      "updated_at": "2026-08-07 10:12:34"
+      "lines": 3463,
+      "hash": "1e0ef0006b125d0033fcd20c8b24ef7edbf220cb12daf9cc17f3271b6c0b9292",
+      "updated_at": "2026-08-07 10:23:34"
     },
     "automation/perucompras_core.py": {
       "status": "done",

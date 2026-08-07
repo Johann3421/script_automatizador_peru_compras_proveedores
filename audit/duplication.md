@@ -16,7 +16,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 10)
 - `modulo_subir_pdf/workers.py` (Línea 1109)
 - `modulo_subir_pdf/workers.py` (Línea 1246)
-- `modulo_subir_pdf/workers.py` (Línea 1527)
+- `modulo_subir_pdf/workers.py` (Línea 1513)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 174)
 
 ### Función `ok` (14 ocurrencias)
@@ -32,7 +32,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 14)
 - `modulo_subir_pdf/workers.py` (Línea 1110)
 - `modulo_subir_pdf/workers.py` (Línea 1247)
-- `modulo_subir_pdf/workers.py` (Línea 1528)
+- `modulo_subir_pdf/workers.py` (Línea 1514)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 178)
 
 ### Función `error` (14 ocurrencias)
@@ -48,7 +48,7 @@
 - `modulo_subir_pdf/workers.py` (Línea 12)
 - `modulo_subir_pdf/workers.py` (Línea 1112)
 - `modulo_subir_pdf/workers.py` (Línea 1249)
-- `modulo_subir_pdf/workers.py` (Línea 1530)
+- `modulo_subir_pdf/workers.py` (Línea 1516)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 176)
 
 ### Función `warn` (11 ocurrencias)
@@ -62,7 +62,7 @@
 - `modulo_subir_pdf/automation_otro_bot/stock.py` (Línea 96)
 - `modulo_subir_pdf/workers.py` (Línea 1111)
 - `modulo_subir_pdf/workers.py` (Línea 1248)
-- `modulo_subir_pdf/workers.py` (Línea 1529)
+- `modulo_subir_pdf/workers.py` (Línea 1515)
 
 ### Función `progress` (2 ocurrencias)
 - `utils/logger.py` (Línea 20)
@@ -164,7 +164,7 @@
 
 ### Función `stop_stock_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 92)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3223)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3273)
 
 ### Función `start_stock_audit` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 96)
@@ -172,7 +172,7 @@
 
 ### Función `export_audit` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 102)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3241)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3291)
 
 ### Función `detect_columns` (2 ocurrencias)
 - `modulo_modificar_productos/utils_mod/excel_parser_mod.py` (Línea 58)
@@ -295,13 +295,13 @@
 
 ### Función `re_enable` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1233)
-- `modulo_subir_pdf/workers.py` (Línea 1514)
+- `modulo_subir_pdf/workers.py` (Línea 1498)
 
 ### Función `handle_request` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1323)
-- `modulo_subir_pdf/workers.py` (Línea 1604)
+- `modulo_subir_pdf/workers.py` (Línea 1590)
 
 ### Función `handle_response` (2 ocurrencias)
 - `modulo_subir_pdf/workers.py` (Línea 1328)
-- `modulo_subir_pdf/workers.py` (Línea 1609)
+- `modulo_subir_pdf/workers.py` (Línea 1595)
 

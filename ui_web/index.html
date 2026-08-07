@@ -493,9 +493,9 @@
             <div class="form-group">
               <label style="color: var(--azul-pc); font-weight: bold;">Estrategia de Precio (CEAM Auditor):</label>
               <select id="jsonPriceStrategy" class="form-control" onchange="if(window._lastLoadedJsonRows) renderJsonTable(window._lastLoadedJsonRows)">
+                <option value="max" selected>Precio Máximo de Mercado (Más Alto — Predeterminado)</option>
                 <option value="min">Precio Mínimo de Mercado (Más Bajo)</option>
-                <option value="max">Precio Máximo de Mercado (Más Alto)</option>
-                <option value="ref" selected>Precio Referencial (P. Ref)</option>
+                <option value="ref">Precio Referencial (P. Ref)</option>
                 <option value="med">Precio Mediana (Equilibrado)</option>
               </select>
             </div>
@@ -1080,8 +1080,21 @@
     }
 
     function startJsonProcess() {
-      logJsonConsole("[JSON] Envío masivo JSON a API Perú Compras iniciado...", "log-ok");
-      pyapi('start_process');
+      const user = getValOrFallback(['stockUser', 'user', 'entryUser', 'jsonUser'], "estalin.huamali01");
+      const pass = getValOrFallback(['stockPass', 'pass', 'entryPass', 'jsonPass'], "");
+      const acuerdo = getSelectText('stockAcuerdo') || getSelectText('jsonAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
+      const cat = getSelectText('stockCat') || getSelectText('jsonCat') || "COMPUTADORAS DE ESCRITORIO";
+      const catg = getSelectText('stockCategoria') || getSelectText('jsonCategoria') || "COMPUTADORA TODO EN UNO";
+      const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
+      const priceStrategy = document.getElementById('jsonPriceStrategy') ? document.getElementById('jsonPriceStrategy').value : 'max';
+
+      if (!window._lastLoadedJsonRows || window._lastLoadedJsonRows.length === 0) {
+        logJsonConsole("⚠️ No hay datos o archivo JSON cargado en la tabla. Por favor selecciona un JSON con 'Examinar...' o presiona 'EXTRAER TODOS LOS PRECIOS'.", "log-warn");
+        return;
+      }
+
+      logJsonConsole(`[SUBIDA PRECIOS] Iniciando inserción masiva de ${window._lastLoadedJsonRows.length} precios (Estrategia: ${priceStrategy.toUpperCase()})...`, "log-ok");
+      pyapi('start_json_process', { user, pass, acuerdo, cat, catg, visible, priceStrategy, data: window._lastLoadedJsonRows });
     }
 
     function stopJsonProcess() {

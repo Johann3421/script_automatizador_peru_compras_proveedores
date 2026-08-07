@@ -1,8 +1,8 @@
 # Auditoría de Funciones: `modulo_subir_pdf/main_subir_pdf.py`
 
 - **Lenguaje:** `python`
-- **Líneas de código:** 3413
-- **Hash SHA256:** `0007148891aa`
+- **Líneas de código:** 3463
+- **Hash SHA256:** `1e0ef0006b12`
 - **Estrategia de Análisis:** Bloques por funciones (ast)
 
 ---
@@ -18,11 +18,11 @@
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def run_app()`
-- **Línea inicial:** 3272 | **Línea final:** 3407
+- **Línea inicial:** 3322 | **Línea final:** 3457
 - **Firma completa:** `def run_app()`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_Backend, hasattr, strftime, join, see, getattr, dirname, configure, set_window, start`
+- **Dependencias / Invocaciones:** `getattr, join, Event, CaptchaBridge, insert, strftime, _load_dropdown_json, start, isfile, set_window`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 19)
 
 ### `def __init__(self, parent)`
@@ -30,7 +30,7 @@
 - **Firma completa:** `def __init__(self, parent)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `winfo_screenheight, CTkLabel, resizable, after, attributes, CTkProgressBar, CTkFont, winfo_screenwidth, place, __init__`
+- **Dependencias / Invocaciones:** `attributes, set, super, configure, geometry, CTkFont, CTkProgressBar, place, __init__, after`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _step(self)`
@@ -38,7 +38,7 @@
 - **Firma completa:** `def _step(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `set, len, configure, after`
+- **Dependencias / Invocaciones:** `after, set, configure, len`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def _finish(self)`
@@ -46,7 +46,7 @@
 - **Firma completa:** `def _finish(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `destroy, deiconify`
+- **Dependencias / Invocaciones:** `deiconify, destroy`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def __init__(self)`
@@ -54,7 +54,7 @@
 - **Firma completa:** `def __init__(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `Lock, Event`
+- **Dependencias / Invocaciones:** `Event, Lock`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def request(self, img)`
@@ -62,7 +62,7 @@
 - **Firma completa:** `def request(self, img)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `set, wait, clear, is_set`
+- **Dependencias / Invocaciones:** `wait, is_set, clear, set`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def respond(self, code)`
@@ -78,7 +78,7 @@
 - **Firma completa:** `def __init__(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `set_appearance_mode, set_default_color_theme, super, SplashScreen, _build_ui, minsize, poll_queue, Queue, CaptchaBridge, _load_dropdown_json`
+- **Dependencias / Invocaciones:** `Event, CaptchaBridge, geometry, poll_queue, set_appearance_mode, Queue, SplashScreen, __init__, minsize, withdraw`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _load_dropdown_json(self)`
@@ -86,7 +86,7 @@
 - **Firma completa:** `def _load_dropdown_json(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `isfile, load, insert, abspath, resource_path, dirname, open`
+- **Dependencias / Invocaciones:** `insert, dirname, open, resource_path, abspath, isfile, load`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 9)
 
 ### `def _setup_styles(self)`
@@ -94,7 +94,7 @@
 - **Firma completa:** `def _setup_styles(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `Style, configure, map, theme_use`
+- **Dependencias / Invocaciones:** `map, Style, theme_use, configure`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _set_taskbar_icon(self)`
@@ -102,7 +102,7 @@
 - **Firma completa:** `def _set_taskbar_icon(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `winfo_id, GetParent, GetWindowLongW, ShowWindow, SetWindowLongW`
+- **Dependencias / Invocaciones:** `GetParent, ShowWindow, winfo_id, SetWindowLongW, GetWindowLongW`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def _start_drag(self, event)`
@@ -118,7 +118,7 @@
 - **Firma completa:** `def _drag_window(self, event)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `winfo_y, winfo_x, getattr, geometry`
+- **Dependencias / Invocaciones:** `winfo_x, winfo_y, geometry, getattr`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def _close_window(self)`
@@ -134,7 +134,7 @@
 - **Firma completa:** `def _open_config_dialog(self)`
 - **Propósito:** Abre la ventana modal de Configuración y Preferencias del Sistema.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `Button, showinfo, Label, configure, pack, resizable, Frame, insert, geometry, winfo_screenheight`
+- **Dependencias / Invocaciones:** `update_idletasks, geometry, Button, title, winfo_screenheight, pack, showinfo, insert, Label, resizable`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _open_about_dialog(self)`
@@ -142,7 +142,7 @@
 - **Firma completa:** `def _open_about_dialog(self)`
 - **Propósito:** Abre la ventana modal Acerca del Sistema.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `winfo_screenheight, resizable, transient, Toplevel, Button, Frame, grab_set, winfo_screenwidth, update_idletasks, geometry`
+- **Dependencias / Invocaciones:** `update_idletasks, geometry, configure, Button, Label, Toplevel, title, transient, winfo_screenheight, grab_set`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _minimize_window(self)`
@@ -150,7 +150,7 @@
 - **Firma completa:** `def _minimize_window(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `update_idletasks, iconify, bind, overrideredirect`
+- **Dependencias / Invocaciones:** `update_idletasks, overrideredirect, iconify, bind`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _on_window_map(self, event)`
@@ -158,7 +158,7 @@
 - **Firma completa:** `def _on_window_map(self, event)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `state, getattr, _set_taskbar_icon, overrideredirect, unbind`
+- **Dependencias / Invocaciones:** `state, _set_taskbar_icon, getattr, overrideredirect, unbind`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _toggle_maximize(self)`
@@ -166,7 +166,7 @@
 - **Firma completa:** `def _toggle_maximize(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `winfo_id, hasattr, ShowWindow, config, getattr, state`
+- **Dependencias / Invocaciones:** `state, ShowWindow, config, getattr, winfo_id, hasattr`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 7)
 
 ### `def _build_ui(self)`
@@ -174,7 +174,7 @@
 - **Firma completa:** `def _build_ui(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_opts_texts, _export_audit_report, _on_categoria_changed, Button, cmd, _on_launch, showinfo, Label, overrideredirect, grid`
+- **Dependencias / Invocaciones:** `build_instructions_tab, _on_catalogo_changed, bind, _on_sheet_changed, tag_configure, _set_taskbar_icon, Button, add_separator, config, place`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def _clear_excel(self)`
@@ -182,7 +182,7 @@
 - **Firma completa:** `def _clear_excel(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `config, get_children, hasattr, delete`
+- **Dependencias / Invocaciones:** `get_children, delete, config, hasattr`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def _switch_view(self, view_id)`
@@ -190,7 +190,7 @@
 - **Firma completa:** `def _switch_view(self, view_id)`
 - **Propósito:** Cambia la vista activa y resalta el tab horizontal correspondiente.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, hasattr, items, config, grid, grid_forget`
+- **Dependencias / Invocaciones:** `grid_forget, config, get, items, grid, hasattr`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _collect_tree_rows(self)`
@@ -198,7 +198,7 @@
 - **Firma completa:** `def _collect_tree_rows(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `len, hasattr, item, get_children, append`
+- **Dependencias / Invocaciones:** `get_children, len, append, hasattr, item`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _run_auditor_check(self, modulo_nombre)`
@@ -206,7 +206,7 @@
 - **Firma completa:** `def _run_auditor_check(self, modulo_nombre)`
 - **Propósito:** Ejecuta el chequeo rápido del auditor sobre las fichas procesadas.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `config, audit_results, hasattr, _collect_tree_rows`
+- **Dependencias / Invocaciones:** `audit_results, config, _collect_tree_rows, hasattr`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _export_audit_report(self, fmt, modulo_nombre)`
@@ -214,7 +214,7 @@
 - **Firma completa:** `def _export_audit_report(self, fmt, modulo_nombre)`
 - **Propósito:** Genera y guarda el informe de auditoría en Excel (.xlsx) o PDF/HTML.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `upper, showwarning, strftime, showerror, replace, showinfo, export_excel_report, _run_auditor_check, asksaveasfilename, now`
+- **Dependencias / Invocaciones:** `replace, _run_auditor_check, asksaveasfilename, export_pdf_report, showwarning, strftime, showerror, export_excel_report, now, upper`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _update_tools_excel_status(self)`
@@ -222,7 +222,7 @@
 - **Firma completa:** `def _update_tools_excel_status(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `len, hasattr, config, getattr, basename`
+- **Dependencias / Invocaciones:** `config, len, getattr, basename, hasattr`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def _build_advanced_tools_tab(self, parent)`
@@ -230,7 +230,7 @@
 - **Firma completa:** `def _build_advanced_tools_tab(self, parent)`
 - **Propósito:** Vista de Herramientas Avanzadas — diagnóstico y scrapers en Tkinter nativo.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `make_action_btn, bind, grid_rowconfigure, grid_columnconfigure, _update_tools_excel_status, Frame, Button, Canvas, Scrollbar, create_tool_card`
+- **Dependencias / Invocaciones:** `configure, Canvas, bind, Frame, create_window, Label, make_action_btn, _update_tools_excel_status, Button, create_tool_card`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _build_stock_tab(self, left_col, right_col, parent)`
@@ -238,7 +238,7 @@
 - **Firma completa:** `def _build_stock_tab(self, left_col, right_col, parent)`
 - **Propósito:** Vista de Análisis de Stock — paleta institucional light.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `dict, grid_columnconfigure, CTkEntry, _section_label, CTkFrame, grid, set, configure, pack, CTkTextbox`
+- **Dependencias / Invocaciones:** `_on_stock_acuerdo_changed, _section_label, enumerate, grid_columnconfigure, pack, Event, set, insert, CTkButton, get`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _export_stock_audit_report(self, fmt)`
@@ -246,7 +246,7 @@
 - **Firma completa:** `def _export_stock_audit_report(self, fmt)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `upper, showwarning, strftime, showerror, showinfo, export_excel_report, getattr, asksaveasfilename, round, now`
+- **Dependencias / Invocaciones:** `round, asksaveasfilename, export_pdf_report, showwarning, getattr, strftime, showerror, export_excel_report, now, upper`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _on_load_stock_excel(self)`
@@ -254,7 +254,7 @@
 - **Firma completa:** `def _on_load_stock_excel(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `len, join, askopenfilename, configure, analizar_excel_stock, basename`
+- **Dependencias / Invocaciones:** `configure, len, askopenfilename, join, basename, analizar_excel_stock`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def _on_download_stock_template(self)`
@@ -262,7 +262,7 @@
 - **Firma completa:** `def _on_download_stock_template(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `Workbook, save, asksaveasfilename, _append_stock_log, append`
+- **Dependencias / Invocaciones:** `_append_stock_log, asksaveasfilename, save, Workbook, append`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def _load_stock_combos_json(self)`
@@ -270,7 +270,7 @@
 - **Firma completa:** `def _load_stock_combos_json(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `load, insert, abspath, resource_path, dirname, open, _append_stock_log`
+- **Dependencias / Invocaciones:** `_append_stock_log, insert, dirname, open, resource_path, abspath, load`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _on_stock_acuerdo_changed(self, acuerdo_text)`
@@ -278,7 +278,7 @@
 - **Firma completa:** `def _on_stock_acuerdo_changed(self, acuerdo_text)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, sorted, add, set, configure, _on_stock_catalogo_changed`
+- **Dependencias / Invocaciones:** `set, configure, _on_stock_catalogo_changed, get, add, sorted`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _on_stock_catalogo_changed(self, catalogo_text)`
@@ -286,7 +286,7 @@
 - **Firma completa:** `def _on_stock_catalogo_changed(self, catalogo_text)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, sorted, strip, add, set, configure`
+- **Dependencias / Invocaciones:** `set, configure, get, add, sorted, strip`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _on_stock_start(self)`
@@ -294,7 +294,7 @@
 - **Firma completa:** `def _on_stock_start(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, strip, float, Thread, configure, clear, _append_stock_log`
+- **Dependencias / Invocaciones:** `_append_stock_log, configure, Thread, get, clear, float, start, strip`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 13)
 
 ### `def _on_stock_stop(self)`
@@ -302,7 +302,7 @@
 - **Firma completa:** `def _on_stock_stop(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `close, getattr, set, configure, _append_stock_log`
+- **Dependencias / Invocaciones:** `set, _append_stock_log, configure, getattr, close`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def _append_stock_log(self, msg)`
@@ -310,7 +310,7 @@
 - **Firma completa:** `def _append_stock_log(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `configure, insert, strftime, see`
+- **Dependencias / Invocaciones:** `strftime, see, configure, insert`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _execute_stock(self, usuario, password, acuerdo, catalogo, categoria, pausa)`
@@ -328,7 +328,7 @@
 Valida credenciales y utiliza el Excel ya subido en la aplicación (pestaña Stock u Ofertas),
 luego lanza execute_auditor en un hilo en segundo plano.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, analizar_excel_stock, strip, str, len, showwarning, hasattr, bool, exists`
+- **Dependencias / Invocaciones:** `_append_stock_log, configure, Thread, str, bool, get, getattr, clear, showwarning, len`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 34)
 
 ### `def _on_audit_done(self, filas, resumen)`
@@ -337,7 +337,7 @@ luego lanza execute_auditor en un hilo en segundo plano.
 - **Propósito:** Callback llamado por execute_auditor cuando termina.
 Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, makedirs, asksaveasfilename, generar_excel_auditoria, _ui_done, strftime, hasattr, join, Popen, after`
+- **Dependencias / Invocaciones:** `_append_stock_log, configure, asksaveasfilename, get, join, generar_excel_auditoria, strftime, after, _ui_done, Popen`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 20)
 
 ### `def _build_credentials_section(self, parent)`
@@ -345,7 +345,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _build_credentials_section(self, parent)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `CTkLabel, grid_columnconfigure, CTkButton, CTkEntry, insert, CTkFont, _section_label, CTkFrame, CTkCheckBox, grid`
+- **Dependencias / Invocaciones:** `CTkFont, insert, CTkButton, _section_label, grid, grid_columnconfigure, CTkCheckBox, CTkLabel, CTkEntry, CTkFrame`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _toggle_password(self)`
@@ -361,7 +361,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _build_excel_section(self, parent)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `CTkLabel, grid_columnconfigure, CTkButton, CTkFont, CTkComboBox, _section_label, CTkFrame, grid, pack`
+- **Dependencias / Invocaciones:** `CTkFont, CTkButton, CTkComboBox, _section_label, grid, grid_columnconfigure, pack, CTkLabel, CTkFrame`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _pick_excel(self)`
@@ -369,7 +369,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _pick_excel(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_update_tools_excel_status, insert, hasattr, _on_sheet_changed, get_sheets, askopenfilename, config, set, configure, delete`
+- **Dependencias / Invocaciones:** `get_sheets, set, configure, _on_sheet_changed, insert, config, _update_tools_excel_status, askopenfilename, delete, basename`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 9)
 
 ### `def _on_sheet_changed(self, choice)`
@@ -377,7 +377,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_sheet_changed(self, choice)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `hasattr, close, get_children, set, configure, load_workbook, append, strip, insert, delete`
+- **Dependencias / Invocaciones:** `parse_excel, config, enumerate, set, insert, get_children, get, len, delete, detect_columns`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 31)
 
 ### `def _build_catalog_section(self, parent)`
@@ -385,7 +385,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _build_catalog_section(self, parent)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, _opts_texts, CTkLabel, dict, grid_columnconfigure, CTkFont, CTkComboBox, set, _section_label, CTkFrame`
+- **Dependencias / Invocaciones:** `set, dict, _on_catalogo_changed, CTkFont, get, CTkComboBox, _section_label, grid, grid_columnconfigure, CTkLabel`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _opts_texts(self, data)`
@@ -401,7 +401,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _find_children(self, combo_text)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, split`
+- **Dependencias / Invocaciones:** `split, get, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _on_catalogo_changed(self, choice)`
@@ -409,7 +409,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_catalogo_changed(self, choice)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_opts_texts, _find_children, _on_categoria_changed, set, configure`
+- **Dependencias / Invocaciones:** `set, configure, _find_children, _opts_texts, _on_categoria_changed`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def _on_categoria_changed(self, choice)`
@@ -417,7 +417,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_categoria_changed(self, choice)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, _opts_texts, strip, set, configure, split`
+- **Dependencias / Invocaciones:** `set, configure, get, split, _opts_texts, strip`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _on_extract_json_portal(self)`
@@ -425,7 +425,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_extract_json_portal(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `start, get, strip, len, hasattr, dumps, bool, getattr, print, evaluate_js`
+- **Dependencias / Invocaciones:** `evaluate_js, Thread, bool, get, getattr, print, len, dumps, basename, start`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 14)
 
 ### `def _build_opciones_section(self, parent)`
@@ -433,7 +433,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _build_opciones_section(self, parent)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `CTkLabel, grid_columnconfigure, CTkFont, set, _section_label, CTkFrame, CTkSlider, grid, configure`
+- **Dependencias / Invocaciones:** `set, configure, CTkFont, CTkSlider, _section_label, grid, grid_columnconfigure, CTkLabel, CTkFrame`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _build_execution_section(self, parent)`
@@ -441,7 +441,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _build_execution_section(self, parent)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `CTkLabel, grid_rowconfigure, _build_captcha_panel, grid_columnconfigure, CTkProgressBar, tag_config, CTkFont, CTkTextbox, set, _section_label`
+- **Dependencias / Invocaciones:** `_make_stat, set, _build_captcha_panel, configure, CTkFont, CTkProgressBar, CTkTextbox, tag_config, _section_label, grid`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _make_stat(self, parent, label, color, col)`
@@ -449,7 +449,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _make_stat(self, parent, label, color, col)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `CTkLabel, CTkFont, CTkFrame, grid, pack`
+- **Dependencias / Invocaciones:** `CTkFont, grid, pack, CTkLabel, CTkFrame`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _build_captcha_panel(self, parent)`
@@ -457,7 +457,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _build_captcha_panel(self, parent)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `bind, CTkLabel, grid_columnconfigure, CTkButton, CTkEntry, _on_captcha_submit, CTkFont, CTkFrame, grid, grid_remove`
+- **Dependencias / Invocaciones:** `bind, CTkButton, CTkFont, grid, CTkEntry, _on_captcha_submit, grid_columnconfigure, CTkLabel, grid_remove, CTkFrame`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _show_captcha(self, image_bytes)`
@@ -465,7 +465,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _show_captcha(self, image_bytes)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `resize, CTkImage, focus_set, BytesIO, grid, configure, open, delete`
+- **Dependencias / Invocaciones:** `configure, focus_set, resize, open, grid, delete, CTkImage, BytesIO`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _hide_captcha_panel(self)`
@@ -481,7 +481,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_captcha_submit(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, respond, _hide_captcha_panel, _log`
+- **Dependencias / Invocaciones:** `get, _hide_captcha_panel, respond, _log, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def _section_label(self, parent, text, row)`
@@ -497,7 +497,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _log(self, msg, level)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `configure, insert, see, append`
+- **Dependencias / Invocaciones:** `append, see, configure, insert`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _on_test(self)`
@@ -505,7 +505,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_test(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, strip, _val, hasattr, _hide_captcha_panel, bool, Thread, set, configure`
+- **Dependencias / Invocaciones:** `set, configure, _val, Thread, bool, get, _hide_captcha_panel, clear, delete, split`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def _on_certs_only(self)`
@@ -513,7 +513,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_certs_only(self)`
 - **Propósito:** Handler del botón 'Solo Certificaciones': entra a cada ficha y agrega ISO 9001/14001.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, strip, _val, hasattr, _hide_captcha_panel, bool, Thread, set, configure`
+- **Dependencias / Invocaciones:** `set, configure, _val, Thread, bool, get, _hide_captcha_panel, clear, delete, split`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _on_extract(self)`
@@ -521,7 +521,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_extract(self)`
 - **Propósito:** Handler del botón 'Extraer Reportes': descarga reportes de Producto Ofertado.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, strip, _hide_captcha_panel, bool, Thread, set, configure, clear, delete`
+- **Dependencias / Invocaciones:** `set, configure, Thread, bool, get, _hide_captcha_panel, clear, delete, start, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _execute_extract(self, usuario, password, headless)`
@@ -545,7 +545,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_nro_parte(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, strip, _val, _hide_captcha_panel, bool, Thread, set, configure, clear`
+- **Dependencias / Invocaciones:** `set, configure, _val, Thread, bool, get, _hide_captcha_panel, clear, delete, split`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def _execute_nro_parte(self, usuario, password, headless, pre_selected)`
@@ -561,7 +561,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_compare(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, strip, _val, hasattr, _hide_captcha_panel, bool, getattr, Thread, set`
+- **Dependencias / Invocaciones:** `set, configure, _val, Thread, bool, get, _hide_captcha_panel, clear, getattr, delete`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _execute_compare(self, usuario, password, headless, pre_selected)`
@@ -577,7 +577,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_discovery(self)`
 - **Propósito:** Handler del botón 'Discovery': ejecuta el script discovery_perucompras.py.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, strip, _hide_captcha_panel, bool, getattr, Thread, set, configure, clear`
+- **Dependencias / Invocaciones:** `set, configure, Thread, bool, get, _hide_captcha_panel, clear, getattr, delete, start`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _execute_discovery(self, usuario, password, headless)`
@@ -593,7 +593,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_discovery2(self)`
 - **Propósito:** Handler del botón 'Discovery v2': scraping profundo multi-técnica.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `start, get, strip, _hide_captcha_panel, bool, getattr, Thread, set, configure, clear`
+- **Dependencias / Invocaciones:** `set, configure, Thread, bool, get, _hide_captcha_panel, clear, getattr, delete, start`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _execute_discovery2(self, usuario, password, headless)`
@@ -617,7 +617,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_launch(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, start, strip, len, _val, _hide_captcha_panel, bool, Thread, set, configure`
+- **Dependencias / Invocaciones:** `set, configure, _val, Thread, bool, len, _hide_captcha_panel, clear, get, delete`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _execute(self, usuario, password, headless, rows, pausa, pre_selected)`
@@ -633,7 +633,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_stop(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `set, configure, _log, after`
+- **Dependencias / Invocaciones:** `after, set, configure, _log`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _reset_after_stop(self)`
@@ -649,7 +649,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def poll_queue(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, isinstance, len, set, _show_captcha, after, get_nowait, configure, _log, str`
+- **Dependencias / Invocaciones:** `set, configure, isinstance, is_set, str, get, len, after, get_nowait, _log`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 15)
 
 ### `def __init__(self, val)`
@@ -825,7 +825,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def select_file(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, basename, detect_columns, Tk, attributes, destroy, askopenfilename, get_sheets, withdraw, parse_excel`
+- **Dependencias / Invocaciones:** `get_sheets, attributes, Tk, parse_excel, destroy, get, askopenfilename, withdraw, detect_columns, basename`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def select_stock_file(self)`
@@ -833,7 +833,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def select_stock_file(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, detect_columns, append, parse_excel, Tk, attributes, str, iterrows, destroy, askopenfilename`
+- **Dependencias / Invocaciones:** `get_sheets, attributes, Tk, parse_excel, destroy, iterrows, str, get, askopenfilename, withdraw`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def select_json_file(self)`
@@ -841,7 +841,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def select_json_file(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, isinstance, Tk, attributes, lower, load, destroy, askopenfilename, parse_excel_precios, endswith`
+- **Dependencias / Invocaciones:** `attributes, Tk, destroy, isinstance, parse_excel_precios, str, get, askopenfilename, withdraw, endswith`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 7)
 
 ### `def load_sheet(self, sheet_name)`
@@ -849,7 +849,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def load_sheet(self, sheet_name)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, detect_columns, getattr, parse_excel`
+- **Dependencias / Invocaciones:** `parse_excel, detect_columns, get, getattr`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def start_process(self, params)`
@@ -857,7 +857,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def start_process(self, params)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, float, _DummyWidget, _on_launch, str`
+- **Dependencias / Invocaciones:** `str, get, _DummyWidget, float, _on_launch`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def stop_process(self)`
@@ -873,7 +873,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def start_stock_process(self, params)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, _DummyWidget, getattr, analizar_excel_stock, _on_stock_start, str`
+- **Dependencias / Invocaciones:** `_on_stock_start, str, get, _DummyWidget, getattr, analizar_excel_stock, strip`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 16)
 
 ### `def start_stock_audit(self, params)`
@@ -881,7 +881,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def start_stock_audit(self, params)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, _DummyWidget, str, getattr, _on_stock_audit_start, analizar_excel_stock`
+- **Dependencias / Invocaciones:** `str, get, _DummyWidget, getattr, _on_stock_audit_start, analizar_excel_stock, strip`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 16)
 
 ### `def extract_json_portal(self, params)`
@@ -889,11 +889,19 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def extract_json_portal(self, params)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, _DummyWidget, _on_extract_json_portal, str`
+- **Dependencias / Invocaciones:** `str, _on_extract_json_portal, get, _DummyWidget, strip`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 8)
 
+### `def start_json_process(self, params)`
+- **Línea inicial:** 3219 | **Línea final:** 3267
+- **Firma completa:** `def start_json_process(self, params)`
+- **Propósito:** Sin docstring explícito.
+- **Efectos Secundarios:** I/O de archivos o consola
+- **Dependencias / Invocaciones:** `evaluate_js, str, isinstance, Thread, bool, get, _DummyWidget, getattr, print, _get_id_categoria`
+- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 15)
+
 ### `def run_tool_test(self, params)`
-- **Línea inicial:** 3219 | **Línea final:** 3220
+- **Línea inicial:** 3269 | **Línea final:** 3270
 - **Firma completa:** `def run_tool_test(self, params)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -901,23 +909,23 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def stop_stock_process(self)`
-- **Línea inicial:** 3223 | **Línea final:** 3229
+- **Línea inicial:** 3273 | **Línea final:** 3279
 - **Firma completa:** `def stop_stock_process(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `_on_stock_stop, hasattr, str`
+- **Dependencias / Invocaciones:** `_on_stock_stop, str, hasattr`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def download_stock_template(self)`
-- **Línea inicial:** 3231 | **Línea final:** 3238
+- **Línea inicial:** 3281 | **Línea final:** 3288
 - **Firma completa:** `def download_stock_template(self)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, hasattr, _on_download_stock_template`
+- **Dependencias / Invocaciones:** `_on_download_stock_template, hasattr, str`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def export_audit(self, fmt)`
-- **Línea inicial:** 3241 | **Línea final:** 3246
+- **Línea inicial:** 3291 | **Línea final:** 3296
 - **Firma completa:** `def export_audit(self, fmt)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -985,7 +993,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def make_win_btn(parent, text, cmd, hover_bg, hover_fg, width)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `bind, cmd, config, Label, pack`
+- **Dependencias / Invocaciones:** `bind, Label, config, pack, cmd`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def add_sep(titulo)`
@@ -1001,7 +1009,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def st_seg(texto, color, bold)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `Frame, pack, Label`
+- **Dependencias / Invocaciones:** `Frame, Label, pack`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _on_cfg(e)`
@@ -1009,7 +1017,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_cfg(e)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `configure, bbox`
+- **Dependencias / Invocaciones:** `bbox, configure`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _on_canvas_cfg(e)`
@@ -1041,7 +1049,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _ui_done()`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, makedirs, generar_excel_auditoria, strftime, hasattr, join, Popen, asksaveasfilename, configure, _append_stock_log`
+- **Dependencias / Invocaciones:** `_append_stock_log, configure, asksaveasfilename, get, join, generar_excel_auditoria, strftime, Popen, makedirs, hasattr`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 18)
 
 ### `def _log(msg)`
@@ -1049,7 +1057,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _log(msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** I/O de archivos o consola
-- **Dependencias / Invocaciones:** `hasattr, dumps, getattr, print, evaluate_js`
+- **Dependencias / Invocaciones:** `evaluate_js, getattr, print, dumps, hasattr`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def _on_done(fichas, filepath)`
@@ -1057,7 +1065,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _on_done(fichas, filepath)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `len, hasattr, dumps, getattr, evaluate_js, basename`
+- **Dependencias / Invocaciones:** `evaluate_js, len, getattr, basename, dumps, hasattr`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _val(combo)`
@@ -1065,7 +1073,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _val(combo)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, split`
+- **Dependencias / Invocaciones:** `split, get, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _val(combo)`
@@ -1073,7 +1081,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _val(combo)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, split`
+- **Dependencias / Invocaciones:** `split, get, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _val(combo)`
@@ -1081,7 +1089,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _val(combo)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, split`
+- **Dependencias / Invocaciones:** `split, get, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _val(combo)`
@@ -1089,7 +1097,7 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _val(combo)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, split`
+- **Dependencias / Invocaciones:** `split, get, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _val(combo)`
@@ -1097,29 +1105,37 @@ Siempre se ejecuta en el hilo del auditor — usa self.after() para UI.
 - **Firma completa:** `def _val(combo)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `get, strip, split`
+- **Dependencias / Invocaciones:** `split, get, strip`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def _log(self, msg, level)`
-- **Línea inicial:** 3277 | **Línea final:** 3292
+- **Línea inicial:** 3327 | **Línea final:** 3342
 - **Firma completa:** `def _log(self, msg, level)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `insert, strftime, hasattr, see, dumps, configure, evaluate_js, str`
+- **Dependencias / Invocaciones:** `see, configure, evaluate_js, insert, str, strftime, dumps, hasattr`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def _append_stock_log(self, msg)`
-- **Línea inicial:** 3294 | **Línea final:** 3309
+- **Línea inicial:** 3344 | **Línea final:** 3359
 - **Firma completa:** `def _append_stock_log(self, msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `insert, strftime, hasattr, see, dumps, configure, evaluate_js, str`
+- **Dependencias / Invocaciones:** `see, configure, evaluate_js, insert, str, strftime, dumps, hasattr`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 6)
 
 ### `def __getattr__(self, name)`
-- **Línea inicial:** 3311 | **Línea final:** 3314
+- **Línea inicial:** 3361 | **Línea final:** 3364
 - **Firma completa:** `def __getattr__(self, name)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
 - **Dependencias / Invocaciones:** `_DummyWidget, setattr`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
+
+### `def _log(app_inst, msg)`
+- **Línea inicial:** 3241 | **Línea final:** 3248
+- **Firma completa:** `def _log(app_inst, msg)`
+- **Propósito:** Sin docstring explícito.
+- **Efectos Secundarios:** I/O de archivos o consola
+- **Dependencias / Invocaciones:** `evaluate_js, str, print, dumps, hasattr`
+- **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)

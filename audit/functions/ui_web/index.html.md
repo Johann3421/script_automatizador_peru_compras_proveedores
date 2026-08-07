@@ -1,8 +1,8 @@
 # Auditoría de Funciones: `ui_web/index.html`
 
 - **Lenguaje:** `html`
-- **Líneas de código:** 1137
-- **Hash SHA256:** `833c17e2eea4`
+- **Líneas de código:** 1150
+- **Hash SHA256:** `d69be786fbff`
 - **Estrategia de Análisis:** Bloques por funciones (ast)
 
 ---

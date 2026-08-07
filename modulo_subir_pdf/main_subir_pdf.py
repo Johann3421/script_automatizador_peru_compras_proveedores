@@ -3216,6 +3216,56 @@ class SubirPdfWebApi:
         except Exception as e:
             return {"status": "error", "msg": str(e)}
 
+    def start_json_process(self, params=None, *a):
+        try:
+            params = params or {}
+            user_val = str(params.get("user") or "").strip()
+            pass_val = str(params.get("pass") or "").strip()
+            acuerdo_val = str(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES").strip()
+            catalogo_val = str(params.get("cat") or "COMPUTADORAS DE ESCRITORIO").strip()
+            categoria_val = str(params.get("catg") or "COMPUTADORA TODO EN UNO").strip()
+            visible = bool(params.get("visible", False))
+
+            if params.get("data") and isinstance(params["data"], list):
+                self._app._precios_json_data = params["data"]
+
+            precios_data = getattr(self._app, "_precios_json_data", None)
+            if not precios_data:
+                return {"status": "error", "msg": "No hay datos de precios JSON cargados"}
+
+            self._app.entry_stock_user = _DummyWidget(user_val)
+            self._app.entry_stock_pass = _DummyWidget(pass_val)
+            self._app.btn_test_precios = _DummyWidget()
+            self._app.btn_iniciar_precios = _DummyWidget()
+
+            def _log(app_inst, msg):
+                print(f"[SUBIDA PRECIOS JSON] {msg}")
+                if hasattr(self, '_window') and self._window:
+                    try:
+                        js_msg = json.dumps(str(msg))
+                        self._window.evaluate_js(f"logJsonConsole({js_msg});")
+                    except Exception:
+                        pass
+
+            import threading
+            import workers
+
+            combos = getattr(self._app, "_stock_combos_data", {})
+            n_acuerdo = workers._get_id_acuerdo(combos, acuerdo_val) if hasattr(workers, '_get_id_acuerdo') else "249"
+            n_catalogo = workers._get_id_catalogo(combos, acuerdo_val, catalogo_val) if hasattr(workers, '_get_id_catalogo') else "252"
+            n_categoria = workers._get_id_categoria(combos, acuerdo_val, catalogo_val, categoria_val) if hasattr(workers, '_get_id_categoria') else "11736"
+
+            threading.Thread(
+                target=workers.execute_iniciar_precios,
+                args=(self._app, user_val, pass_val, not visible, _log,
+                      precios_data, n_acuerdo, n_catalogo, n_categoria),
+                daemon=True
+            ).start()
+
+            return {"status": "started"}
+        except Exception as e:
+            return {"status": "error", "msg": str(e)}
+
     def run_tool_test(self, params=None, *a):
         return self.extract_json_portal(params, *a)
 

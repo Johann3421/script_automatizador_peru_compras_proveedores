@@ -1,8 +1,8 @@
 # Auditoría de Funciones: `modulo_subir_pdf/workers.py`
 
 - **Lenguaje:** `python`
-- **Líneas de código:** 2194
-- **Hash SHA256:** `9b300dfd1e9a`
+- **Líneas de código:** 2241
+- **Hash SHA256:** `e4b649bf4d15`
 - **Estrategia de Análisis:** Bloques por funciones (ast)
 
 ---
@@ -14,7 +14,7 @@
 - **Firma completa:** `def _make_stock_log(append_fn)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, append_fn, _StockLog`
+- **Dependencias / Invocaciones:** `_StockLog, str, append_fn`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def execute_stock(app, usuario, password, acuerdo, catalogo, categoria, pausa)`
@@ -22,7 +22,7 @@
 - **Firma completa:** `def execute_stock(app, usuario, password, acuerdo, catalogo, categoria, pausa)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `set_viewport_size, len, basename, paso4_actualizar_stock, init_browser, max, paso3_filtros_stock, _append_stock_log, lower, stock_log`
+- **Dependencias / Invocaciones:** `join, set, _append_stock_log, bool, len, get, strftime, basename, paso2_navegacion_stock, max`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 18)
 
 ### `def execute_extract(app, usuario, password, headless)`
@@ -30,7 +30,7 @@
 - **Firma completa:** `def execute_extract(app, usuario, password, headless)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, LogWriter, set_viewport_size, len, basename, init_browser, replace, search, group, get_attribute`
+- **Dependencias / Invocaciones:** `inner_text, join, makedirs, goto, ok, get_attribute, locator, len, search, select_option`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 32)
 
 ### `def execute_certs_only(app, usuario, password, headless, pre_selected)`
@@ -38,7 +38,7 @@
 - **Firma completa:** `def execute_certs_only(app, usuario, password, headless, pre_selected)`
 - **Propósito:** Ejecuta SOLO la corrección de certificaciones ISO 9001/14001 para todas las fichas.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, leer_certificaciones_pagina, LogWriter, set_viewport_size, len, upper, init_browser, agregar_certificaciones_faltantes, after, error`
+- **Dependencias / Invocaciones:** `enumerate, upper, goto, ok, len, get, leer_certificaciones_pagina, do_login, configure, is_set`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 23)
 
 ### `def execute_nro_parte(app, usuario, password, headless, pre_selected)`
@@ -46,7 +46,7 @@
 - **Firma completa:** `def execute_nro_parte(app, usuario, password, headless, pre_selected)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, LogWriter, set_viewport_size, len, upper, init_browser, after, error, next, guardar_cambios`
+- **Dependencias / Invocaciones:** `eliminar_caracteristica, enumerate, leer_caracteristicas_pagina, upper, goto, ok, len, get, guardar_cambios, do_login`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 20)
 
 ### `def execute_compare(app, usuario, password, headless, pre_selected)`
@@ -54,7 +54,7 @@
 - **Firma completa:** `def execute_compare(app, usuario, password, headless, pre_selected)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, LogWriter, set_viewport_size, len, upper, basename, comparar_caracteristicas, init_browser, replace, search`
+- **Dependencias / Invocaciones:** `time, enumerate, write_colored_results, leer_caracteristicas_pagina, upper, goto, ok, fullmatch, comparar_caracteristicas, get`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 33)
 
 ### `def execute_discovery(app, usuario, password, headless)`
@@ -62,7 +62,7 @@
 - **Firma completa:** `def execute_discovery(app, usuario, password, headless)`
 - **Propósito:** Ejecuta el discovery de endpoints directamente en la app (mismo browser).
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `LogWriter, set_viewport_size, len, init_browser, startswith, insert, BeautifulSoup, generar_reporte, after, error`
+- **Dependencias / Invocaciones:** `analizar_js, add, join, any, enumerate, clasificar_respuesta, makedirs, BeautifulSoup, get_text, generar_reporte`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 42)
 
 ### `def execute_discovery2(app, usuario, password, headless)`
@@ -70,7 +70,7 @@
 - **Firma completa:** `def execute_discovery2(app, usuario, password, headless)`
 - **Propósito:** Ejecuta discovery_v2_perucompras.py: 8 técnicas de scraping profundo.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `enumerar_acciones, LogWriter, analizar_js_profundo, set_viewport_size, probe, len, recon_files, probar_post, generar_reporte_v2, init_browser`
+- **Dependencias / Invocaciones:** `isinstance, join, items, makedirs, set, fromkeys, list, ok, insert, len`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 25)
 
 ### `def execute_test(app, usuario, password, headless, pre_selected)`
@@ -78,7 +78,7 @@
 - **Firma completa:** `def execute_test(app, usuario, password, headless, pre_selected)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, LogWriter, set_viewport_size, len, upper, basename, buscar_producto_api, subir_pdf_en_edicion, wait_for_load_state, comparar_caracteristicas`
+- **Dependencias / Invocaciones:** `eliminar_caracteristica, buscar_producto_api, join, cambiar_precio_en_edicion, enumerate, subir_imagen_en_edicion, write_colored_results, leer_caracteristicas_pagina, upper, goto`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 46)
 
 ### `def execute(app, usuario, password, headless, rows, pausa, pre_selected)`
@@ -86,7 +86,7 @@
 - **Firma completa:** `def execute(app, usuario, password, headless, rows, pausa, pre_selected)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, LogWriter, set_viewport_size, len, basename, init_browser, error, info, is_set, ok`
+- **Dependencias / Invocaciones:** `write_colored_results, run_bulk_subir_pdf, goto, ok, len, get, basename, do_login, is_set, init_browser`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 21)
 
 ### `def read_select_options_precios(page, selector)`
@@ -110,7 +110,7 @@
 - **Firma completa:** `def execute_extraer_menu_precios(app, usuario, password, headless, log_func)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, get_writable_path, set_viewport_size, init_browser, DummyLog, after, dirname, read_select_options_precios, select_option, enumerate`
+- **Dependencias / Invocaciones:** `DummyLog, read_select_options_precios, enumerate, goto, set, type, list, select_option, do_login, configure`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 16)
 
 ### `def _calcular_precio_dolar(precio_max, ganancia, tc)`
@@ -128,30 +128,30 @@
 Estrategia 1: comparar C_Descripcion (PC) contra descripcin_fichaproducto (Local).
 Estrategia 2: buscar nro_parte local dentro de la C_Descripcion de Perú Compras.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `upper, get, strip`
+- **Dependencias / Invocaciones:** `get, upper, strip`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 8)
 
 ### `def execute_test_precios(app, usuario, password, headless, log_func, precios_data, acuerdo_val, catalogo_val, categoria_val)`
-- **Línea inicial:** 1218 | **Línea final:** 1453
+- **Línea inicial:** 1218 | **Línea final:** 1434
 - **Firma completa:** `def execute_test_precios(app, usuario, password, headless, log_func, precios_data, acuerdo_val, catalogo_val, categoria_val)`
 - **Propósito:** TEST: navega a t_ProductoOfertadoAmp, aplica filtros, descarga TODOS los
 productos mediante peticiones POST directas usando el payload interceptado
 y las cookies de sesión del navegador (mucho más rápido), hace matching
 y muestra qué precio se insertaría. NO escribe nada todavía.
 - **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, on, click, set_viewport_size, wait_for_selector, len, post, init_browser, re_enable, json`
-- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 31)
+- **Dependencias / Invocaciones:** `DummyLog, parse_qs, goto, type, wait_for_selector, extend, get, len, json, click`
+- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 27)
 
 ### `def _buscar_match_pc(rec_local, all_products)`
-- **Línea inicial:** 1461 | **Línea final:** 1471
+- **Línea inicial:** 1441 | **Línea final:** 1455
 - **Firma completa:** `def _buscar_match_pc(rec_local, all_products)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `upper, get, strip`
-- **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 8)
+- **Dependencias / Invocaciones:** `str, get, upper, strip`
+- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 11)
 
 ### `def _interpret_response_precios(text)`
-- **Línea inicial:** 1473 | **Línea final:** 1481
+- **Línea inicial:** 1457 | **Línea final:** 1465
 - **Firma completa:** `def _interpret_response_precios(text)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -159,23 +159,23 @@ y muestra qué precio se insertaría. NO escribe nada todavía.
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def _enviar_oferta_precios(page, log_func, app)`
-- **Línea inicial:** 1483 | **Línea final:** 1500
+- **Línea inicial:** 1467 | **Línea final:** 1484
 - **Firma completa:** `def _enviar_oferta_precios(page, log_func, app)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `log_func, post, text`
+- **Dependencias / Invocaciones:** `text, post, log_func`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def execute_iniciar_precios(app, usuario, password, headless, log_func, precios_data, acuerdo_val, catalogo_val, categoria_val)`
-- **Línea inicial:** 1502 | **Línea final:** 1876
+- **Línea inicial:** 1486 | **Línea final:** 1923
 - **Firma completa:** `def execute_iniciar_precios(app, usuario, password, headless, log_func, precios_data, acuerdo_val, catalogo_val, categoria_val)`
 - **Propósito:** Sin docstring explícito.
-- **Efectos Secundarios:** Navegación / Red HTTP
-- **Dependencias / Invocaciones:** `goto, on, click, set_viewport_size, wait_for_selector, len, post, _interpret_response_precios, Alignment, init_browser`
-- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 46)
+- **Efectos Secundarios:** Cálculo interno o mutación local
+- **Dependencias / Invocaciones:** `DummyLog, min, _interpret_response_precios, parse_qs, getattr, join, _enviar_oferta_precios, enumerate, is_visible, range`
+- **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 59)
 
 ### `def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log, headless)`
-- **Línea inicial:** 1893 | **Línea final:** 2057
+- **Línea inicial:** 1940 | **Línea final:** 2104
 - **Firma completa:** `def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log, headless)`
 - **Propósito:** Auditor del Portal Stock.
 
@@ -191,11 +191,11 @@ on_done      : callable(filas, resumen) — se llama al finalizar
 on_log       : callable(str) — se llama para cada mensaje de log
 headless     : bool — True para oculto, False para visible en pantalla
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `len, upper, _build_portal_index, consultar_json_productos, init_browser, int, on_log, saltar_verificacion, is_set, on_done`
+- **Dependencias / Invocaciones:** `getattr, on_log, consultar_json_productos, _get_id_catalogo, upper, saltar_verificacion, round, len, get, strftime`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 20)
 
 ### `def _get_id_acuerdo(combos, acuerdo_text)`
-- **Línea inicial:** 2060 | **Línea final:** 2064
+- **Línea inicial:** 2107 | **Línea final:** 2111
 - **Firma completa:** `def _get_id_acuerdo(combos, acuerdo_text)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -203,7 +203,7 @@ headless     : bool — True para oculto, False para visible en pantalla
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _get_id_catalogo(combos, acuerdo_text, catalogo_text)`
-- **Línea inicial:** 2066 | **Línea final:** 2072
+- **Línea inicial:** 2113 | **Línea final:** 2119
 - **Firma completa:** `def _get_id_catalogo(combos, acuerdo_text, catalogo_text)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -211,7 +211,7 @@ headless     : bool — True para oculto, False para visible en pantalla
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def _get_id_categoria(combos, acuerdo_text, catalogo_text, categoria_text)`
-- **Línea inicial:** 2074 | **Línea final:** 2081
+- **Línea inicial:** 2121 | **Línea final:** 2128
 - **Firma completa:** `def _get_id_categoria(combos, acuerdo_text, catalogo_text, categoria_text)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -219,7 +219,7 @@ headless     : bool — True para oculto, False para visible en pantalla
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def _build_portal_index(registros, on_log)`
-- **Línea inicial:** 2084 | **Línea final:** 2141
+- **Línea inicial:** 2131 | **Línea final:** 2188
 - **Firma completa:** `def _build_portal_index(registros, on_log)`
 - **Propósito:** Construye un índice {ficha_id: {stock_portal, estado_portal}}
 a partir de los registros del portal.
@@ -228,11 +228,11 @@ El JSON puede ser:
   - Lista de dicts con claves explícitas (e.g. ID_ProductoOfertado, N_Existencias, C_Estado)
   - Lista de listas posicionales (DataTables style)
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `isinstance, str, search, split, startswith, strip, len, upper, group, _detect_key`
+- **Dependencias / Invocaciones:** `group, str, isinstance, _detect_key, get, len, search, split, startswith, upper`
 - **Nivel de Complejidad:** `ALTA` (Ramas lógicas: 13)
 
 ### `def _detect_key(d, candidates)`
-- **Línea inicial:** 2144 | **Línea final:** 2150
+- **Línea inicial:** 2191 | **Línea final:** 2197
 - **Firma completa:** `def _detect_key(d, candidates)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -240,11 +240,11 @@ El JSON puede ser:
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def execute_json_extractor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log, headless)`
-- **Línea inicial:** 2153 | **Línea final:** 2194
+- **Línea inicial:** 2200 | **Línea final:** 2241
 - **Firma completa:** `def execute_json_extractor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log, headless)`
 - **Propósito:** Ejecuta la extracción masiva E2E del dataset JSON del portal utilizando perucompras_core.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `extraer_json_catalogo, on_done, on_log, _get_id_acuerdo, getattr, join, _get_id_categoria, abspath, _get_id_catalogo, len`
+- **Dependencias / Invocaciones:** `dirname, on_done, len, getattr, on_log, join, extraer_json_catalogo, strftime, _get_id_acuerdo, _get_id_categoria`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def re_enable()`
@@ -256,12 +256,12 @@ El JSON puede ser:
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def re_enable()`
-- **Línea inicial:** 1514 | **Línea final:** 1516
+- **Línea inicial:** 1498 | **Línea final:** 1502
 - **Firma completa:** `def re_enable()`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `after, configure`
-- **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
+- **Dependencias / Invocaciones:** `after, configure, hasattr`
+- **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 4)
 
 ### `def info(self, msg)`
 - **Línea inicial:** 10 | **Línea final:** 10
@@ -308,7 +308,7 @@ El JSON puede ser:
 - **Firma completa:** `def stock_log(msg)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `str, set, configure, max, _append_stock_log`
+- **Dependencias / Invocaciones:** `set, _append_stock_log, configure, str, max`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 2)
 
 ### `def _read_options(selector)`
@@ -316,7 +316,7 @@ El JSON puede ser:
 - **Firma completa:** `def _read_options(selector)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `inner_text, strip, get_attribute, append, locator, all`
+- **Dependencias / Invocaciones:** `get_attribute, inner_text, locator, append, all, strip`
 - **Nivel de Complejidad:** `MEDIA` (Ramas lógicas: 5)
 
 ### `def _fetch(url)`
@@ -332,7 +332,7 @@ El JSON puede ser:
 - **Firma completa:** `def update_ui()`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `set, _on_precio_acuerdo_changed, list, fromkeys, configure`
+- **Dependencias / Invocaciones:** `set, configure, list, _on_precio_acuerdo_changed, fromkeys`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def handle_request(req)`
@@ -348,11 +348,11 @@ El JSON puede ser:
 - **Firma completa:** `def handle_response(response)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `json, get`
+- **Dependencias / Invocaciones:** `get, json`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def handle_request(req)`
-- **Línea inicial:** 1604 | **Línea final:** 1607
+- **Línea inicial:** 1590 | **Línea final:** 1593
 - **Firma completa:** `def handle_request(req)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -360,11 +360,11 @@ El JSON puede ser:
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 1)
 
 ### `def handle_response(response)`
-- **Línea inicial:** 1609 | **Línea final:** 1615
+- **Línea inicial:** 1595 | **Línea final:** 1601
 - **Firma completa:** `def handle_response(response)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
-- **Dependencias / Invocaciones:** `json, get`
+- **Dependencias / Invocaciones:** `get, json`
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 3)
 
 ### `def info(self, m)`
@@ -432,7 +432,7 @@ El JSON puede ser:
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def info(self, m)`
-- **Línea inicial:** 1527 | **Línea final:** 1527
+- **Línea inicial:** 1513 | **Línea final:** 1513
 - **Firma completa:** `def info(self, m)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -440,7 +440,7 @@ El JSON puede ser:
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def ok(self, m)`
-- **Línea inicial:** 1528 | **Línea final:** 1528
+- **Línea inicial:** 1514 | **Línea final:** 1514
 - **Firma completa:** `def ok(self, m)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -448,7 +448,7 @@ El JSON puede ser:
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def warn(self, m)`
-- **Línea inicial:** 1529 | **Línea final:** 1529
+- **Línea inicial:** 1515 | **Línea final:** 1515
 - **Firma completa:** `def warn(self, m)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
@@ -456,7 +456,7 @@ El JSON puede ser:
 - **Nivel de Complejidad:** `BAJA` (Ramas lógicas: 0)
 
 ### `def error(self, m)`
-- **Línea inicial:** 1530 | **Línea final:** 1530
+- **Línea inicial:** 1516 | **Línea final:** 1516
 - **Firma completa:** `def error(self, m)`
 - **Propósito:** Sin docstring explícito.
 - **Efectos Secundarios:** Cálculo interno o mutación local
