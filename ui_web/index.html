@@ -1058,12 +1058,28 @@
       pyapi('extract_json_portal', { user, pass, acuerdo, cat, catg, visible });
     }
 
-    function runToolTest(testName) {
+    function logToolsConsole(msg, cls) {
       const box = document.getElementById('toolsLog');
+      if (!box) return;
       const div = document.createElement('div');
-      div.className = "log-warn";
-      div.innerText = `[PRUEBA] Ejecutando: ${testName}...`;
+      if (cls) div.className = cls;
+      div.innerText = msg;
       box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function runToolTest(testName) {
+      logToolsConsole(`[PRUEBA REAL] Ejecutando: ${testName}... Conectando backend...`, "log-ok");
+      
+      const user = document.getElementById('stockUser') ? document.getElementById('stockUser').value : "estalin.huamali01";
+      const pass = document.getElementById('stockPass') ? document.getElementById('stockPass').value : "";
+      const acuerdo = getSelectText('stockAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
+      const cat = getSelectText('stockCat') || "COMPUTADORAS DE ESCRITORIO";
+      const catg = getSelectText('stockCategoria') || "COMPUTADORA TODO EN UNO";
+      const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
+
+      logToolsConsole(`[PRUEBA] Iniciando extracción masiva de JSON y prueba de endpoints en el portal...`, "log-warn");
+      pyapi('run_tool_test', { testName, user, pass, acuerdo, cat, catg, visible });
     }
   </script>
 </body>

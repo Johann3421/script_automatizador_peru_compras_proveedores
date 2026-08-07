@@ -2223,6 +2223,7 @@ class SubirPdfApp(ctk.CTk):
                 try:
                     js_msg = json.dumps(msg)
                     self._api_bridge._window.evaluate_js(f"logJsonConsole({js_msg});")
+                    self._api_bridge._window.evaluate_js(f"logToolsConsole({js_msg});")
                 except Exception:
                     pass
 
@@ -2234,6 +2235,7 @@ class SubirPdfApp(ctk.CTk):
                     self._api_bridge._window.evaluate_js(f"renderJsonTable({js_data});")
                     if filepath:
                         self._api_bridge._window.evaluate_js(f"logJsonConsole('[JSON OK] Dataset guardado: ' + {js_file} + ' (' + {len(fichas)} + ' fichas)', 'log-ok');")
+                        self._api_bridge._window.evaluate_js(f"logToolsConsole('[JSON OK] Dataset guardado: ' + {js_file} + ' (' + {len(fichas)} + ' fichas)', 'log-ok');")
                 except Exception:
                     pass
 
@@ -3180,6 +3182,9 @@ class SubirPdfWebApi:
             return {"status": "started"}
         except Exception as e:
             return {"status": "error", "msg": str(e)}
+
+    def run_tool_test(self, params=None, *a):
+        return self.extract_json_portal(params, *a)
 
 
     def stop_stock_process(self, *a):
