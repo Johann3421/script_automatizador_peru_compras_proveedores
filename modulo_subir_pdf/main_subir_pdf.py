@@ -21,7 +21,12 @@
 # REGLA: Para cambiar el comportamiento de automatización → editar workers.py
 #        Para cambiar la UI → editar los bloques _build_* de este archivo
 # ═══════════════════════════════════════════════════════════════════════
-import sys, os, queue, threading, time, json, re
+import sys, os, time, threading, queue, json, re
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='backslashreplace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='backslashreplace')
+except Exception:
+    pass
 from io import BytesIO
 from pathlib import Path
 from datetime import datetime
@@ -2986,6 +2991,25 @@ class _DummyWidget:
     def __call__(self, *a, **k): return self.val
 
 
+def _get_user_pass(app, params=None):
+    params = params or {}
+    user = str(params.get("user") or "").strip()
+    pwd = str(params.get("pass") or "").strip()
+
+    if not user and hasattr(app, "entry_stock_user") and hasattr(app.entry_stock_user, "get"):
+        user = str(app.entry_stock_user.get()).strip()
+    if not user and hasattr(app, "entry_user") and hasattr(app.entry_user, "get"):
+        user = str(app.entry_user.get()).strip()
+    if not user:
+        user = "estalin.huamali01"
+
+    if not pwd and hasattr(app, "entry_stock_pass") and hasattr(app.entry_stock_pass, "get"):
+        pwd = str(app.entry_stock_pass.get()).strip()
+    if not pwd and hasattr(app, "entry_pass") and hasattr(app.entry_pass, "get"):
+        pwd = str(app.entry_pass.get()).strip()
+    return user, pwd
+
+
 class SubirPdfWebApi:
     """Puente JS -> Python. Delega al backend SubirPdfApp."""
 
@@ -2996,6 +3020,8 @@ class SubirPdfWebApi:
 
     def set_window(self, w):
         self._window = w
+        if hasattr(self, '_app') and self._app:
+            self._app._window = w
 
     def get_catalog_options(self, *a):
         """Devuelve las opciones desplegables del archivo JSON."""
@@ -3216,25 +3242,6 @@ class SubirPdfWebApi:
         except Exception as e:
             return {"status": "error", "msg": str(e)}
 
-def _get_user_pass(app, params=None):
-    params = params or {}
-    user = str(params.get("user") or "").strip()
-    pwd = str(params.get("pass") or "").strip()
-
-    if not user and hasattr(app, "entry_stock_user") and hasattr(app.entry_stock_user, "get"):
-        user = str(app.entry_stock_user.get()).strip()
-    if not user and hasattr(app, "entry_user") and hasattr(app.entry_user, "get"):
-        user = str(app.entry_user.get()).strip()
-    if not user:
-        user = "estalin.huamali01"
-
-    if not pwd and hasattr(app, "entry_stock_pass") and hasattr(app.entry_stock_pass, "get"):
-        pwd = str(app.entry_stock_pass.get()).strip()
-    if not pwd and hasattr(app, "entry_pass") and hasattr(app.entry_pass, "get"):
-        pwd = str(app.entry_pass.get()).strip()
-    return user, pwd
-
-
     def start_json_process(self, params=None, *a):
         try:
             params = params or {}
@@ -3262,14 +3269,17 @@ def _get_user_pass(app, params=None):
             self._app.btn_iniciar_precios = _DummyWidget()
 
             def _log(app_inst, msg):
-                print(f"[SUBIDA PRECIOS JSON] {msg}")
+                try:
+                    print(f"[SUBIDA PRECIOS JSON] {msg}")
+                except Exception:
+                    pass
                 win = getattr(self, '_window', None) or getattr(getattr(self, '_app', None), '_window', None)
                 if win:
                     try:
                         js_msg = json.dumps(str(msg))
                         win.evaluate_js(f"logJsonConsole({js_msg});")
                     except Exception as ex:
-                        print(f"Error evaluate_js: {ex}")
+                        pass
 
             combos = getattr(self._app, "_stock_combos_data", {})
             n_acuerdo = workers._get_id_acuerdo(combos, acuerdo_val) if hasattr(workers, '_get_id_acuerdo') else "249"
