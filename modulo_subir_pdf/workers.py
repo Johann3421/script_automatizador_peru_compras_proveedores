@@ -2157,9 +2157,10 @@ def execute_json_extractor(app, usuario, password, acuerdo, catalogo, categoria,
     usuario = usuario or "estalin.huamali01"
     on_log(f"🔍 [EXTRACTOR] Conectando a Perú Compras con usuario '{usuario}'...")
 
-    n_acuerdo = 249
-    n_catalogo = 252
-    n_categoria = 11736
+    combos = getattr(app, "_stock_combos_data", {})
+    n_acuerdo = _get_id_acuerdo(combos, acuerdo) or 249
+    n_catalogo = _get_id_catalogo(combos, acuerdo, catalogo) or 252
+    n_categoria = _get_id_categoria(combos, acuerdo, catalogo, categoria) or 11736
 
     out_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reportes_auditoria")
     os.makedirs(out_folder, exist_ok=True)

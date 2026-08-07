@@ -209,22 +209,41 @@ def insertar_stock_item(
 
 def consultar_json_productos(
     page,
-    n_acuerdo: int,
-    n_catalogo: int,
-    n_categoria: int,
+    n_acuerdo: Optional[int] = None,
+    n_catalogo: Optional[int] = None,
+    n_categoria: Optional[int] = None,
     log_func: Optional[Callable[[str], None]] = None
 ) -> List[Dict[str, Any]]:
     """
     FUNCION PADRE 6: Extracción Masiva del Dataset JSON de Fichas.
-    """
-    _log(log_func, f"📡 Solicitando dataset JSON crudo del portal (Acuerdo:{n_acuerdo}, Cat:{n_catalogo}, Catg:{n_categoria})...")
     
-    if "MejoraBasica" not in page.url:
-        try:
-            page.goto(MEJORA_URL, wait_until="networkidle", timeout=60_000)
-            time.sleep(2)
-        except Exception:
-            pass
+    Obtiene dinámicamente los IDs activos del DOM (#ajaxAcuerdo, #ajaxCatalogo, #ajaxCategoria)
+    para evitar inconsistencias entre las categorías seleccionadas y el endpoint.
+    """
+    _log(log_func, "📡 Solicitando dataset JSON crudo del portal...")
+    
+    # Extraer IDs dinámicos reales del DOM activo en pantalla
+    try:
+        dom_ids = page.evaluate("""() => {
+            const ac = document.querySelector('#ajaxAcuerdo, #N_Acuerdo, select[name*="cuerdo"]')?.value;
+            const cat = document.querySelector('#ajaxCatalogo, #N_Catalogo, select[name*="atalogo"]')?.value;
+            const catg = document.querySelector('#ajaxCategoria, #N_Categoria, select[name*="ategoria"]')?.value;
+            return { ac: ac || null, cat: cat || null, catg: catg || null };
+        }""")
+        if dom_ids.get("ac") and str(dom_ids["ac"]).isdigit():
+            n_acuerdo = int(dom_ids["ac"])
+        if dom_ids.get("cat") and str(dom_ids["cat"]).isdigit():
+            n_catalogo = int(dom_ids["cat"])
+        if dom_ids.get("catg") and str(dom_ids["catg"]).isdigit():
+            n_categoria = int(dom_ids["catg"])
+    except Exception as e:
+        _log(log_func, f"⚠️ No se pudieron obtener IDs del DOM, usando parámetros: {e}")
+
+    n_acuerdo = n_acuerdo or 249
+    n_catalogo = n_catalogo or 252
+    n_categoria = n_categoria or 11736
+
+    _log(log_func, f"  🔍 Parámetros finales de consulta: Acuerdo={n_acuerdo}, Catálogo={n_catalogo}, Categoría={n_categoria}")
 
     ts = int(time.time() * 1000)
     endpoint = (
@@ -233,37 +252,42 @@ def consultar_json_productos(
         f"&N_Categoria={n_categoria}&C_Descripcion=&_={ts}"
     )
 
-    try:
-        raw = page.evaluate(f"""
-            async () => {{
-                try {{
-                    const r = await fetch('{endpoint}', {{
-                        method: 'GET', credentials: 'include'
-                    }});
-                    if (!r.ok) return '__HTTP_' + r.status;
-                    return await r.text();
-                }} catch(e) {{
-                    return '__ERR_' + e.toString();
+    for intento in range(1, 4):
+        try:
+            raw = page.evaluate(f"""
+                async () => {{
+                    try {{
+                        const r = await fetch('{endpoint}', {{
+                            method: 'GET',
+                            headers: {{ 'X-Requested-With': 'XMLHttpRequest' }},
+                            credentials: 'include'
+                        }});
+                        if (!r.ok) return '__HTTP_' + r.status;
+                        return await r.text();
+                    }} catch(e) {{
+                        return '__ERR_' + e.toString();
+                    }}
                 }}
-            }}
-        """)
+            """)
 
-        if not raw or str(raw).startswith("__"):
-            _log(log_func, f"❌ Respuesta inválida del endpoint: {raw}")
-            return []
+            if raw and not str(raw).startswith("__"):
+                parsed = json.loads(raw)
+                data = parsed.get("data", []) if isinstance(parsed, dict) else parsed
+                if isinstance(data, list) and len(data) > 0:
+                    _log(log_func, f"✅ Dataset extraído exitosamente ({len(data)} fichas).")
+                    return data
+                elif isinstance(data, list):
+                    _log(log_func, f"ℹ️ El dataset retornó 0 fichas (Intento {intento}/3).")
+            else:
+                _log(log_func, f"⚠️ Intento {intento}/3 falló con respuesta: {raw}")
 
-        parsed = json.loads(raw)
-        data = parsed.get("data", []) if isinstance(parsed, dict) else parsed
-        if isinstance(data, list):
-            _log(log_func, f"✅ Dataset extraído exitosamente ({len(data)} fichas).")
-            return data
-        else:
-            _log(log_func, f"⚠️ Respuesta inesperada: {type(data)}")
-            return []
+        except Exception as e:
+            _log(log_func, f"⚠️ Error en intento {intento}/3: {e}")
 
-    except Exception as e:
-        _log(log_func, f"❌ Error parseando JSON de productos: {e}")
-        return []
+        time.sleep(1.5)
+
+    _log(log_func, "❌ No se pudieron extraer fichas tras 3 intentos.")
+    return []
 
 
 def extraer_json_catalogo(

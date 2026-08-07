@@ -203,6 +203,11 @@
 - `modulo_modificar_productos/extract_combinaciones.py` (Línea 107)
 - `modulo_modificar_productos/extract_dropdowns_modificar.py` (Línea 156)
 
+### Función `do_login` (3 ocurrencias)
+- `automation/login.py` (Línea 151)
+- `modulo_subir_pdf/discovery_perucompras.py` (Línea 161)
+- `modulo_subir_pdf/discovery_v2_perucompras.py` (Línea 130)
+
 ### Función `warning` (3 ocurrencias)
 - `automation/perucompras_core.py` (Línea 62)
 - `modulo_subir_pdf/workers.py` (Línea 11)
@@ -212,11 +217,6 @@
 - `automation/perucompras_core.py` (Línea 64)
 - `modulo_subir_pdf/workers.py` (Línea 13)
 - `modulo_subir_pdf/main_subir_pdf.py` (Línea 177)
-
-### Función `do_login` (3 ocurrencias)
-- `automation/login.py` (Línea 151)
-- `modulo_subir_pdf/discovery_perucompras.py` (Línea 161)
-- `modulo_subir_pdf/discovery_v2_perucompras.py` (Línea 130)
 
 ### Función `poll_queue` (3 ocurrencias)
 - `ui/screen_run.py` (Línea 275)
