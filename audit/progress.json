@@ -339,9 +339,9 @@
     },
     "ui_web/index.html": {
       "status": "done",
-      "lines": 1086,
-      "hash": "02b625289d3b1e61355f57cd4532aacd76bf01ff1d4e561d55a5d9652629f0aa",
-      "updated_at": "2026-08-07 08:31:16"
+      "lines": 1087,
+      "hash": "31deeb814cc5869c8077a31c4a486a767dc02bff88b3ea3fa0d0d3b24b8b202e",
+      "updated_at": "2026-08-07 08:41:57"
     },
     "modulo_modificar_productos/main_modificar.py": {
       "status": "done",
