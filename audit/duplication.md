@@ -148,31 +148,31 @@
 
 ### Función `load_sheet` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 71)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3074)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3107)
 
 ### Función `start_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 80)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3083)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3116)
 
 ### Función `stop_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 84)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3099)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3132)
 
 ### Función `start_stock_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 88)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3107)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3140)
 
 ### Función `stop_stock_process` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 92)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3190)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3223)
 
 ### Función `start_stock_audit` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 96)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3139)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3172)
 
 ### Función `export_audit` (2 ocurrencias)
 - `demo_pywebview.py` (Línea 102)
-- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3208)
+- `modulo_subir_pdf/main_subir_pdf.py` (Línea 3241)
 
 ### Función `detect_columns` (2 ocurrencias)
 - `modulo_modificar_productos/utils_mod/excel_parser_mod.py` (Línea 58)

@@ -887,12 +887,12 @@
     /* CARGA DE ARCHIVO EXCLUSIVO PARA MÓDULO SUBIDA DE PRECIOS JSON */
     function selectJsonFile() {
       if (window.pywebview && window.pywebview.api) {
-        window.pywebview.api.select_file().then(res => {
+        window.pywebview.api.select_json_file().then(res => {
           if (res && res.path) {
             document.getElementById('jsonFilePath').value = res.name;
             const badge = document.getElementById('jsonBadge');
             badge.className = "status-badge ok";
-            badge.innerText = `✓ JSON cargado: ${res.name} (${res.rows.length} ofertas)`;
+            badge.innerText = `✓ JSON/Excel cargado: ${res.name} (${res.rows.length} ofertas)`;
             
             renderJsonTable(res.rows);
             logJsonConsole(`[JSON OK] Archivo cargado: ${res.name} (${res.rows.length} ofertas)`, 'log-ok');
@@ -916,17 +916,25 @@
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay archivo JSON cargado</td></tr>';
         return;
       }
-      tbody.innerHTML = rows.map((r, i) => `
-        <tr>
-          <td style="text-align: center;">${i+1}</td>
-          <td>FICHA-${10000+i}</td>
-          <td><strong>${r.parte || ''}</strong></td>
-          <td style="text-align: right;">S/ ${r.precio || '0.00'}</td>
-          <td style="text-align: center;">0.0%</td>
-          <td style="text-align: right; font-weight: bold; color: var(--azul-pc);">S/ ${r.precio || '0.00'}</td>
-          <td style="text-align: center; color: var(--ok-text); font-weight: bold;">Pendiente API</td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = rows.map((r, i) => {
+        const idFicha = r.ID_CatalogoProducto || r.ID_ProductoOfertado || `FICHA-${10000+i}`;
+        const desc = r.C_Descripcion || r.parte || r.nro_parte || `Producto ${i+1}`;
+        const moneda = r.C_MonedaOfertada ? (r.C_MonedaOfertada === 'USD' ? '$' : 'S/') : 'S/';
+        const precio = r.N_PrecioOfertado !== undefined ? r.N_PrecioOfertado : (r.precio || '0.00');
+        const estado = r.C_Estado || 'Pendiente API';
+
+        return `
+          <tr>
+            <td style="text-align: center;">${i+1}</td>
+            <td>${idFicha}</td>
+            <td><strong title="${desc}">${desc.length > 50 ? desc.substring(0,47)+'...' : desc}</strong></td>
+            <td style="text-align: right;">${moneda} ${precio}</td>
+            <td style="text-align: center;">0.0%</td>
+            <td style="text-align: right; font-weight: bold; color: var(--azul-pc);">${moneda} ${precio}</td>
+            <td style="text-align: center; color: var(--ok-text); font-weight: bold;">${estado}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function logConsole(msg, cls) {

@@ -3071,6 +3071,39 @@ class SubirPdfWebApi:
         self._app._stock_excel_path = path
         return {"path": path, "name": os.path.basename(path), "sheets": get_sheets(path), "rows": rows}
 
+    # JSON de Precios
+    def select_json_file(self, *a):
+        import tkinter as tk
+        from tkinter import filedialog
+        import json
+        root = tk.Tk(); root.withdraw(); root.attributes("-topmost", True)
+        path = filedialog.askopenfilename(
+            title="Seleccionar Archivo JSON o Excel de Precios",
+            filetypes=[("Archivos JSON (*.json)", "*.json"), ("Archivos Excel (*.xlsx, *.xls)", "*.xlsx *.xls"), ("Todos los archivos", "*.*")]
+        )
+        root.destroy()
+        if not path:
+            return None
+        
+        rows = []
+        try:
+            if path.lower().endswith(".json"):
+                with open(path, "r", encoding="utf-8") as f:
+                    raw_data = json.load(f)
+                if isinstance(raw_data, list):
+                    rows = raw_data
+                elif isinstance(raw_data, dict):
+                    rows = raw_data.get("data", raw_data.get("fichas", [raw_data]))
+            else:
+                from tab_precios_json import parse_excel_precios
+                rows = parse_excel_precios(path)
+            
+            self._app._precios_json_path = path
+            self._app._precios_json_data = rows
+            return {"path": path, "name": os.path.basename(path), "rows": rows}
+        except Exception as e:
+            return {"error": str(e), "path": path, "name": os.path.basename(path), "rows": []}
+
     def load_sheet(self, sheet_name=None, *a):
         if not getattr(self._app, "_excel_path", "") or not sheet_name:
             return []
