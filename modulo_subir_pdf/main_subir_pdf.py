@@ -275,8 +275,17 @@ class SubirPdfApp(ctk.CTk):
         super().__init__()
         self.withdraw()  # Ocultar ventana principal durante la carga del Splash
         self.title(f"Sistema de Automatización — Perú Compras v{VERSION}")
-        self.geometry("1080x760")
-        self.minsize(920, 640)
+
+        # Detección y adaptación inteligente a pantallas pequeñas (laptops) y grandes
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        init_w = min(1080, max(880, sw - 80))
+        init_h = min(760, max(600, sh - 90))
+        init_x = max(0, (sw - init_w) // 2)
+        init_y = max(0, (sh - init_h) // 2)
+
+        self.geometry(f"{init_w}x{init_h}+{init_x}+{init_y}")
+        self.minsize(860, 580)
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
 
@@ -426,6 +435,57 @@ class SubirPdfApp(ctk.CTk):
         x = self.winfo_x() + (event.x - self._drag_x)
         y = self.winfo_y() + (event.y - self._drag_y)
         self.geometry(f"+{x}+{y}")
+
+    def _start_resize(self, event, mode="both"):
+        """Inicia el redimensionamiento dinámico de la ventana por arrastre de mouse."""
+        if getattr(self, "_is_maximized", False):
+            return
+        self._resize_mode = mode
+        self._resize_start_x = event.x_root
+        self._resize_start_y = event.y_root
+        self._resize_start_w = self.winfo_width()
+        self._resize_start_h = self.winfo_height()
+
+    def _do_resize(self, event):
+        """Aplica el cambio de tamaño libre en horizontal/vertical respetando minsize."""
+        if getattr(self, "_is_maximized", False):
+            return
+        mode = getattr(self, "_resize_mode", "both")
+        dx = event.x_root - self._resize_start_x
+        dy = event.y_root - self._resize_start_y
+
+        min_w, min_h = 860, 580
+        new_w = self._resize_start_w
+        new_h = self._resize_start_h
+
+        if mode in ("both", "x", "e"):
+            new_w = max(min_w, self._resize_start_w + dx)
+        if mode in ("both", "y", "s"):
+            new_h = max(min_h, self._resize_start_h + dy)
+
+        self.geometry(f"{new_w}x{new_h}")
+
+    def _set_window_preset(self, target_w, target_h):
+        """Ajusta la ventana a una resolución predefinida."""
+        if getattr(self, "_is_maximized", False):
+            self._toggle_maximize()
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        w = min(target_w, max(860, sw - 40))
+        h = min(target_h, max(580, sh - 60))
+        x = max(0, (sw - w) // 2)
+        y = max(0, (sh - h) // 2)
+        self.geometry(f"{w}x{h}+{x}+{y}")
+
+    def _center_window(self):
+        """Centra la ventana actual en la pantalla."""
+        sw = self.winfo_screenwidth()
+        sh = self.winfo_screenheight()
+        w = self.winfo_width()
+        h = self.winfo_height()
+        x = max(0, (sw - w) // 2)
+        y = max(0, (sh - h) // 2)
+        self.geometry(f"{w}x{h}+{x}+{y}")
 
     def _close_window(self):
         self.destroy()
@@ -701,6 +761,16 @@ class SubirPdfApp(ctk.CTk):
         m_cfg.add_command(label="Preferencias de conexión y guardado", command=self._open_config_dialog)
         m_cfg.add_command(label="Parámetros de red y tiempos de pausa", command=self._open_config_dialog)
         menubar.add_cascade(label="Configuración", menu=m_cfg)
+
+        m_ver = tk.Menu(menubar, tearoff=0, font=("Segoe UI", 10))
+        m_ver.add_command(label="💻 Modo Compacto / Laptops (920 × 600)", command=lambda: self._set_window_preset(920, 600))
+        m_ver.add_command(label="🖥️ Modo Estándar (1080 × 760)", command=lambda: self._set_window_preset(1080, 760))
+        m_ver.add_command(label="📺 Modo Amplio (1280 × 820)", command=lambda: self._set_window_preset(1280, 820))
+        m_ver.add_command(label="🖥️ Modo Ultra Amplio (1440 × 900)", command=lambda: self._set_window_preset(1440, 900))
+        m_ver.add_separator()
+        m_ver.add_command(label="🎯 Centrar ventana en pantalla", command=self._center_window)
+        m_ver.add_command(label="⛶ Maximizar / Restaurar (F11)", command=self._toggle_maximize)
+        menubar.add_cascade(label="Ver", menu=m_ver)
 
         m_hlp = tk.Menu(menubar, tearoff=0, font=("Segoe UI", 10))
         m_hlp.add_command(label="Manual de usuario (Instrucciones)", command=lambda: self._switch_view("guide"))
@@ -994,11 +1064,33 @@ class SubirPdfApp(ctk.CTk):
         self._lbl_nav = st_seg("Navegador: No iniciado")
         self.lbl_counter = st_seg("Registros: 0 cargados")
         self._lbl_modulo = st_seg("Modulo: Publicacion de Ofertas PDF")
+
+        # Manija de redimensionamiento visual en esquina inferior derecha (Sizegrip)
+        grip = tk.Label(statusbar, text="⇲", font=("Segoe UI", 11, "bold"),
+                        bg="#E8E8E8", fg="#777777", cursor="size_nw_se", padx=6)
+        grip.pack(side="right", fill="y")
+        grip.bind("<ButtonPress-1>", lambda e: self._start_resize(e, mode="both"))
+        grip.bind("<B1-Motion>", self._do_resize)
+        grip.bind("<Enter>", lambda e: grip.config(fg="#006CA8"))
+        grip.bind("<Leave>", lambda e: grip.config(fg="#777777"))
+
         tk.Label(statusbar, text=f"Peru Compras Bot v{VERSION}",
                  font=("Segoe UI", 9), bg="#E8E8E8", fg="#555555",
-                 padx=10).pack(side="right")
+                 padx=8).pack(side="right")
+
+        # Bordes activos delgados en lateral derecho e inferior para ensanchar/alargar
+        edge_right = tk.Frame(self, bg="#C8C8C8", width=3, cursor="size_we")
+        edge_right.place(relx=1.0, rely=0.05, relheight=0.95, anchor="ne")
+        edge_right.bind("<ButtonPress-1>", lambda e: self._start_resize(e, mode="x"))
+        edge_right.bind("<B1-Motion>", self._do_resize)
+
+        edge_bottom = tk.Frame(self, bg="#C8C8C8", height=3, cursor="size_ns")
+        edge_bottom.place(relx=0.0, rely=1.0, relwidth=0.97, anchor="sw")
+        edge_bottom.bind("<ButtonPress-1>", lambda e: self._start_resize(e, mode="y"))
+        edge_bottom.bind("<B1-Motion>", self._do_resize)
 
         self.bind("<F5>", lambda e: self._on_launch())
+        self.bind("<F11>", lambda e: self._toggle_maximize())
         self._switch_view("pdf")
 
     def _clear_excel(self):
