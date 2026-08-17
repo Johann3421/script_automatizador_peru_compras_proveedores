@@ -72,7 +72,7 @@ end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
 var
-  CachePath, Cmd: String;
+  CachePath: String;
   ResultCode: Integer;
 begin
   if CurStep = ssPostInstall then
