@@ -436,34 +436,92 @@ class SubirPdfApp(ctk.CTk):
         y = self.winfo_y() + (event.y - self._drag_y)
         self.geometry(f"+{x}+{y}")
 
-    def _start_resize(self, event, mode="both"):
-        """Inicia el redimensionamiento dinámico de la ventana por arrastre de mouse."""
+    def _setup_border_resizing(self):
+        """Crea los 8 manejadores perimetrales para redimensionar en todas las direcciones como una ventana nativa de Windows."""
+        import tkinter as tk
+        BORDER = 6
+        self._resizing = False
+        self._resize_dir = "se"
+        self._start_x = 0
+        self._start_y = 0
+        self._start_geom = (0, 0, 0, 0)
+
+        # 8 bordes y esquinas con cursores nativos de Windows
+        self._resize_handles = {
+            "e":  tk.Frame(self, cursor="size_we", bg=""),
+            "w":  tk.Frame(self, cursor="size_we", bg=""),
+            "s":  tk.Frame(self, cursor="size_ns", bg=""),
+            "n":  tk.Frame(self, cursor="size_ns", bg=""),
+            "se": tk.Frame(self, cursor="size_nw_se", bg=""),
+            "sw": tk.Frame(self, cursor="size_ne_sw", bg=""),
+            "ne": tk.Frame(self, cursor="size_ne_sw", bg=""),
+            "nw": tk.Frame(self, cursor="size_nw_se", bg=""),
+        }
+
+        # Ubicación perimetral alrededor de toda la ventana
+        self._resize_handles["e"].place(relx=1.0, rely=0.0, relheight=1.0, width=BORDER, anchor="ne")
+        self._resize_handles["w"].place(relx=0.0, rely=0.0, relheight=1.0, width=BORDER, anchor="nw")
+        self._resize_handles["s"].place(relx=0.0, rely=1.0, relwidth=1.0, height=BORDER, anchor="sw")
+        self._resize_handles["n"].place(relx=0.0, rely=0.0, relwidth=1.0, height=BORDER, anchor="nw")
+
+        self._resize_handles["se"].place(relx=1.0, rely=1.0, width=BORDER*2, height=BORDER*2, anchor="se")
+        self._resize_handles["sw"].place(relx=0.0, rely=1.0, width=BORDER*2, height=BORDER*2, anchor="sw")
+        self._resize_handles["ne"].place(relx=1.0, rely=0.0, width=BORDER*2, height=BORDER*2, anchor="ne")
+        self._resize_handles["nw"].place(relx=0.0, rely=0.0, width=BORDER*2, height=BORDER*2, anchor="nw")
+
+        for direction, handle in self._resize_handles.items():
+            handle.lift()
+            handle.bind("<ButtonPress-1>", lambda e, d=direction: self._start_resize(e, d))
+            handle.bind("<B1-Motion>", self._do_resize)
+            handle.bind("<ButtonRelease-1>", self._stop_resize)
+
+    def _start_resize(self, event, direction="se"):
+        """Inicia el redimensionamiento dinámico en la dirección seleccionada."""
         if getattr(self, "_is_maximized", False):
             return
-        self._resize_mode = mode
-        self._resize_start_x = event.x_root
-        self._resize_start_y = event.y_root
-        self._resize_start_w = self.winfo_width()
-        self._resize_start_h = self.winfo_height()
+        self._resizing = True
+        self._resize_dir = direction
+        self._start_x = event.x_root
+        self._start_y = event.y_root
+        self._start_geom = (self.winfo_x(), self.winfo_y(), self.winfo_width(), self.winfo_height())
+
+    def _stop_resize(self, event):
+        self._resizing = False
 
     def _do_resize(self, event):
-        """Aplica el cambio de tamaño libre en horizontal/vertical respetando minsize."""
-        if getattr(self, "_is_maximized", False):
+        """Aplica el cambio de tamaño dinámico en tiempo real adaptando toda la interfaz."""
+        if not getattr(self, "_resizing", False) or getattr(self, "_is_maximized", False):
             return
-        mode = getattr(self, "_resize_mode", "both")
-        dx = event.x_root - self._resize_start_x
-        dy = event.y_root - self._resize_start_y
-
+        x0, y0, w0, h0 = self._start_geom
+        dx = event.x_root - self._start_x
+        dy = event.y_root - self._start_y
         min_w, min_h = 860, 580
-        new_w = self._resize_start_w
-        new_h = self._resize_start_h
 
-        if mode in ("both", "x", "e"):
-            new_w = max(min_w, self._resize_start_w + dx)
-        if mode in ("both", "y", "s"):
-            new_h = max(min_h, self._resize_start_h + dy)
+        new_x, new_y, new_w, new_h = x0, y0, w0, h0
+        direction = getattr(self, "_resize_dir", "se")
 
-        self.geometry(f"{new_w}x{new_h}")
+        if "e" in direction:
+            new_w = max(min_w, w0 + dx)
+        if "w" in direction:
+            cand_w = w0 - dx
+            if cand_w >= min_w:
+                new_w = cand_w
+                new_x = x0 + dx
+            else:
+                new_w = min_w
+                new_x = x0 + (w0 - min_w)
+        if "s" in direction:
+            new_h = max(min_h, h0 + dy)
+        if "n" in direction:
+            cand_h = h0 - dy
+            if cand_h >= min_h:
+                new_h = cand_h
+                new_y = y0 + dy
+            else:
+                new_h = min_h
+                new_y = y0 + (h0 - min_h)
+
+        self.geometry(f"{new_w}x{new_h}+{new_x}+{new_y}")
 
     def _set_window_preset(self, target_w, target_h):
         """Ajusta la ventana a una resolución predefinida."""
@@ -1069,8 +1127,9 @@ class SubirPdfApp(ctk.CTk):
         grip = tk.Label(statusbar, text="⇲", font=("Segoe UI", 11, "bold"),
                         bg="#E8E8E8", fg="#777777", cursor="size_nw_se", padx=6)
         grip.pack(side="right", fill="y")
-        grip.bind("<ButtonPress-1>", lambda e: self._start_resize(e, mode="both"))
+        grip.bind("<ButtonPress-1>", lambda e: self._start_resize(e, "se"))
         grip.bind("<B1-Motion>", self._do_resize)
+        grip.bind("<ButtonRelease-1>", self._stop_resize)
         grip.bind("<Enter>", lambda e: grip.config(fg="#006CA8"))
         grip.bind("<Leave>", lambda e: grip.config(fg="#777777"))
 
@@ -1078,16 +1137,8 @@ class SubirPdfApp(ctk.CTk):
                  font=("Segoe UI", 9), bg="#E8E8E8", fg="#555555",
                  padx=8).pack(side="right")
 
-        # Bordes activos delgados en lateral derecho e inferior para ensanchar/alargar
-        edge_right = tk.Frame(self, bg="#C8C8C8", width=3, cursor="size_we")
-        edge_right.place(relx=1.0, rely=0.05, relheight=0.95, anchor="ne")
-        edge_right.bind("<ButtonPress-1>", lambda e: self._start_resize(e, mode="x"))
-        edge_right.bind("<B1-Motion>", self._do_resize)
-
-        edge_bottom = tk.Frame(self, bg="#C8C8C8", height=3, cursor="size_ns")
-        edge_bottom.place(relx=0.0, rely=1.0, relwidth=0.97, anchor="sw")
-        edge_bottom.bind("<ButtonPress-1>", lambda e: self._start_resize(e, mode="y"))
-        edge_bottom.bind("<B1-Motion>", self._do_resize)
+        # Inicializar el sistema perimetral de bordes activos en las 8 direcciones
+        self._setup_border_resizing()
 
         self.bind("<F5>", lambda e: self._on_launch())
         self.bind("<F11>", lambda e: self._toggle_maximize())
