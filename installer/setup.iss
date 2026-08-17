@@ -29,6 +29,7 @@ SolidCompression=yes
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 UninstallDisplayIcon={app}\{#MyAppExeName}
+SetupIconFile=..\resources\icon.ico
 LicenseFile=license.txt
 WizardStyle=modern
 

@@ -398,11 +398,21 @@ class SubirPdfApp(ctk.CTk):
     def _set_taskbar_icon(self):
         try:
             import ctypes
+            # Establecer AppUserModelID para que Windows agrupe correctamente en la barra de tareas
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("TKC.PeruComprasBot.1.4")
             hwnd = ctypes.windll.user32.GetParent(self.winfo_id()) or self.winfo_id()
             style = ctypes.windll.user32.GetWindowLongW(hwnd, -20)
             style = style | 0x00040000  # WS_EX_APPWINDOW
             ctypes.windll.user32.SetWindowLongW(hwnd, -20, style)
             ctypes.windll.user32.ShowWindow(hwnd, 5)
+        except Exception:
+            pass
+        # Cargar icono profesional desde resources/
+        try:
+            from resource_helper import resource_path
+            ico = resource_path(os.path.join("resources", "icon.ico"))
+            if os.path.isfile(ico):
+                self.iconbitmap(default=ico)
         except Exception:
             pass
 

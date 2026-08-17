@@ -87,12 +87,22 @@ def build():
         "--workpath", BUILD_DIR,
     ]
 
+    # Icono profesional del ejecutable
+    icon_path = os.path.join(PROJECT_DIR, "resources", "icon.ico")
+    if os.path.isfile(icon_path):
+        pyi_args += ["--icon", icon_path]
+        print(f"  Icono: {icon_path}")
+    else:
+        print("  WARN: resources/icon.ico no encontrado, usando icono por defecto")
+
+
     add_data_dirs = [
         ("ui_web", "ui_web"),
         ("modulo_subir_pdf", "modulo_subir_pdf"),
         ("automation", "automation"),
         ("utils", "utils"),
         ("scripts", "scripts"),
+        ("resources", "resources"),
     ]
     for src, dst in add_data_dirs:
         full_src = os.path.join(PROJECT_DIR, src)
