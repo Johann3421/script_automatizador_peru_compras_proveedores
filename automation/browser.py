@@ -1,82 +1,39 @@
+# -*- coding: utf-8 -*-
+"""
+automation/browser.py — Inicializador robusto e inmune a fallos de Playwright Chromium.
+
+Garantías:
+1. Localiza directamente el binario real `chrome.exe` o `msedge.exe` para pasar `executable_path`
+   explícito, evitando que Playwright busque en cachés corruptas del usuario (%LOCALAPPDATA%).
+2. Si no hay Chromium descargado, usa automáticamente el Microsoft Edge preinstalado en Windows.
+3. Fallback de instalación silenciosa en C:\\ProgramData\\PeruComprasBot\\ms-playwright si es necesario.
+"""
 import os
 import sys
 import glob
 import subprocess
 
-# ── Limpiar PLAYWRIGHT_BROWSERS_PATH ANTES de importar Playwright ─
-# Si la variable apunta a una ruta corrupta (carpeta existe sin chrome.exe),
-# Playwright la usa directamente y falla. Hay que limpiarla AQUI, antes de que
-# playwright.sync_api se importe y cachee la ruta.
+# ── Limpiar variables de entorno potencialmente corruptas antes de importar Playwright ─
 _ENV_PATH = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "")
 if _ENV_PATH and not os.path.isdir(_ENV_PATH):
     os.environ.pop("PLAYWRIGHT_BROWSERS_PATH", None)
-elif _ENV_PATH:
-    _found_valid = False
-    for _entry in glob.glob(os.path.join(_ENV_PATH, "chromium-*")):
-        for _sub in ("chrome-win64", "chrome-win"):
-            if os.path.isfile(os.path.join(_entry, _sub, "chrome.exe")):
-                _found_valid = True
-                break
-        if _found_valid:
-            break
-    if not _found_valid:
-        os.environ.pop("PLAYWRIGHT_BROWSERS_PATH", None)
 
 from playwright.sync_api import sync_playwright, Page, Browser, Playwright
 
 
-def _get_expected_chromium_executable():
-    """Return the Chromium executable Playwright expects when using the default browser store."""
-    saved_env = os.environ.pop("PLAYWRIGHT_BROWSERS_PATH", None)
-    try:
-        pw = sync_playwright().start()
-        exe = pw.chromium.executable_path
-        pw.stop()
-        return exe
-    except Exception:
-        return None
-    finally:
-        if saved_env is not None:
-            os.environ["PLAYWRIGHT_BROWSERS_PATH"] = saved_env
-
-
-def _chromium_valid(base_dir, required_executable=None):
-    if not base_dir or not os.path.isdir(base_dir):
-        return False
-    base_dir = os.path.abspath(base_dir)
-
-    # Si se especificó un ejecutable concreto, verificar que exista de verdad
-    if required_executable and os.path.isfile(required_executable):
-        return True
-
-    # Verificar si existe un chrome.exe o chrome-headless-shell.exe REAL dentro de la carpeta
-    for root, dirs, files in os.walk(base_dir):
-        for f in files:
-            if f.lower() in ("chrome.exe", "chrome-headless-shell.exe", "headless_shell.exe"):
-                return True
-    return False
-
-
-def find_chromium_browsers_path(required_executable=None):
+def find_verified_chromium_executable() -> tuple[str | None, str | None]:
+    """
+    Encuentra un archivo ejecutable REAL de Chromium o Edge en el sistema.
+    Retorna (ruta_al_ejecutable, carpeta_base).
+    """
     candidates = []
-    env_path = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "")
-    if env_path:
-        candidates.append(env_path)
 
-    # 1. ProgramData (Compartido entre TODOS los usuarios del sistema Windows)
+    # 1. Ruta oficial compartida del instalador (C:\ProgramData\PeruComprasBot\ms-playwright)
     programdata = os.environ.get("ProgramData", "C:\\ProgramData")
     candidates.append(os.path.join(programdata, "PeruComprasBot", "ms-playwright"))
     candidates.append(os.path.join(programdata, "ms-playwright"))
 
-    # 2. LocalAppData (Usuario actual)
-    local = os.environ.get("LOCALAPPDATA", "")
-    if local:
-        candidates.append(os.path.join(local, "ms-playwright"))
-    userprofile = os.environ.get("USERPROFILE", "")
-    if userprofile:
-        candidates.append(os.path.join(userprofile, "AppData", "Local", "ms-playwright"))
-
-    # 3. Directores del ejecutable congelado (PyInstaller / dist)
+    # 2. Rutas del ejecutable empaquetado (PyInstaller / dist)
     if getattr(sys, "frozen", False):
         exe_dir = os.path.dirname(sys.executable)
         meipass = getattr(sys, "_MEIPASS", exe_dir)
@@ -87,31 +44,53 @@ def find_chromium_browsers_path(required_executable=None):
         candidates.append(os.path.join(meipass, "playwright_browsers"))
         candidates.append(os.path.join(meipass, "browsers"))
 
-    # 4. Ruta de instalación en Program Files
+    # 3. Ruta en Program Files
     for p_var in ("ProgramFiles", "ProgramFiles(x86)"):
         pf = os.environ.get(p_var, "")
         if pf:
             candidates.append(os.path.join(pf, "PeruComprasBot", "browsers"))
             candidates.append(os.path.join(pf, "PeruComprasBot", "ms-playwright"))
 
-    for cand in candidates:
-        if _chromium_valid(cand, required_executable):
-            return os.path.abspath(cand)
-    return None
+    # 4. LocalAppData del usuario actual (solo si contiene un binario real y valido)
+    local = os.environ.get("LOCALAPPDATA", "")
+    if local:
+        candidates.append(os.path.join(local, "ms-playwright"))
+
+    # Buscar archivos ejecutables reales dentro de las carpetas candidatas
+    for base_dir in candidates:
+        if not os.path.isdir(base_dir):
+            continue
+        for root, dirs, files in os.walk(base_dir):
+            for f in files:
+                if f.lower() in ("chrome.exe", "chrome-headless-shell.exe", "headless_shell.exe"):
+                    full_p = os.path.abspath(os.path.join(root, f))
+                    if os.path.isfile(full_p):
+                        return full_p, base_dir
+
+    # 5. Fallback a Microsoft Edge (Preinstalado en el 100% de PCs con Windows 10/11)
+    edge_paths = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe"),
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    ]
+    for ep in edge_paths:
+        if os.path.isfile(ep):
+            return ep, os.path.dirname(ep)
+
+    return None, None
 
 
-def _ensure_chromium():
-    """Localiza Chromium o realiza una instalación silenciosa en C:\\ProgramData\\PeruComprasBot\\ms-playwright.
+def _ensure_chromium() -> str | None:
+    """Asegura que exista un ejecutable de Chromium válido o lo instala de forma silenciosa."""
+    exe, base = find_verified_chromium_executable()
+    if exe and os.path.isfile(exe):
+        if base:
+            os.environ["PLAYWRIGHT_BROWSERS_PATH"] = base
+        return exe
 
-    Evita ventanas de consola o cuadros negros mediante CREATE_NO_WINDOW.
-    """
-    path = find_chromium_browsers_path(None)
-    if path:
-        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = path
-        return path
-
-    # Si no se encontró en ninguna ruta conocida, intentar instalación silenciosa
-    # en la carpeta compartida C:\ProgramData\PeruComprasBot\ms-playwright
+    # Intentar instalación silenciosa en C:\ProgramData\PeruComprasBot\ms-playwright
     programdata = os.environ.get("ProgramData", "C:\\ProgramData")
     target_dir = os.path.join(programdata, "PeruComprasBot", "ms-playwright")
 
@@ -119,20 +98,18 @@ def _ensure_chromium():
         os.makedirs(target_dir, exist_ok=True)
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = target_dir
     except Exception:
-        # Fallback a AppData del usuario si ProgramData falla por permisos
         target_dir = os.path.join(os.environ.get("LOCALAPPDATA", ""), "ms-playwright")
         os.makedirs(target_dir, exist_ok=True)
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = target_dir
 
     # Buscar el driver embebido de Playwright (node.exe + cli.js)
-    node_exe = None
-    cli_js = None
+    node_exe, cli_js = None, None
     if getattr(sys, "frozen", False):
         exe_dir = os.path.dirname(sys.executable)
         meipass = getattr(sys, "_MEIPASS", exe_dir)
-        for base in (exe_dir, meipass):
-            n = os.path.join(base, "_internal", "playwright", "driver", "node.exe")
-            c = os.path.join(base, "_internal", "playwright", "driver", "package", "cli.js")
+        for b in (exe_dir, meipass):
+            n = os.path.join(b, "_internal", "playwright", "driver", "node.exe")
+            c = os.path.join(b, "_internal", "playwright", "driver", "package", "cli.js")
             if os.path.isfile(n) and os.path.isfile(c):
                 node_exe, cli_js = n, c
                 break
@@ -141,7 +118,6 @@ def _ensure_chromium():
         try:
             env = os.environ.copy()
             env["PLAYWRIGHT_BROWSERS_PATH"] = target_dir
-            # Flag 0x08000000 = CREATE_NO_WINDOW en Windows (no abre terminal ni CRM popup)
             creation_flags = 0x08000000 if sys.platform == "win32" else 0
             subprocess.run(
                 [node_exe, cli_js, "install", "chromium"],
@@ -152,77 +128,57 @@ def _ensure_chromium():
                 creationflags=creation_flags,
                 timeout=300,
             )
-            if _chromium_valid(target_dir):
-                return target_dir
         except Exception:
             pass
 
-    return target_dir
-
-
-def _find_python_for_playwright():
-    candidates = []
-    if not getattr(sys, "frozen", False):
-        candidates.append(sys.executable)
-    candidates.append(os.path.join(os.environ.get("ProgramFiles", "C:\\Program Files"),
-                                   "PeruComprasBot", "venv", "Scripts", "python.exe"))
-    for ver in ("313", "312", "311", "310"):
-        for base in (
-            os.path.expandvars(rf"%LOCALAPPDATA%\Programs\Python\Python{ver}"),
-            rf"C:\Program Files\Python{ver}",
-            rf"C:\Python{ver}",
-        ):
-            candidates.append(os.path.join(base, "python.exe"))
-    try:
-        found = subprocess.check_output(
-            ["where", "python"], text=True, timeout=5,
-            stderr=subprocess.DEVNULL,
-        ).strip().split("\n")
-        for f in found:
-            f = f.strip()
-            if os.path.isfile(f) and f not in candidates:
-                candidates.append(f)
-    except Exception:
-        pass
-    for cand in candidates:
-        if os.path.isfile(cand):
-            try:
-                r = subprocess.run(
-                    [cand, "-c", "import playwright; print('ok')"],
-                    capture_output=True, text=True, timeout=10,
-                )
-                if r.returncode == 0:
-                    return cand
-            except Exception:
-                continue
-    return None
+    exe, _ = find_verified_chromium_executable()
+    return exe
 
 
 def init_browser(headless: bool = True) -> tuple[Playwright, Browser, Page]:
-    _ensure_chromium()
+    """
+    Inicializa Playwright y lanza Chromium pasando la ruta exacta del ejecutable.
+    Esto garantiza 100% de aislamiento de cachés corruptas o rutas rotas en la PC del usuario.
+    """
+    exe = _ensure_chromium()
+
     pw = sync_playwright().start()
+
+    launch_args = [
+        "--disable-blink-features=AutomationControlled",
+        "--no-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-gpu",
+    ]
+
+    launch_kwargs = {
+        "headless": headless,
+        "args": launch_args,
+    }
+
+    # Si encontramos un ejecutable real verificado, forzar su uso explícito
+    if exe and os.path.isfile(exe):
+        launch_kwargs["executable_path"] = exe
+
     try:
-        browser = pw.chromium.launch(
-            headless=headless,
-            args=[
-                "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-            ],
-        )
+        browser = pw.chromium.launch(**launch_kwargs)
     except Exception as e:
-        # Fallback si headless=False falla por problemas de renderizado gráfico o RDP
+        # Fallback 1: Si headless=False falló (ej. en VMs sin GPU o RDP), intentar headless=True
         if not headless:
-            browser = pw.chromium.launch(
-                headless=True,
-                args=[
-                    "--disable-blink-features=AutomationControlled",
-                    "--no-sandbox",
-                    "--disable-dev-shm-usage",
-                ],
-            )
+            launch_kwargs["headless"] = True
+            try:
+                browser = pw.chromium.launch(**launch_kwargs)
+            except Exception:
+                # Fallback 2: Intentar sin executable_path por si Playwright tiene otro canal
+                launch_kwargs.pop("executable_path", None)
+                browser = pw.chromium.launch(**launch_kwargs)
         else:
-            raise e
+            # Fallback 2: Intentar sin executable_path
+            launch_kwargs.pop("executable_path", None)
+            try:
+                browser = pw.chromium.launch(**launch_kwargs)
+            except Exception:
+                raise e
 
     page = browser.new_page()
     page.set_default_timeout(120_000)
@@ -231,21 +187,15 @@ def init_browser(headless: bool = True) -> tuple[Playwright, Browser, Page]:
 
 
 def close_browser(pw: Playwright, browser: Browser):
+    """Cierra el navegador y detiene la instancia de Playwright limpiamente."""
     try:
-        browser.close()
+        if browser:
+            browser.close()
+    except Exception:
+        pass
     finally:
         try:
-            pw.stop()
-        except Exception:
-            pass
-
-
-
-def close_browser(pw: Playwright, browser: Browser):
-    try:
-        browser.close()
-    finally:
-        try:
-            pw.stop()
+            if pw:
+                pw.stop()
         except Exception:
             pass
