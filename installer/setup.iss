@@ -34,7 +34,7 @@ SetupIconFile=..\resources\icon.ico
 LicenseFile=license.txt
 WizardStyle=modern
 ; Forzar sobreescritura completa al reinstalar
-CloseApplications=force
+CloseApplications=yes
 
 [Languages]
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
@@ -52,15 +52,21 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilen
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\_internal\resources\{#MyAppIcon}"; WorkingDir: "{app}"
 
 [Run]
-; 1. Limpiar cache de iconos de Windows para que el nuevo icono se muestre inmediatamente
-Filename: "cmd.exe"; Parameters: "/c ie4uinit.exe -show"; StatusMsg: "Actualizando iconos del sistema..."; Flags: runhidden waituntilterminated
-; 2. Instalar Chromium para Playwright en C:\ProgramData\PeruComprasBot\ms-playwright (compartido para TODOS los usuarios de la PC)
+; Instalar Chromium para Playwright en C:\ProgramData\PeruComprasBot\ms-playwright (compartido para TODOS los usuarios de la PC)
 Filename: "cmd.exe"; Parameters: "/c ""set PLAYWRIGHT_BROWSERS_PATH={commonappdata}\PeruComprasBot\ms-playwright&& ""{app}\_internal\playwright\driver\node.exe"" ""{app}\_internal\playwright\driver\package\cli.js"" install chromium"""; Description: "Descargando motor Chromium (necesario para automatización)..."; StatusMsg: "Instalando motor Chromium para Playwright en la PC, espere..."; Flags: runhidden waituntilterminated; Check: NeedsChromiumInstall
 
 ; Abrir la aplicación al finalizar la instalación
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
+// Notificar a Windows de forma limpia y oficial que refresque los iconos sin reiniciar explorer.exe
+procedure SHChangeNotify(wEventId: Integer; uFlags: Cardinal; dwItem1, dwItem2: Cardinal);
+  external 'SHChangeNotify@shell32.dll stdcall';
+
+const
+  SHCNE_ASSOCCHANGED = $08000000;
+  SHCNF_IDLIST = $0000;
+
 function NeedsChromiumInstall: Boolean;
 var
   NodeExe, CliJs: String;
@@ -71,18 +77,14 @@ begin
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
-var
-  CachePath: String;
-  ResultCode: Integer;
 begin
   if CurStep = ssPostInstall then
   begin
-    { Eliminar archivos de cache de iconos de Windows para forzar regeneracion }
-    CachePath := ExpandConstant('{localappdata}\Microsoft\Windows\Explorer');
-    Exec('cmd.exe', '/c del /f /q "' + CachePath + '\iconcache*" 2>nul', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    Exec('cmd.exe', '/c del /f /q "' + CachePath + '\thumbcache*" 2>nul', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    { Reiniciar el explorador para que recargue iconos frescos }
-    Exec('cmd.exe', '/c taskkill /f /im explorer.exe & start explorer.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    try
+      // Actualizar los iconos en Windows limpiamente
+      SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, 0, 0);
+    except
+    end;
   end;
 end;
 
