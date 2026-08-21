@@ -302,6 +302,11 @@ class SubirPdfApp(ctk.CTk):
         self._excel_rows = []
         self._excel_columns = []
 
+        self._process_start_time = None
+        self._last_elapsed_seconds = 0.0
+        self._last_report_path = ""
+        self._last_report_dir = os.path.join(_PROJECT_ROOT, "reportes_auditoria")
+
         self._catalog_data = {}
         self._catalog_combos = []
         self._load_dropdown_json()
@@ -549,6 +554,27 @@ class SubirPdfApp(ctk.CTk):
         self.destroy()
         import sys
         sys.exit(0)
+
+    def _open_last_report(self):
+        """Abre directamente el último reporte Excel o archivo de auditoría generado."""
+        path = getattr(self, "_last_report_path", "")
+        from utils_mod.excel_report_designer import open_file_in_system
+        if path and os.path.exists(path):
+            if not open_file_in_system(path):
+                messagebox.showerror("Error", f"No se pudo abrir el archivo:\n{path}")
+        else:
+            out_dir = getattr(self, "_last_report_dir", "") or os.path.join(_PROJECT_ROOT, "reportes_auditoria")
+            if os.path.exists(out_dir):
+                open_file_in_system(out_dir)
+            else:
+                messagebox.showinfo("Reportes", "Aún no se ha generado ningún informe en esta sesión.")
+
+    def _open_reports_folder(self):
+        """Abre la carpeta que contiene los reportes e informes de auditoría."""
+        out_dir = getattr(self, "_last_report_dir", "") or os.path.join(_PROJECT_ROOT, "reportes_auditoria")
+        os.makedirs(out_dir, exist_ok=True)
+        from utils_mod.excel_report_designer import open_file_in_system
+        open_file_in_system(out_dir)
 
     def _open_config_dialog(self):
         """Abre la ventana modal de Configuración y Preferencias del Sistema."""
@@ -1202,7 +1228,8 @@ class SubirPdfApp(ctk.CTk):
         """Ejecuta el chequeo rápido del auditor sobre las fichas procesadas."""
         from utils_mod.audit_reporter import audit_results
         rows = self._collect_tree_rows()
-        summary = audit_results(rows)
+        elapsed_sec = getattr(self, "_last_elapsed_seconds", 0.0)
+        summary = audit_results(rows, elapsed_seconds=elapsed_sec)
         if hasattr(self, "lbl_audit_summary") and self.lbl_audit_summary:
             text = f"Total: {summary['total']} | ✓ OK: {summary['ok']} | ✕ Err: {summary['err']} | Éxito: {summary['rate']}%"
             self.lbl_audit_summary.config(text=text)
@@ -1242,7 +1269,11 @@ class SubirPdfApp(ctk.CTk):
             ok, msg = export_pdf_report(rows, summary, path, modulo_nombre=modulo_nombre)
 
         if ok:
-            messagebox.showinfo("Auditor de Resultados", f"¡Informe de Auditoría generado exitosamente!\n\nArchivo creado:\n{msg}")
+            self._last_report_path = path
+            self._last_report_dir = os.path.dirname(path)
+            from utils_mod.excel_report_designer import open_file_in_system
+            if messagebox.askyesno("Auditor de Resultados", f"¡Informe de Auditoría generado exitosamente!\n\nArchivo creado:\n{msg}\n\n¿Deseas abrir el archivo ahora?"):
+                open_file_in_system(path)
         else:
             messagebox.showerror("Error en Auditoría", f"Ocurrió un error al generar el informe:\n{msg}")
 
@@ -1624,9 +1655,15 @@ class SubirPdfApp(ctk.CTk):
         ).pack(side="left", padx=(0, 4), fill="x", expand=True)
 
         ctk.CTkButton(
-            btn_r, text="📄 Informe PDF", height=32, font=ctk.CTkFont(size=11, weight="bold"),
+            btn_r, text="📂 Abrir Reporte", height=32, font=ctk.CTkFont(size=11, weight="bold"),
             fg_color="#006CA8", hover_color="#00507E", text_color="#FFFFFF",
-            command=lambda: self._export_stock_audit_report(fmt="pdf")
+            command=self._open_last_report
+        ).pack(side="left", padx=(0, 4), fill="x", expand=True)
+
+        ctk.CTkButton(
+            btn_r, text="📁 Carpeta", height=32, font=ctk.CTkFont(size=11, weight="bold"),
+            fg_color=C["border"], hover_color=C["card2"], text_color=C["txt"],
+            command=self._open_reports_folder
         ).pack(side="left", fill="x", expand=True)
 
     # ═══════════════════════════════════════════════════════════════
@@ -1676,7 +1713,11 @@ class SubirPdfApp(ctk.CTk):
             ok, msg = export_pdf_report(rows, summary, path, modulo_nombre="Actualización de Stock")
 
         if ok:
-            messagebox.showinfo("Auditor de Stock", f"¡Informe de Auditoría de Stock generado exitosamente!\n\nUbicación:\n{msg}")
+            self._last_report_path = path
+            self._last_report_dir = os.path.dirname(path)
+            from utils_mod.excel_report_designer import open_file_in_system
+            if messagebox.askyesno("Auditor de Stock", f"¡Informe de Auditoría de Stock generado exitosamente!\n\nUbicación:\n{msg}\n\n¿Deseas abrir el informe ahora?"):
+                open_file_in_system(path)
         else:
             messagebox.showerror("Error en Auditoría", f"Ocurrió un error al generar el informe:\n{msg}")
 
@@ -1835,6 +1876,7 @@ class SubirPdfApp(ctk.CTk):
 
         # ── PASO 5: Marcar estado como en ejecución y actualizar botones
         self._stock_running = True
+        self._stock_process_start_time = time.time()
         self._stock_stop_event.clear()
         self.btn_stock_start.configure(state="disabled")
         self.btn_stock_stop.configure(state="normal")
@@ -1960,8 +2002,9 @@ class SubirPdfApp(ctk.CTk):
             except Exception: pass
         self._append_stock_log(f"🔍 Iniciando Auditor Portal ({len(excel_rows)} productos | Navegador {'visible' if visible else 'oculto'})...")
 
-        # Reset stop event
+        # Reset stop event y registrar tiempo de inicio
         self._stock_stop_event.clear()
+        self._stock_audit_start_time = time.time()
 
         import threading, workers
         threading.Thread(
@@ -1985,6 +2028,14 @@ class SubirPdfApp(ctk.CTk):
                     try: self.lbl_audit_status.configure(text="Sin datos para guardar", text_color="#e74c3c")
                     except Exception: pass
                 return
+
+            elapsed_sec = None
+            if getattr(self, "_stock_audit_start_time", None):
+                elapsed_sec = time.time() - self._stock_audit_start_time
+                from utils_mod.excel_report_designer import format_elapsed_time
+                resumen["elapsed_time"] = format_elapsed_time(elapsed_sec)
+                resumen["elapsed_seconds"] = elapsed_sec
+                self._append_stock_log(f"⏱️ Tiempo total de auditoría: {format_elapsed_time(elapsed_sec)} ({elapsed_sec:.1f}s)")
 
             ok    = resumen.get("ok", 0)
             dif   = resumen.get("dif", 0)
@@ -2020,13 +2071,12 @@ class SubirPdfApp(ctk.CTk):
             from utils_mod.audit_portal_excel import generar_excel_auditoria
             ok_save, msg = generar_excel_auditoria(filas, resumen, path)
             if ok_save:
+                self._last_report_path = path
+                self._last_report_dir = os.path.dirname(path)
                 self._append_stock_log(f"📊 ¡Informe de Auditoría generado exitosamente!")
                 self._append_stock_log(f"📂 Guardado en: {path}")
-                import subprocess
-                try:
-                    subprocess.Popen(["start", "", path], shell=True)
-                except Exception:
-                    pass
+                from utils_mod.excel_report_designer import open_file_in_system
+                open_file_in_system(path)
             else:
                 self._append_stock_log(f"❌ Error al generar el Excel: {msg}")
 
@@ -2513,6 +2563,35 @@ class SubirPdfApp(ctk.CTk):
         self.log_box.tag_config("existing", foreground="#1A5493")
         self.log_box.tag_config("notfound", foreground="#B45309")
 
+        # Barra de Acciones y Reportes de Auditoría
+        rep_row = ctk.CTkFrame(frame, fg_color="transparent")
+        rep_row.grid(row=6, column=0, padx=0, pady=(2, 6), sticky="ew")
+        rep_row.grid_columnconfigure((0, 1, 2), weight=1)
+
+        self.btn_gen_rep = ctk.CTkButton(
+            rep_row, text="📊 Generar Informe Excel", height=32,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            fg_color="#1B6B1B", hover_color="#145214", text_color="#FFFFFF",
+            command=lambda: self._export_audit_report(fmt="excel")
+        )
+        self.btn_gen_rep.grid(row=0, column=0, padx=(0, 4), sticky="ew")
+
+        self.btn_open_rep = ctk.CTkButton(
+            rep_row, text="📂 Abrir Reporte Excel", height=32,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            fg_color="#006CA8", hover_color="#00507E", text_color="#FFFFFF",
+            command=self._open_last_report
+        )
+        self.btn_open_rep.grid(row=0, column=1, padx=(0, 4), sticky="ew")
+
+        self.btn_open_dir = ctk.CTkButton(
+            rep_row, text="📁 Carpeta de Reportes", height=32,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            fg_color=C["border"], hover_color=C["card2"], text_color=C["txt"],
+            command=self._open_reports_folder
+        )
+        self.btn_open_dir.grid(row=0, column=2, sticky="ew")
+
     def _make_stat(self, parent, label, color, col):
         C = self._C
         f = ctk.CTkFrame(parent, fg_color=C["card"], corner_radius=6,
@@ -2623,6 +2702,7 @@ class SubirPdfApp(ctk.CTk):
         }
 
         self._running = True
+        self._process_start_time = time.time()
         self._log_lines.clear()
         self.stop_event.clear()
         self.captcha_bridge.stop_event = self.stop_event
@@ -2670,6 +2750,7 @@ class SubirPdfApp(ctk.CTk):
         }
 
         self._running = True
+        self._process_start_time = time.time()
         self._log_lines.clear()
         self.stop_event.clear()
         self.captcha_bridge.stop_event = self.stop_event
@@ -2701,6 +2782,7 @@ class SubirPdfApp(ctk.CTk):
         headless = not bool(self.check_visible.get())
 
         self._running = True
+        self._process_start_time = time.time()
         self._log_lines.clear()
         self.stop_event.clear()
         self.captcha_bridge.stop_event = self.stop_event
@@ -2755,6 +2837,7 @@ class SubirPdfApp(ctk.CTk):
         }
 
         self._running = True
+        self._process_start_time = time.time()
         self._log_lines.clear()
         self.stop_event.clear()
         self.captcha_bridge.stop_event = self.stop_event
@@ -2805,6 +2888,7 @@ class SubirPdfApp(ctk.CTk):
         }
 
         self._running = True
+        self._process_start_time = time.time()
         self._log_lines.clear()
         self.stop_event.clear()
         self.captcha_bridge.stop_event = self.stop_event
@@ -2834,6 +2918,7 @@ class SubirPdfApp(ctk.CTk):
             return
         headless = not bool(self.check_visible.get())
         self._running = True
+        self._process_start_time = time.time()
         self._log_lines.clear()
         self.stop_event.clear()
         self.captcha_bridge.stop_event = self.stop_event
@@ -2862,6 +2947,7 @@ class SubirPdfApp(ctk.CTk):
             return
         headless = not bool(self.check_visible.get())
         self._running = True
+        self._process_start_time = time.time()
         self._log_lines.clear()
         self.stop_event.clear()
         self.captcha_bridge.stop_event = self.stop_event
@@ -2922,6 +3008,7 @@ class SubirPdfApp(ctk.CTk):
 
         # ── PASO 4: Inicializar contadores y estado de ejecución ────────
         self._running = True
+        self._process_start_time = time.time()
         self._ok = 0
         self._errors = 0
         self._total = len(rows)
@@ -3048,9 +3135,15 @@ class SubirPdfApp(ctk.CTk):
                     ok  = item.get("ok", 0)
                     err = item.get("errors", 0)
                     self._running = False
-                    self.lbl_status.configure(
-                        text=f"Finalizado  ·  {ok} OK  ·  {err} errores"
-                    )
+                    elapsed_txt = ""
+                    if getattr(self, "_process_start_time", None):
+                        elapsed = time.time() - self._process_start_time
+                        self._last_elapsed_seconds = elapsed
+                        from utils_mod.excel_report_designer import format_elapsed_time
+                        elapsed_txt = format_elapsed_time(elapsed)
+                        self._log(f"⏱️ Tiempo total transcurrido: {elapsed_txt} ({elapsed:.1f}s)", "complete")
+                    status_msg = f"Finalizado{' (' + elapsed_txt + ')' if elapsed_txt else ''}  ·  {ok} OK  ·  {err} errores"
+                    self.lbl_status.configure(text=status_msg)
                     self.progress.set(1)
                     self.btn_launch.configure(state="normal")
                     self.btn_stop.configure(state="disabled", text="■  Detener")
@@ -3066,7 +3159,14 @@ class SubirPdfApp(ctk.CTk):
 
                     if level == "DONE":
                         self._running = False
-                        self.lbl_status.configure(text=msg)
+                        elapsed_txt = ""
+                        if getattr(self, "_process_start_time", None):
+                            elapsed = time.time() - self._process_start_time
+                            self._last_elapsed_seconds = elapsed
+                            from utils_mod.excel_report_designer import format_elapsed_time
+                            elapsed_txt = format_elapsed_time(elapsed)
+                            self._log(f"⏱️ Tiempo total transcurrido: {elapsed_txt} ({elapsed:.1f}s)", "complete")
+                        self.lbl_status.configure(text=f"{msg}{' (' + elapsed_txt + ')' if elapsed_txt else ''}")
                         self.progress.set(1)
                         self.btn_launch.configure(state="normal")
                         self.btn_stop.configure(state="disabled", text="■  Detener")

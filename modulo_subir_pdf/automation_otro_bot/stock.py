@@ -1268,138 +1268,57 @@ HEADER_FILL = PatternFill(start_color="305496", end_color="305496", fill_type="s
 HEADER_FONT = Font(bold=True, color="FFFFFF")
 
 
-def generar_reporte_excel(output_path: str, acuerdo="", catalogo="", categoria="") -> str:
-    """Genera el reporte Excel con 3 hojas."""
-    if not RESULTADOS:
-        wb = openpyxl.Workbook()
-        ws1 = wb.active
-        ws1.title = "Resumen"
-        ws1["A1"] = "Reporte de Actualización de Stock"
-        ws1["A2"] = f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        ws1["A3"] = f"Acuerdo: {acuerdo}"
-        ws1["A4"] = f"Catálogo: {catalogo}"
-        ws1["A5"] = f"Categoría: {categoria}"
-        ws1["A7"] = "Estado del Proceso"
-        ws1["B7"] = "No se registraron productos o el proceso finalizó antes de procesar la lista."
-        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-        wb.save(output_path)
-        return output_path
+def generar_reporte_excel(output_path: str, acuerdo="", catalogo="", categoria="", elapsed_seconds=None) -> str:
+    """Genera el reporte Excel corporativo de actualización de stock."""
+    from utils_mod.excel_report_designer import build_executive_excel_report, format_elapsed_time
 
-
-    wb = openpyxl.Workbook()
     total = len(RESULTADOS)
-    exitos = sum(1 for r in RESULTADOS if r["Estado"] == "OK")
+    exitos = sum(1 for r in RESULTADOS if str(r.get("Estado", "")).upper() == "OK")
     fallidos = total - exitos
     ratio = (exitos / total * 100) if total > 0 else 0
 
-    # ── Hoja 1: Resumen ──
-    ws1 = wb.active
-    ws1.title = "Resumen"
-    ws1["A1"] = "Reporte de Actualización de Stock"
-    ws1["A1"].font = Font(bold=True, size=14)
-    ws1["A2"] = f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-    ws1["A3"] = f"Acuerdo: {acuerdo}"
-    ws1["A4"] = f"Catálogo: {catalogo}"
-    ws1["A5"] = f"Categoría: {categoria}"
+    summary = {
+        "total": total,
+        "ok": exitos,
+        "warn": 0,
+        "err": fallidos,
+        "rate": round(ratio, 1),
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "acuerdo": acuerdo or "EXT-CE-2022-5",
+        "catalogo": catalogo or "—",
+        "categoria": categoria or "—",
+        "elapsed_time": format_elapsed_time(elapsed_seconds) if elapsed_seconds is not None else "—",
+    }
 
-    ws1["A7"] = "Total productos"
-    ws1["B7"] = total
-    ws1["A8"] = "Exitosos"
-    ws1["B8"] = exitos
-    ws1["A9"] = "Fallidos"
-    ws1["B9"] = fallidos
-    ws1["A10"] = "Ratio éxito"
-    ws1["B10"] = f"{ratio:.1f}%"
-
-    # Gráfico de pie
-    pie = PieChart()
-    pie.title = "Éxito vs Fallo"
-    # Escribir datos en celdas para que el chart pueda referenciarlos
-    ws1["D7"] = "Éxitos"
-    ws1["E7"] = exitos
-    ws1["D8"] = "Fallos"
-    ws1["E8"] = fallidos
-    pie_data = Reference(ws1, min_col=5, min_row=7, max_col=5, max_row=8)
-    pie_cats = Reference(ws1, min_col=4, min_row=7, max_col=4, max_row=8)
-    pie.add_data(pie_data)
-    pie.set_categories(pie_cats)
-    ws1.add_chart(pie, "G7")
-
-    # Conteo por tipo de fallo
-    tipos = {}
+    # Mapear filas a formato estándar
+    rows_data = []
     for r in RESULTADOS:
-        if r["Estado"] == "FALLO":
-            t = r["Tipo de Fallo"] or "Sin clasificar"
-            tipos[t] = tipos.get(t, 0) + 1
-    if tipos:
-        ws1["A13"] = "Tipo de Fallo"
-        ws1["B13"] = "Cantidad"
-        ws1["A13"].fill = HEADER_FILL
-        ws1["B13"].fill = HEADER_FILL
-        ws1["A13"].font = HEADER_FONT
-        ws1["B13"].font = HEADER_FONT
-        for i, (t, n) in enumerate(sorted(tipos.items(), key=lambda x: -x[1])):
-            ws1.cell(row=14 + i, column=1, value=t)
-            ws1.cell(row=14 + i, column=2, value=n)
+        rows_data.append({
+            "parte": r.get("Parte", ""),
+            "ficha": r.get("Ficha", ""),
+            "descripcion": r.get("Descripción", ""),
+            "stock_portal": r.get("Stock", ""),
+            "estado": r.get("Estado", ""),
+            "obs": r.get("Tipo de Fallo", "") or "Actualizado correctamente",
+        })
 
-        # Gráfico de barras
-        bar = BarChart()
-        bar.title = "Fallos por tipo"
-        bar.type = "col"
-        data_ref = Reference(ws1, min_col=2, min_row=14, max_col=2, max_row=13 + len(tipos))
-        cats_ref = Reference(ws1, min_col=1, min_row=14, max_col=1, max_row=13 + len(tipos))
-        bar.add_data(data_ref)
-        bar.set_categories(cats_ref)
-        ws1.add_chart(bar, "D13")
+    headers = [
+        ("idx",         "N°",                    "center", 6),
+        ("parte",       "N° de Parte",           "center", 18),
+        ("ficha",       "Ficha Portal",          "center", 14),
+        ("descripcion", "Descripción del Producto", "left", 42),
+        ("stock_portal","Stock Asignado",        "center", 14),
+        ("estado",      "Estado Actualización",  "center", 18),
+        ("obs",         "Detalle / Observación", "left",   35),
+    ]
 
-    # ── Hoja 2: Detalle por Producto ──
-    ws2 = wb.create_sheet("Detalle por Producto")
-    headers = ["#", "Parte", "Stock", "Ficha", "Estado", "Tipo de Fallo",
-               "Descripción", "Duración (seg)"]
-    for c, h in enumerate(headers, start=1):
-        cell = ws2.cell(row=1, column=c, value=h)
-        cell.fill = HEADER_FILL
-        cell.font = HEADER_FONT
-        cell.alignment = Alignment(horizontal="center")
-    for i, r in enumerate(RESULTADOS, start=2):
-        ws2.cell(row=i, column=1, value=i - 1)
-        ws2.cell(row=i, column=2, value=r["Parte"])
-        ws2.cell(row=i, column=3, value=r["Stock"])
-        ws2.cell(row=i, column=4, value=r.get("Ficha", ""))
-        ws2.cell(row=i, column=5, value=r["Estado"])
-        ws2.cell(row=i, column=6, value=r["Tipo de Fallo"])
-        ws2.cell(row=i, column=7, value=r["Descripción"])
-        ws2.cell(row=i, column=8, value=r["Duración (seg)"])
-        fill = GREEN if r["Estado"] == "OK" else RED
-        for c in range(1, 9):
-            ws2.cell(row=i, column=c).fill = fill
-
-    # Auto-ajustar columnas
-    for c in range(1, 9):
-        ws2.column_dimensions[get_column_letter(c)].width = 18
-
-    # ── Hoja 3: Solo Fallidos ──
-    ws3 = wb.create_sheet("Solo Fallidos")
-    fallidos_list = [r for r in RESULTADOS if r["Estado"] == "FALLO"]
-    for c, h in enumerate(headers, start=1):
-        cell = ws3.cell(row=1, column=c, value=h)
-        cell.fill = HEADER_FILL
-        cell.font = HEADER_FONT
-    for i, r in enumerate(fallidos_list, start=2):
-        ws3.cell(row=i, column=1, value=i - 1)
-        ws3.cell(row=i, column=2, value=r["Parte"])
-        ws3.cell(row=i, column=3, value=r["Stock"])
-        ws3.cell(row=i, column=4, value=r.get("Ficha", ""))
-        ws3.cell(row=i, column=5, value=r["Estado"])
-        ws3.cell(row=i, column=6, value=r["Tipo de Fallo"])
-        ws3.cell(row=i, column=7, value=r["Descripción"])
-        ws3.cell(row=i, column=8, value=r["Duración (seg)"])
-        for c in range(1, 9):
-            ws3.cell(row=i, column=c).fill = RED
-    for c in range(1, 9):
-        ws3.column_dimensions[get_column_letter(c)].width = 18
-
-    wb.save(output_path)
+    ok, res = build_executive_excel_report(
+        rows_data=rows_data,
+        summary=summary,
+        output_path=output_path,
+        modulo_nombre="Actualización de Stock — Perú Compras",
+        headers_config=headers
+    )
     return output_path
 
 

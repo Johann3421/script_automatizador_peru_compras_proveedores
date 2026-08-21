@@ -1,0 +1,2894 @@
+<html class=""><head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Sistema Informático de Catalogo - Perú Compras</title>
+
+    <link href="/Content/Site.css" rel="stylesheet">
+    <link href="/Content/jquery.fancybox.css" rel="stylesheet">
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/Content/bootstrap.min.css" rel="stylesheet">
+
+    <!--Select 2-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.4/dist/sweetalert2.all.min.js"></script><style>.swal2-popup.swal2-toast{box-sizing:border-box;grid-column:1/4 !important;grid-row:1/4 !important;grid-template-columns:min-content auto min-content;padding:1em;overflow-y:hidden;background:#fff;box-shadow:0 0 1px rgba(0,0,0,.075),0 1px 2px rgba(0,0,0,.075),1px 2px 4px rgba(0,0,0,.075),1px 3px 8px rgba(0,0,0,.075),2px 4px 16px rgba(0,0,0,.075);pointer-events:all}.swal2-popup.swal2-toast>*{grid-column:2}.swal2-popup.swal2-toast .swal2-title{margin:.5em 1em;padding:0;font-size:1em;text-align:initial}.swal2-popup.swal2-toast .swal2-loading{justify-content:center}.swal2-popup.swal2-toast .swal2-input{height:2em;margin:.5em;font-size:1em}.swal2-popup.swal2-toast .swal2-validation-message{font-size:1em}.swal2-popup.swal2-toast .swal2-footer{margin:.5em 0 0;padding:.5em 0 0;font-size:.8em}.swal2-popup.swal2-toast .swal2-close{grid-column:3/3;grid-row:1/99;align-self:center;width:.8em;height:.8em;margin:0;font-size:2em}.swal2-popup.swal2-toast .swal2-html-container{margin:.5em 1em;padding:0;overflow:initial;font-size:1em;text-align:initial}.swal2-popup.swal2-toast .swal2-html-container:empty{padding:0}.swal2-popup.swal2-toast .swal2-loader{grid-column:1;grid-row:1/99;align-self:center;width:2em;height:2em;margin:.25em}.swal2-popup.swal2-toast .swal2-icon{grid-column:1;grid-row:1/99;align-self:center;width:2em;min-width:2em;height:2em;margin:0 .5em 0 0}.swal2-popup.swal2-toast .swal2-icon .swal2-icon-content{display:flex;align-items:center;font-size:1.8em;font-weight:bold}.swal2-popup.swal2-toast .swal2-icon.swal2-success .swal2-success-ring{width:2em;height:2em}.swal2-popup.swal2-toast .swal2-icon.swal2-error [class^=swal2-x-mark-line]{top:.875em;width:1.375em}.swal2-popup.swal2-toast .swal2-icon.swal2-error [class^=swal2-x-mark-line][class$=left]{left:.3125em}.swal2-popup.swal2-toast .swal2-icon.swal2-error [class^=swal2-x-mark-line][class$=right]{right:.3125em}.swal2-popup.swal2-toast .swal2-actions{justify-content:flex-start;height:auto;margin:0;margin-top:.5em;padding:0 .5em}.swal2-popup.swal2-toast .swal2-styled{margin:.25em .5em;padding:.4em .6em;font-size:1em}.swal2-popup.swal2-toast .swal2-success{border-color:#a5dc86}.swal2-popup.swal2-toast .swal2-success [class^=swal2-success-circular-line]{position:absolute;width:1.6em;height:3em;border-radius:50%}.swal2-popup.swal2-toast .swal2-success [class^=swal2-success-circular-line][class$=left]{top:-0.8em;left:-0.5em;transform:rotate(-45deg);transform-origin:2em 2em;border-radius:4em 0 0 4em}.swal2-popup.swal2-toast .swal2-success [class^=swal2-success-circular-line][class$=right]{top:-0.25em;left:.9375em;transform-origin:0 1.5em;border-radius:0 4em 4em 0}.swal2-popup.swal2-toast .swal2-success .swal2-success-ring{width:2em;height:2em}.swal2-popup.swal2-toast .swal2-success .swal2-success-fix{top:0;left:.4375em;width:.4375em;height:2.6875em}.swal2-popup.swal2-toast .swal2-success [class^=swal2-success-line]{height:.3125em}.swal2-popup.swal2-toast .swal2-success [class^=swal2-success-line][class$=tip]{top:1.125em;left:.1875em;width:.75em}.swal2-popup.swal2-toast .swal2-success [class^=swal2-success-line][class$=long]{top:.9375em;right:.1875em;width:1.375em}.swal2-popup.swal2-toast .swal2-success.swal2-icon-show .swal2-success-line-tip{animation:swal2-toast-animate-success-line-tip .75s}.swal2-popup.swal2-toast .swal2-success.swal2-icon-show .swal2-success-line-long{animation:swal2-toast-animate-success-line-long .75s}.swal2-popup.swal2-toast.swal2-show{animation:swal2-toast-show .5s}.swal2-popup.swal2-toast.swal2-hide{animation:swal2-toast-hide .1s forwards}div:where(.swal2-container){display:grid;position:fixed;z-index:1060;inset:0;box-sizing:border-box;grid-template-areas:"top-start     top            top-end" "center-start  center         center-end" "bottom-start  bottom-center  bottom-end";grid-template-rows:minmax(min-content, auto) minmax(min-content, auto) minmax(min-content, auto);height:100%;padding:.625em;overflow-x:hidden;transition:background-color .1s;-webkit-overflow-scrolling:touch}div:where(.swal2-container).swal2-backdrop-show,div:where(.swal2-container).swal2-noanimation{background:rgba(0,0,0,.4)}div:where(.swal2-container).swal2-backdrop-hide{background:rgba(0,0,0,0) !important}div:where(.swal2-container).swal2-top-start,div:where(.swal2-container).swal2-center-start,div:where(.swal2-container).swal2-bottom-start{grid-template-columns:minmax(0, 1fr) auto auto}div:where(.swal2-container).swal2-top,div:where(.swal2-container).swal2-center,div:where(.swal2-container).swal2-bottom{grid-template-columns:auto minmax(0, 1fr) auto}div:where(.swal2-container).swal2-top-end,div:where(.swal2-container).swal2-center-end,div:where(.swal2-container).swal2-bottom-end{grid-template-columns:auto auto minmax(0, 1fr)}div:where(.swal2-container).swal2-top-start>.swal2-popup{align-self:start}div:where(.swal2-container).swal2-top>.swal2-popup{grid-column:2;place-self:start center}div:where(.swal2-container).swal2-top-end>.swal2-popup,div:where(.swal2-container).swal2-top-right>.swal2-popup{grid-column:3;place-self:start end}div:where(.swal2-container).swal2-center-start>.swal2-popup,div:where(.swal2-container).swal2-center-left>.swal2-popup{grid-row:2;align-self:center}div:where(.swal2-container).swal2-center>.swal2-popup{grid-column:2;grid-row:2;place-self:center center}div:where(.swal2-container).swal2-center-end>.swal2-popup,div:where(.swal2-container).swal2-center-right>.swal2-popup{grid-column:3;grid-row:2;place-self:center end}div:where(.swal2-container).swal2-bottom-start>.swal2-popup,div:where(.swal2-container).swal2-bottom-left>.swal2-popup{grid-column:1;grid-row:3;align-self:end}div:where(.swal2-container).swal2-bottom>.swal2-popup{grid-column:2;grid-row:3;place-self:end center}div:where(.swal2-container).swal2-bottom-end>.swal2-popup,div:where(.swal2-container).swal2-bottom-right>.swal2-popup{grid-column:3;grid-row:3;place-self:end end}div:where(.swal2-container).swal2-grow-row>.swal2-popup,div:where(.swal2-container).swal2-grow-fullscreen>.swal2-popup{grid-column:1/4;width:100%}div:where(.swal2-container).swal2-grow-column>.swal2-popup,div:where(.swal2-container).swal2-grow-fullscreen>.swal2-popup{grid-row:1/4;align-self:stretch}div:where(.swal2-container).swal2-no-transition{transition:none !important}div:where(.swal2-container) div:where(.swal2-popup){display:none;position:relative;box-sizing:border-box;grid-template-columns:minmax(0, 100%);width:32em;max-width:100%;padding:0 0 1.25em;border:none;border-radius:5px;background:#fff;color:#545454;font-family:inherit;font-size:1rem}div:where(.swal2-container) div:where(.swal2-popup):focus{outline:none}div:where(.swal2-container) div:where(.swal2-popup).swal2-loading{overflow-y:hidden}div:where(.swal2-container) h2:where(.swal2-title){position:relative;max-width:100%;margin:0;padding:.8em 1em 0;color:inherit;font-size:1.875em;font-weight:600;text-align:center;text-transform:none;word-wrap:break-word}div:where(.swal2-container) div:where(.swal2-actions){display:flex;z-index:1;box-sizing:border-box;flex-wrap:wrap;align-items:center;justify-content:center;width:auto;margin:1.25em auto 0;padding:0}div:where(.swal2-container) div:where(.swal2-actions):not(.swal2-loading) .swal2-styled[disabled]{opacity:.4}div:where(.swal2-container) div:where(.swal2-actions):not(.swal2-loading) .swal2-styled:hover{background-image:linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1))}div:where(.swal2-container) div:where(.swal2-actions):not(.swal2-loading) .swal2-styled:active{background-image:linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2))}div:where(.swal2-container) div:where(.swal2-loader){display:none;align-items:center;justify-content:center;width:2.2em;height:2.2em;margin:0 1.875em;animation:swal2-rotate-loading 1.5s linear 0s infinite normal;border-width:.25em;border-style:solid;border-radius:100%;border-color:#2778c4 rgba(0,0,0,0) #2778c4 rgba(0,0,0,0)}div:where(.swal2-container) button:where(.swal2-styled){margin:.3125em;padding:.625em 1.1em;transition:box-shadow .1s;box-shadow:0 0 0 3px rgba(0,0,0,0);font-weight:500}div:where(.swal2-container) button:where(.swal2-styled):not([disabled]){cursor:pointer}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm){border:0;border-radius:.25em;background:initial;background-color:#7066e0;color:#fff;font-size:1em}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-confirm):focus-visible{box-shadow:0 0 0 3px rgba(112,102,224,.5)}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-deny){border:0;border-radius:.25em;background:initial;background-color:#dc3741;color:#fff;font-size:1em}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-deny):focus-visible{box-shadow:0 0 0 3px rgba(220,55,65,.5)}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel){border:0;border-radius:.25em;background:initial;background-color:#6e7881;color:#fff;font-size:1em}div:where(.swal2-container) button:where(.swal2-styled):where(.swal2-cancel):focus-visible{box-shadow:0 0 0 3px rgba(110,120,129,.5)}div:where(.swal2-container) button:where(.swal2-styled).swal2-default-outline:focus-visible{box-shadow:0 0 0 3px rgba(100,150,200,.5)}div:where(.swal2-container) button:where(.swal2-styled):focus-visible{outline:none}div:where(.swal2-container) button:where(.swal2-styled)::-moz-focus-inner{border:0}div:where(.swal2-container) div:where(.swal2-footer){margin:1em 0 0;padding:1em 1em 0;border-top:1px solid #eee;color:inherit;font-size:1em;text-align:center}div:where(.swal2-container) .swal2-timer-progress-bar-container{position:absolute;right:0;bottom:0;left:0;grid-column:auto !important;overflow:hidden;border-bottom-right-radius:5px;border-bottom-left-radius:5px}div:where(.swal2-container) div:where(.swal2-timer-progress-bar){width:100%;height:.25em;background:rgba(0,0,0,.2)}div:where(.swal2-container) img:where(.swal2-image){max-width:100%;margin:2em auto 1em}div:where(.swal2-container) button:where(.swal2-close){z-index:2;align-items:center;justify-content:center;width:1.2em;height:1.2em;margin-top:0;margin-right:0;margin-bottom:-1.2em;padding:0;overflow:hidden;transition:color .1s,box-shadow .1s;border:none;border-radius:5px;background:rgba(0,0,0,0);color:#ccc;font-family:monospace;font-size:2.5em;cursor:pointer;justify-self:end}div:where(.swal2-container) button:where(.swal2-close):hover{transform:none;background:rgba(0,0,0,0);color:#f27474}div:where(.swal2-container) button:where(.swal2-close):focus-visible{outline:none;box-shadow:inset 0 0 0 3px rgba(100,150,200,.5)}div:where(.swal2-container) button:where(.swal2-close)::-moz-focus-inner{border:0}div:where(.swal2-container) .swal2-html-container{z-index:1;justify-content:center;margin:0;padding:1em 1.6em .3em;overflow:auto;color:inherit;font-size:1.125em;font-weight:normal;line-height:normal;text-align:center;word-wrap:break-word;word-break:break-word}div:where(.swal2-container) input:where(.swal2-input),div:where(.swal2-container) input:where(.swal2-file),div:where(.swal2-container) textarea:where(.swal2-textarea),div:where(.swal2-container) select:where(.swal2-select),div:where(.swal2-container) div:where(.swal2-radio),div:where(.swal2-container) label:where(.swal2-checkbox){margin:1em 2em 3px}div:where(.swal2-container) input:where(.swal2-input),div:where(.swal2-container) input:where(.swal2-file),div:where(.swal2-container) textarea:where(.swal2-textarea){box-sizing:border-box;width:auto;transition:border-color .1s,box-shadow .1s;border:1px solid #d9d9d9;border-radius:.1875em;background:rgba(0,0,0,0);box-shadow:inset 0 1px 1px rgba(0,0,0,.06),0 0 0 3px rgba(0,0,0,0);color:inherit;font-size:1.125em}div:where(.swal2-container) input:where(.swal2-input).swal2-inputerror,div:where(.swal2-container) input:where(.swal2-file).swal2-inputerror,div:where(.swal2-container) textarea:where(.swal2-textarea).swal2-inputerror{border-color:#f27474 !important;box-shadow:0 0 2px #f27474 !important}div:where(.swal2-container) input:where(.swal2-input):focus,div:where(.swal2-container) input:where(.swal2-file):focus,div:where(.swal2-container) textarea:where(.swal2-textarea):focus{border:1px solid #b4dbed;outline:none;box-shadow:inset 0 1px 1px rgba(0,0,0,.06),0 0 0 3px rgba(100,150,200,.5)}div:where(.swal2-container) input:where(.swal2-input)::placeholder,div:where(.swal2-container) input:where(.swal2-file)::placeholder,div:where(.swal2-container) textarea:where(.swal2-textarea)::placeholder{color:#ccc}div:where(.swal2-container) .swal2-range{margin:1em 2em 3px;background:#fff}div:where(.swal2-container) .swal2-range input{width:80%}div:where(.swal2-container) .swal2-range output{width:20%;color:inherit;font-weight:600;text-align:center}div:where(.swal2-container) .swal2-range input,div:where(.swal2-container) .swal2-range output{height:2.625em;padding:0;font-size:1.125em;line-height:2.625em}div:where(.swal2-container) .swal2-input{height:2.625em;padding:0 .75em}div:where(.swal2-container) .swal2-file{width:75%;margin-right:auto;margin-left:auto;background:rgba(0,0,0,0);font-size:1.125em}div:where(.swal2-container) .swal2-textarea{height:6.75em;padding:.75em}div:where(.swal2-container) .swal2-select{min-width:50%;max-width:100%;padding:.375em .625em;background:rgba(0,0,0,0);color:inherit;font-size:1.125em}div:where(.swal2-container) .swal2-radio,div:where(.swal2-container) .swal2-checkbox{align-items:center;justify-content:center;background:#fff;color:inherit}div:where(.swal2-container) .swal2-radio label,div:where(.swal2-container) .swal2-checkbox label{margin:0 .6em;font-size:1.125em}div:where(.swal2-container) .swal2-radio input,div:where(.swal2-container) .swal2-checkbox input{flex-shrink:0;margin:0 .4em}div:where(.swal2-container) label:where(.swal2-input-label){display:flex;justify-content:center;margin:1em auto 0}div:where(.swal2-container) div:where(.swal2-validation-message){align-items:center;justify-content:center;margin:1em 0 0;padding:.625em;overflow:hidden;background:#f0f0f0;color:#666;font-size:1em;font-weight:300}div:where(.swal2-container) div:where(.swal2-validation-message)::before{content:"!";display:inline-block;width:1.5em;min-width:1.5em;height:1.5em;margin:0 .625em;border-radius:50%;background-color:#f27474;color:#fff;font-weight:600;line-height:1.5em;text-align:center}div:where(.swal2-container) .swal2-progress-steps{flex-wrap:wrap;align-items:center;max-width:100%;margin:1.25em auto;padding:0;background:rgba(0,0,0,0);font-weight:600}div:where(.swal2-container) .swal2-progress-steps li{display:inline-block;position:relative}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step{z-index:20;flex-shrink:0;width:2em;height:2em;border-radius:2em;background:#2778c4;color:#fff;line-height:2em;text-align:center}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step{background:#2778c4}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step~.swal2-progress-step{background:#add8e6;color:#fff}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step.swal2-active-progress-step~.swal2-progress-step-line{background:#add8e6}div:where(.swal2-container) .swal2-progress-steps .swal2-progress-step-line{z-index:10;flex-shrink:0;width:2.5em;height:.4em;margin:0 -1px;background:#2778c4}div:where(.swal2-icon){position:relative;box-sizing:content-box;justify-content:center;width:5em;height:5em;margin:2.5em auto .6em;border:0.25em solid rgba(0,0,0,0);border-radius:50%;border-color:#000;font-family:inherit;line-height:5em;cursor:default;user-select:none}div:where(.swal2-icon) .swal2-icon-content{display:flex;align-items:center;font-size:3.75em}div:where(.swal2-icon).swal2-error{border-color:#f27474;color:#f27474}div:where(.swal2-icon).swal2-error .swal2-x-mark{position:relative;flex-grow:1}div:where(.swal2-icon).swal2-error [class^=swal2-x-mark-line]{display:block;position:absolute;top:2.3125em;width:2.9375em;height:.3125em;border-radius:.125em;background-color:#f27474}div:where(.swal2-icon).swal2-error [class^=swal2-x-mark-line][class$=left]{left:1.0625em;transform:rotate(45deg)}div:where(.swal2-icon).swal2-error [class^=swal2-x-mark-line][class$=right]{right:1em;transform:rotate(-45deg)}div:where(.swal2-icon).swal2-error.swal2-icon-show{animation:swal2-animate-error-icon .5s}div:where(.swal2-icon).swal2-error.swal2-icon-show .swal2-x-mark{animation:swal2-animate-error-x-mark .5s}div:where(.swal2-icon).swal2-warning{border-color:#facea8;color:#f8bb86}div:where(.swal2-icon).swal2-warning.swal2-icon-show{animation:swal2-animate-error-icon .5s}div:where(.swal2-icon).swal2-warning.swal2-icon-show .swal2-icon-content{animation:swal2-animate-i-mark .5s}div:where(.swal2-icon).swal2-info{border-color:#9de0f6;color:#3fc3ee}div:where(.swal2-icon).swal2-info.swal2-icon-show{animation:swal2-animate-error-icon .5s}div:where(.swal2-icon).swal2-info.swal2-icon-show .swal2-icon-content{animation:swal2-animate-i-mark .8s}div:where(.swal2-icon).swal2-question{border-color:#c9dae1;color:#87adbd}div:where(.swal2-icon).swal2-question.swal2-icon-show{animation:swal2-animate-error-icon .5s}div:where(.swal2-icon).swal2-question.swal2-icon-show .swal2-icon-content{animation:swal2-animate-question-mark .8s}div:where(.swal2-icon).swal2-success{border-color:#a5dc86;color:#a5dc86}div:where(.swal2-icon).swal2-success [class^=swal2-success-circular-line]{position:absolute;width:3.75em;height:7.5em;border-radius:50%}div:where(.swal2-icon).swal2-success [class^=swal2-success-circular-line][class$=left]{top:-0.4375em;left:-2.0635em;transform:rotate(-45deg);transform-origin:3.75em 3.75em;border-radius:7.5em 0 0 7.5em}div:where(.swal2-icon).swal2-success [class^=swal2-success-circular-line][class$=right]{top:-0.6875em;left:1.875em;transform:rotate(-45deg);transform-origin:0 3.75em;border-radius:0 7.5em 7.5em 0}div:where(.swal2-icon).swal2-success .swal2-success-ring{position:absolute;z-index:2;top:-0.25em;left:-0.25em;box-sizing:content-box;width:100%;height:100%;border:.25em solid rgba(165,220,134,.3);border-radius:50%}div:where(.swal2-icon).swal2-success .swal2-success-fix{position:absolute;z-index:1;top:.5em;left:1.625em;width:.4375em;height:5.625em;transform:rotate(-45deg)}div:where(.swal2-icon).swal2-success [class^=swal2-success-line]{display:block;position:absolute;z-index:2;height:.3125em;border-radius:.125em;background-color:#a5dc86}div:where(.swal2-icon).swal2-success [class^=swal2-success-line][class$=tip]{top:2.875em;left:.8125em;width:1.5625em;transform:rotate(45deg)}div:where(.swal2-icon).swal2-success [class^=swal2-success-line][class$=long]{top:2.375em;right:.5em;width:2.9375em;transform:rotate(-45deg)}div:where(.swal2-icon).swal2-success.swal2-icon-show .swal2-success-line-tip{animation:swal2-animate-success-line-tip .75s}div:where(.swal2-icon).swal2-success.swal2-icon-show .swal2-success-line-long{animation:swal2-animate-success-line-long .75s}div:where(.swal2-icon).swal2-success.swal2-icon-show .swal2-success-circular-line-right{animation:swal2-rotate-success-circular-line 4.25s ease-in}[class^=swal2]{-webkit-tap-highlight-color:rgba(0,0,0,0)}.swal2-show{animation:swal2-show .3s}.swal2-hide{animation:swal2-hide .15s forwards}.swal2-noanimation{transition:none}.swal2-scrollbar-measure{position:absolute;top:-9999px;width:50px;height:50px;overflow:scroll}.swal2-rtl .swal2-close{margin-right:initial;margin-left:0}.swal2-rtl .swal2-timer-progress-bar{right:0;left:auto}@keyframes swal2-toast-show{0%{transform:translateY(-0.625em) rotateZ(2deg)}33%{transform:translateY(0) rotateZ(-2deg)}66%{transform:translateY(0.3125em) rotateZ(2deg)}100%{transform:translateY(0) rotateZ(0deg)}}@keyframes swal2-toast-hide{100%{transform:rotateZ(1deg);opacity:0}}@keyframes swal2-toast-animate-success-line-tip{0%{top:.5625em;left:.0625em;width:0}54%{top:.125em;left:.125em;width:0}70%{top:.625em;left:-0.25em;width:1.625em}84%{top:1.0625em;left:.75em;width:.5em}100%{top:1.125em;left:.1875em;width:.75em}}@keyframes swal2-toast-animate-success-line-long{0%{top:1.625em;right:1.375em;width:0}65%{top:1.25em;right:.9375em;width:0}84%{top:.9375em;right:0;width:1.125em}100%{top:.9375em;right:.1875em;width:1.375em}}@keyframes swal2-show{0%{transform:scale(0.7)}45%{transform:scale(1.05)}80%{transform:scale(0.95)}100%{transform:scale(1)}}@keyframes swal2-hide{0%{transform:scale(1);opacity:1}100%{transform:scale(0.5);opacity:0}}@keyframes swal2-animate-success-line-tip{0%{top:1.1875em;left:.0625em;width:0}54%{top:1.0625em;left:.125em;width:0}70%{top:2.1875em;left:-0.375em;width:3.125em}84%{top:3em;left:1.3125em;width:1.0625em}100%{top:2.8125em;left:.8125em;width:1.5625em}}@keyframes swal2-animate-success-line-long{0%{top:3.375em;right:2.875em;width:0}65%{top:3.375em;right:2.875em;width:0}84%{top:2.1875em;right:0;width:3.4375em}100%{top:2.375em;right:.5em;width:2.9375em}}@keyframes swal2-rotate-success-circular-line{0%{transform:rotate(-45deg)}5%{transform:rotate(-45deg)}12%{transform:rotate(-405deg)}100%{transform:rotate(-405deg)}}@keyframes swal2-animate-error-x-mark{0%{margin-top:1.625em;transform:scale(0.4);opacity:0}50%{margin-top:1.625em;transform:scale(0.4);opacity:0}80%{margin-top:-0.375em;transform:scale(1.15)}100%{margin-top:0;transform:scale(1);opacity:1}}@keyframes swal2-animate-error-icon{0%{transform:rotateX(100deg);opacity:0}100%{transform:rotateX(0deg);opacity:1}}@keyframes swal2-rotate-loading{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}@keyframes swal2-animate-question-mark{0%{transform:rotateY(-360deg)}100%{transform:rotateY(0)}}@keyframes swal2-animate-i-mark{0%{transform:rotateZ(45deg);opacity:0}25%{transform:rotateZ(-25deg);opacity:.4}50%{transform:rotateZ(15deg);opacity:.8}75%{transform:rotateZ(-5deg);opacity:1}100%{transform:rotateX(0);opacity:1}}body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown){overflow:hidden}body.swal2-height-auto{height:auto !important}body.swal2-no-backdrop .swal2-container{background-color:rgba(0,0,0,0) !important;pointer-events:none}body.swal2-no-backdrop .swal2-container .swal2-popup{pointer-events:all}body.swal2-no-backdrop .swal2-container .swal2-modal{box-shadow:0 0 10px rgba(0,0,0,.4)}@media print{body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown){overflow-y:scroll !important}body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown)>[aria-hidden=true]{display:none}body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown) .swal2-container{position:static !important}}body.swal2-toast-shown .swal2-container{box-sizing:border-box;width:360px;max-width:100%;background-color:rgba(0,0,0,0);pointer-events:none}body.swal2-toast-shown .swal2-container.swal2-top{inset:0 auto auto 50%;transform:translateX(-50%)}body.swal2-toast-shown .swal2-container.swal2-top-end,body.swal2-toast-shown .swal2-container.swal2-top-right{inset:0 0 auto auto}body.swal2-toast-shown .swal2-container.swal2-top-start,body.swal2-toast-shown .swal2-container.swal2-top-left{inset:0 auto auto 0}body.swal2-toast-shown .swal2-container.swal2-center-start,body.swal2-toast-shown .swal2-container.swal2-center-left{inset:50% auto auto 0;transform:translateY(-50%)}body.swal2-toast-shown .swal2-container.swal2-center{inset:50% auto auto 50%;transform:translate(-50%, -50%)}body.swal2-toast-shown .swal2-container.swal2-center-end,body.swal2-toast-shown .swal2-container.swal2-center-right{inset:50% 0 auto auto;transform:translateY(-50%)}body.swal2-toast-shown .swal2-container.swal2-bottom-start,body.swal2-toast-shown .swal2-container.swal2-bottom-left{inset:auto auto 0 0}body.swal2-toast-shown .swal2-container.swal2-bottom{inset:auto auto 0 50%;transform:translateX(-50%)}body.swal2-toast-shown .swal2-container.swal2-bottom-end,body.swal2-toast-shown .swal2-container.swal2-bottom-right{inset:auto 0 0 auto}</style>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.4/dist/sweetalert2.min.css" rel="stylesheet">
+    
+    <!-- DataTables CSS -->
+    <link href="/Content/admin-2/vendor/datatables-plugins/dataTables.bootstrap.css" rel="stylesheet">
+    <!-- DataTables Responsive CSS -->
+    <link href="/Content/admin-2/vendor/datatables-responsive/dataTables.responsive.css" rel="stylesheet">
+    <!-- MetisMenu CSS -->
+    <link href="/Content/admin-2/vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/Content/admin-2/dist/css/sb-admin-2.css" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <link href="/Content/admin-2/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+      
+
+
+    <style>
+        .divLoader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .select2 {
+            width: 100% !important;
+        }
+
+        .select2 {
+            width: 100% !important;
+        }
+    </style>
+    <script src="/Scripts/General.js?v=202608051728116057"></script>
+<style type="text/css">.fancybox-margin{margin-right:0px;}</style><style type="text/css">.fancybox-margin{margin-right:15px;}</style></head>
+
+<body>
+    <div id="wrapper">
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="m_cabecera">
+                <div class="m_cabeceraLogo">
+                    <img src="/Archivos/Imagenes/General/logo_PeruCompras.svg">
+                </div>
+                <div class="m_cabeceraDatos">
+                    
+<style>
+    .hcirculo {
+        border: 3px solid #DDD;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        margin: 0 auto;
+        margin-top: -10px;
+        position: relative;
+        text-transform: uppercase;
+        background: -webkit-radial-gradient(center, rgba(255, 255, 255, .2), rgba(255, 255, 255, .05) 100%);
+        background: -moz-radial-gradient(center, rgba(255, 255, 255, .2), rgba(255, 255, 255, .05) 100%);
+        background: radial-gradient(center, rgba(255, 255, 255, .2), rgba(255, 255, 255, .05) 100%);
+        float: right
+    }
+
+        .hcirculo:before {
+            position: absolute;
+            content: '';
+            right: 4px;
+            top: 3px;
+            width: 20px;
+            height: 10px;
+            background: -webkit-linear-gradient(-90deg, rgba(255,255,255,.3) 20%, rgba(255,255,255,.3) 50%, rgba(255,255,255,.3) 70%, rgba(255,255,255,.3) 100% );
+            border-radius: 50%;
+        }
+
+    .hcolor3 {
+        background-color: rgb(206,45,45);
+    }
+
+    .hcolor2 {
+        background-color: rgb(238,139,31);
+    }
+
+    .hcolor1 {
+        background-color: rgb(248,213,5);
+    }
+
+    .hcolor0 {
+        background-color: rgb(44,165,69);
+    }
+
+    .tooltip-inner {
+        background-color: #337ab7 !important;
+    }
+
+    .tooltip.bottom .tooltip-arrow {
+        border-bottom-color: #337ab7 !important;
+    }
+
+    .tooltip.right .tooltip-arrow {
+        border-right-color: #337ab7 !important;
+    }
+
+    .hcolorText {
+        font-size: 0.9em;
+        position: absolute;
+    }
+
+    .hcolorText3 {
+        color: rgb(206,45,45);
+        margin-left: -30px
+    }
+
+    .hcolorText2 {
+        color: rgb(238,139,31);
+        margin-left: -73px;
+    }
+
+    .hcolorText1 {
+        color: rgb(248,213,5);
+        margin-left: -58px
+    }
+
+    .hcolorText0 {
+        color: rgb(44,165,69);
+        margin-left: -40px
+    }
+
+    .hcolorText_a {
+        font-size: 0.9em;
+        float: left;
+        margin-right: 5px
+    }
+
+    .hcolorText_a3 {
+        color: rgb(206,45,45);
+    }
+
+    .hcolorText_a2 {
+        color: rgb(238,139,31);
+    }
+
+    .hcolorText_a1 {
+        color: rgb(248,213,5);
+    }
+
+    .hcolorText_a0 {
+        color: rgb(44,165,69);
+    }
+
+
+    #perfilIndicadorSemaforoProveedor {
+        float: left;
+        margin-right: 12px;
+    }
+</style>
+<script type="text/javascript">
+    function requestServidor(url, type, success, text) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(type, url);
+        if (text != undefined) { xhr.send(text); }
+        else { xhr.send(); }
+        xhr.onreadystatechange = function () {
+            if (xhr.status == 200 && xhr.readyState == 4) {
+                if (xhr.responseText.length >= 6 && xhr.responseText.substr(0, 6) == "reload")
+                    window.parent.parent.location.reload();
+                success(xhr.responseText);
+            }
+        }
+    }
+
+    requestServidor("/Accesos/Method", "post", mostrarHora);
+    function mostrarHora(rpta) {
+        rpta = rpta.substring(1, rpta.length - 1);
+        document.getElementById("TimeLabel").innerHTML = "<b>" + rpta + "</b>";
+        window.setInterval(mostrarHoraActual, 60000);
+    }
+
+    function mostrarHoraActual() {
+        var horario = document.getElementById("TimeLabel").childNodes[0].innerHTML;
+        var siglas = horario.substring(6, 12);
+        var hora = horario.substring(0, 5);
+        hora = hora.split(":");
+        hora[0] = hora[0] * 1;
+        hora[1] = hora[1] * 1;
+        if (hora[1] < 59) {
+            hora[1]++;
+        }
+        else {
+            if (hora[0] <= 11) {
+                hora[0]++;
+                if (hora[0] == 12) {
+                    if (siglas == "a. m.") siglas = "p. m.";
+                    else siglas = "a. m.";
+                }
+            }
+            else {
+                hora[0] = 1;
+            }
+            hora[1] = 0;
+        }
+        if (hora[0] <= 9) hora[0] = "0" + hora[0];
+        if (hora[1] <= 9) hora[1] = "0" + hora[1];
+        horario = hora[0] + ":" + hora[1] + " " + siglas;
+        document.getElementById("TimeLabel").childNodes[0].innerHTML = horario;
+    }
+
+
+    var positionIndicadorSemaforo12345123 = 0;
+    var contenidoIndicadorSemaforo1235123 = "";
+    var contenidoIndicadorSemaforo1235123_a = "";
+    var intervalIndicadorSemaforo1235123 = null;
+    function perfilObtenerIndicadorSemaforoProveedorSucces(rpta) {
+        if (rpta != "") {
+            rpta = rpta.split("^");
+            contenidoIndicadorSemaforo1235123 = '<div class="hcolorText hcolorText' + rpta[0] + '">' + rpta[1] + '</div>' + '<div class="hcirculo hcolor' + rpta[0] + '" id="idIndicadorPersonaJuridica" data-html="true" title="' + rpta[2] + '"></div>';
+            contenidoIndicadorSemaforo1235123_a = '<div class="hcolorText_a hcolorText_a' + rpta[0] + '">' + rpta[1] + '</div>' + '<div class="hcirculo hcolor' + rpta[0] + '" id="idIndicadorPersonaJuridica" data-html="true" title="' + rpta[2] + '"></div>';
+            mostrarTooltipIndicadorPersonaJuridicaPerfil();
+            setInterval(function () {
+                if (positionIndicadorSemaforo12345123 != $('#idIndicadorPersonaJuridica').position().left) {
+                    mostrarTooltipIndicadorPersonaJuridicaPerfil();
+                }
+            }, 300);
+        }
+    }
+    function mostrarTooltipIndicadorPersonaJuridicaPerfil() {
+        $("#perfilIndicadorSemaforoProveedor").html("");
+        $("#perfilIndicadorSemaforoProveedor").html(contenidoIndicadorSemaforo1235123);
+        if (eval($('#idIndicadorPersonaJuridica').position().left + " < " + 93)) {
+            if (eval($('#idIndicadorPersonaJuridica').position().left + " < " + 74)) {
+                $("#perfilIndicadorSemaforoProveedor").html(contenidoIndicadorSemaforo1235123_a);
+            }
+            if (typeof ($('#idIndicadorPersonaJuridica').bstooltip) != "undefined") {
+                $('#idIndicadorPersonaJuridica').bstooltip({ placement: "right" });
+            } else {
+                $('#idIndicadorPersonaJuridica').tooltip({ placement: "right" });
+            }
+
+        } else {
+            if (typeof ($('#idIndicadorPersonaJuridica').bstooltip) != "undefined") {
+                $('#idIndicadorPersonaJuridica').bstooltip({ placement: "bottom" });
+            } else {
+                $('#idIndicadorPersonaJuridica').tooltip({ placement: "bottom" });
+            }
+        }
+        positionIndicadorSemaforo12345123 = $('#idIndicadorPersonaJuridica').position().left;
+    }
+
+    intervalIndicadorSemaforo1235123 = setInterval(function () {
+        if (typeof ($) != "undefined") {
+            clearInterval(intervalIndicadorSemaforo1235123);
+            requestServidor(document.location.origin + "/Accesos/ObtenerIndicadorSemaforoProveedor", "post", perfilObtenerIndicadorSemaforoProveedorSucces);
+        }
+    }, 100);
+
+
+
+
+</script>
+<!-- !string.IsNullOrEmpty((string)TempData["Usuario"]) modificado -->
+<form action="/AccesoGeneral/LogOff" id="logoutForm" method="post"><input name="__RequestVerificationToken" type="hidden" value="sd1CUgK5g-vlrudx6r9D8rhDvh17eGOPNoN_kCSYjKRu_xbrHCCeNItVzDWaKxl85ELnROfDt9JbOQhBwO1kTkuspm0HV0DOJedW4l5GlYo1">        <div>
+            <div class="m_tituloPrincipal">
+                <label> Catálogos Electrónicos</label>
+            </div>
+            <br>
+            <div class="m_perfil">
+                    <label>Perfil: PROVEEDOR</label>
+            </div>
+            <div class="fila18_bk"></div>
+            <div class="m_usuario">
+                <div id="perfilIndicadorSemaforoProveedor"><div class="hcolorText hcolorText0">Verde</div><div class="hcirculo hcolor0" id="idIndicadorPersonaJuridica" data-html="true" title="" data-original-title="Las OC no presentan retraso en la entrega."></div></div>
+                <div style="float:right"> estalin.huamali01 - THE KING COMPUTER E.I.R.L. </div>
+            </div>
+            <div class="fila20_bk"></div>
+            <div class="m_menu">
+                <a href="javascript:document.getElementById('logoutForm').submit()">&nbsp;SALIR</a>
+
+                    <a href="/t_Usuario/EditarPerfilUsuario">
+                        | &nbsp;PERFIL DE USUARIO &nbsp;|
+                    </a>
+
+                <a href="/">&nbsp; INICIO &nbsp;</a>
+                <label id="TimeLabel"><b>05:28 p. m.</b></label>
+                <label id="lbPublicacionSemaforo" style="margin-right: 50px;font-size:14px;"></label>
+            </div>
+        </div>
+</form>
+<script>
+    var fechaInicio = new Date();    
+    fechaInicio = new Date(fechaInicio.getFullYear(), fechaInicio.getMonth(), fechaInicio.getDate());    
+    var fechaFin = new Date(2020, 6, 6, 0, 0, 0);
+    var diff = fechaFin - fechaInicio;
+    var dias = Math.floor(diff / (1000 * 60 * 60 * 24));    
+    if (dias > 0) {
+        var lbPublicacionSemaforo = document.getElementById("lbPublicacionSemaforo");
+        lbPublicacionSemaforo.innerHTML = "<b>Este semáforo será publicado desde el 06/07/2020 (Faltan " + dias + " días)</b>";
+    }
+</script>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <!-- <div class="m_filaBorde"></div> -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div class="navbar-default sidebar" role="navigation" style="margin-top:0px;">
+                <div class="sidebar-nav navbar-collapse">
+            <ul class="nav mMenu in" id="side-menu">
+                    <li>
+                            <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">&gt;</span></i> Selección de proveedores <span class="fa arrow"></span></a>
+                                    <ul class="nav mMenu nav-second-level collapse">
+                    <li>
+                            <a href="/AcuerdoSuscripcion">Registro</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/t_ProductoOfertado">Presentación de ofertas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/Reportes/Index/107">Admisión y evaluación</a>
+                            
+                    </li>
+        </ul>
+
+                    </li>
+                    <li>
+                            <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">&gt;</span></i> Mejora de ofertas <span class="fa arrow"></span></a>
+                                    <ul class="nav mMenu nav-second-level collapse in">
+                    <li>
+                            <a href="/MejoraBasica" class="active">Precio y Existencias</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/MejoraCobertura">Cobertura de atención</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/MejoraPlazo/IndexMejora">Plazo de entrega máximo</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/DescuentoVolumen">Descuentos por volumen</a>
+                            
+                    </li>
+        </ul>
+
+                    </li>
+                    <li>
+                            <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">&gt;</span></i> Incorporación de nuevos productos <span class="fa arrow"></span></a>
+                                    <ul class="nav mMenu nav-second-level collapse">
+                    <li>
+                            <a href="/t_ProductoOfertadoAmp">Presentación de ofertas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/Reportes/Index/107">Admisión y evaluación</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/DescuentoVolumenAmp">Descuento por volumen AD</a>
+                            
+                    </li>
+        </ul>
+
+                    </li>
+                    <li>
+                            <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">&gt;</span></i> Proformas y Ordenes <span class="fa arrow"></span></a>
+                                    <ul class="nav mMenu nav-second-level collapse">
+                    <li>
+                            <a href="/t_Proforma">Proformas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/OrdenCompra">Orden de compra</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/ProformaSinOrdenCompra">Proformas sin Orden de Compra</a>
+                            
+                    </li>
+        </ul>
+
+                    </li>
+                    <li>
+                            <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">&gt;</span></i> Notificaciones <span class="fa arrow"></span></a>
+                                    <ul class="nav mMenu nav-second-level collapse">
+                    <li>
+                            <a href="/Notificacion">Bandeja de Notificaciones</a>
+                            
+                    </li>
+        </ul>
+
+                    </li>
+        </ul>
+        <!-- if (Convert.ToInt32(TempData.Peek("Rol")) > 1)
+        {
+            <ul class="nav mMenu" id="side-menu">
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Selecci&#243;n de proveedores <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/AcuerdoSuscripcion">Registro</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/t_ProductoOfertado">Presentaci&#243;n de ofertas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/Reportes/Index/107">Admisi&#243;n y evaluaci&#243;n</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Mejora de ofertas <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/MejoraBasica">Precio y Existencias</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/MejoraCobertura">Cobertura de atenci&#243;n</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/MejoraPlazo/IndexMejora">Plazo de entrega m&#225;ximo</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/DescuentoVolumen">Descuentos por volumen</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Incorporaci&#243;n de nuevos productos <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/t_ProductoOfertadoAmp">Presentaci&#243;n de ofertas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/Reportes/Index/107">Admisi&#243;n y evaluaci&#243;n</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/DescuentoVolumenAmp">Descuento por volumen AD</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Proformas y Ordenes <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/t_Proforma">Proformas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/OrdenCompra">Orden de compra</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/ProformaSinOrdenCompra">Proformas sin Orden de Compra</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Notificaciones <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/Notificacion">Bandeja de Notificaciones</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+            </ul>
+        }
+        else
+        {
+            <ul class="nav mMenu" id="side-menu">
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Selecci&#243;n de proveedores <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/AcuerdoSuscripcion">Registro</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/t_ProductoOfertado">Presentaci&#243;n de ofertas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/Reportes/Index/107">Admisi&#243;n y evaluaci&#243;n</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Mejora de ofertas <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/MejoraBasica">Precio y Existencias</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/MejoraCobertura">Cobertura de atenci&#243;n</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/MejoraPlazo/IndexMejora">Plazo de entrega m&#225;ximo</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/DescuentoVolumen">Descuentos por volumen</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Incorporaci&#243;n de nuevos productos <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/t_ProductoOfertadoAmp">Presentaci&#243;n de ofertas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/Reportes/Index/107">Admisi&#243;n y evaluaci&#243;n</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/DescuentoVolumenAmp">Descuento por volumen AD</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Proformas y Ordenes <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/t_Proforma">Proformas</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/OrdenCompra">Orden de compra</a>
+                            
+                    </li>
+                    <li>
+                            <a href="/ProformaSinOrdenCompra">Proformas sin Orden de Compra</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+                        <li>
+                                <a href="#"><i class="fa fa-fw" style="color:red;"><span class="fuente18">></span></i> Notificaciones <span class="fa arrow"></span></a>
+                                        <ul class="nav mMenu nav-second-level">
+                    <li>
+                            <a href="/Notificacion">Bandeja de Notificaciones</a>
+                            
+                    </li>
+        </ul>
+
+                        </li>
+            </ul>
+        }-->
+                </div>
+                <!-- /.sidebar-collapse -->
+                <div class="m_pieLogo">
+                    <img src="/Archivos/Imagenes/General/sub.fw.png">
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div id="page-wrapper" style="min-height: 902px;">
+        
+
+
+
+<script type="text/template" id="wModal_SiNo">
+    <div class="_wModal _wModal_delete">
+        <div class="_wModal_header">
+            Catálogos Electrónicos<br />
+            
+            <div class="_wModal_close _wModal_btn_cancel">x</div>
+        </div>
+        <div class="_wModal_msg">msg</div>
+        <div class="_wModal_btns_right">
+            <div class="_wModal_btn _wModal_btn_blue _wModal_btn_ok">Aceptar</div>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="wModal_confirmacion">
+    <div class="_wModal _wModal_delete">
+        <div class="_wModal_header">
+            Catálogos Electrónicos<br />
+            Mensaje de confirmación
+            <div class="_wModal_close _wModal_btn_cancel">x</div>
+        </div>
+        <div class="_wModal_msg">msg</div>
+        <div class="_wModal_btns_right">
+            <div class="_wModal_btn _wModal_btn_blue _wModal_btn_ok">Aceptar</div>
+            <div class="_wModal_btn _wModal_btn_grey _wModal_btn_cancel">Cancelar</div>
+        </div>
+    </div>
+</script>
+
+
+<!-- Modal Mensaje -->
+<div id="MensajeModal" class="modal fade" role="dialog" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <!-- Modal content-->
+        <div id="modalContent" class="modal-content">
+            <div class="modal-header">
+                Catálogos Electrónicos<br>
+                Mensaje de notificación
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                !
+            </div>
+            <div class="modal-footer">
+                <button name="btnCerrar" value="Cerrar" class="btn btn-default" id="btnSalir" data-dismiss="modal" aria-hidden="true">
+                     Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Mensaje validacion-->
+<div id="MensajeModal2" class="modal fade" role="dialog" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <!-- Modal content-->
+        <div id="modalContent" class="modal-content">
+            <div class="modal-header">
+                Catálogos Electrónicos<br>
+                Mensaje de notificación
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+            <div class="modal-footer">
+                <button name="btnCerrar" value="Cerrar" class="btn btn-default" id="btnSalir" data-dismiss="modal" aria-hidden="true">
+                     Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalle -->
+<div id="DetalleModal" class="modal fade" role="dialog" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div id="modalContent" class="modal-content">
+        </div>
+    </div>
+</div>
+
+<!-- Reducir Precio -->
+<div id="PrecioModal" class="modal fade" role="dialog" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog">
+        <div id="modalContent" class="modal-content">
+        </div>
+    </div>
+</div>
+
+<!-- Modificar Existencias -->
+<div id="ExistenciasModal" class="modal fade" role="dialog" aria-hidden="true" tabindex="-1">
+    <div class="modal-dialog">
+        <div id="modalContent" class="modal-content">
+        </div>
+    </div>
+</div>
+
+<br>
+
+<div class="row" data-select2-id="6">
+    <div class="panel panel-default nopadding" data-select2-id="5">
+        <!-- /.panel-heading -->
+        <div class="panel-heading"><h5>Mejora de precio y existencias</h5></div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="col-lg-2">
+                        <div class="fila8"></div>
+                        <label for="convenio" class="control-label">Acuerdo Marco:</label>
+                    </div>
+                    <div class="col-lg-10" data-select2-id="4">
+                        <select id="ajaxAcuerdo" class="form-control input-sm select2-hidden-accessible" data-select2-id="ajaxAcuerdo" tabindex="-1" aria-hidden="true">
+                            <option value="0" data-select2-id="2">Seleccione un Acuerdo Marco</option>
+                                    <option value="249" data-select2-id="7">EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES  Y ESCÁNERES</option>
+                        </select><span class="select2 select2-container select2-container--default select2-container--below" dir="ltr" data-select2-id="1" style="width: 663.75px;"><span class="selection"><span class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-labelledby="select2-ajaxAcuerdo-container"><span class="select2-selection__rendered" id="select2-ajaxAcuerdo-container" role="textbox" aria-readonly="true" title="EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES  Y ESCÁNERES">EXT-CE-2022-5 COMPUTADORAS DE ESCRITORIO, COMPUTADORAS PORTÁTILES  Y ESCÁNERES</span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+                    </div>
+                </div> <!-- /.Convenio Marco -->
+                <div class="col-lg-6">
+                    <div class="col-lg-2">
+                        <div class="fila8"></div>
+                        <label for="Catalogo" class="control-label">Catálogo Electrónico:</label>
+                    </div>
+                    <div class="col-lg-10">
+                        <select id="ajaxCatalogo" class="form-control input-sm"><option value="0">Seleccione Catálogo</option><option value="251">ESCÁNERES</option><option value="252">COMPUTADORAS DE ESCRITORIO</option><option value="250">COMPUTADORAS PORTÁTILES</option></select>
+                    </div>
+                </div> <!-- /.Catalogo de Convenio -->
+            </div> <!-- /.row -->
+            <div class="fila10_bk"></div>
+            <div class="row">
+                <div class="col-lg-6" id="CategoriaPanelDiv">
+                    <label for="Categoria" class="col-lg-2 control-label">Categoría:</label>
+                    <div class="col-lg-10">
+                        <select id="ajaxCategoria" class="form-control input-sm"><option value="0">Seleccione Categoría</option><option value="11751">DISPOSITIVOS DE ALMACENAMIENTO INTERNO</option><option value="11735">COMPUTADORA DE ESCRITORIO</option><option value="11736">COMPUTADORA TODO EN UNO</option><option value="11740">ESTACION DE TRABAJO</option><option value="11741">MONITOR</option><option value="11742">PANTALLA PUBLICITARIA</option><option value="11747">DISPOSITIVOS DE ALMACENAMIENTO EXTERNO</option><option value="11749">PANTALLA INTERACTIVA</option></select>
+                    </div>
+                </div> <!-- /.Categoria -->
+                <div class="col-lg-6">
+                    <label for="C_Descripcion" class="col-lg-2 control-label">Palabra Clave:</label>
+                    <div class="col-lg-10">
+                        <input type="text" class="form-control input-sm" id="C_Descripcion" name="C_Descripcion" placeholder="Palabra clave">
+                    </div>
+                </div>
+            </div> <!-- /.row -->
+            <br>
+            <div class="col-lg-12 text-right">
+                <button name="btnBuscar" id="btnBuscar" class="btn btn-primary btn-sm" title="Buscar Productos">
+                    <span class="glyphicon glyphicon-search"></span> Iniciar Búsqueda
+                </button>
+            </div>
+        </div> <!-- /.panel-body -->
+    </div>
+</div>
+<div id="divBuscar_ajax" class="m_panelAjax" style="display: none;">
+    <img id="imgBuscar_ajax" src="/Archivos/Imagenes/General/loader-panel.gif">
+</div>
+<div class="row" id="OfertasPanelDiv">
+<style>
+    #wModal_confirmacion {
+        width: 600px !important;
+    }
+
+    ._wModal {
+        width: 500px !important;
+    }
+</style>
+
+<link href="/Content/jquery.fancybox.css" rel="stylesheet">
+<script type="text/javascript" src="/Scripts/jquery.fancybox.pack.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.fancybox').fancybox();
+    });
+
+    //RATG R-011162-2022-Exclusion-de-Ofertas-y-Preaprobación-de-FP INICIO
+    $('.clExclusion').click(function () {
+        var ID_ProductoOfertado = $(this).attr("ID_ProductoOfertado");
+        Id_Categoria = $(this).attr("Id_Categoria");
+        var indicadorOE = $(this).attr("indicadorOE");
+        var isChecked = $(this).is(':checked');
+
+        if (isChecked) {
+            if (indicadorOE == 0) ofertasExcluidas.push(ID_ProductoOfertado);
+            var indexONE = ofertasNoExcluidas.indexOf(ID_ProductoOfertado);
+            if (indexONE > -1) ofertasNoExcluidas.splice(indexONE, 1);
+        } else {
+            if (indicadorOE == 1) ofertasNoExcluidas.push(ID_ProductoOfertado);
+            var indexOE = ofertasExcluidas.indexOf(ID_ProductoOfertado);
+            if (indexOE > -1) ofertasExcluidas.splice(indexOE, 1);
+        }
+        
+        if (ofertasNoExcluidas.length > 0 || ofertasExcluidas.length > 0) {
+            $('#dvBtnAplicarRegistrosExclusion').show();
+        } else {
+            $('#dvBtnAplicarRegistrosExclusion').hide();
+        }
+    });
+
+    $('#btnAplicarRegistrosExclusion').click(function () {
+        var cantidadFichasProductoExcluidas = ofertasExcluidas.length;
+        var cantidadFichasProductoNoExcluidas = ofertasNoExcluidas.length;
+
+        $('#wModal_confirmacion').wModal({
+            offset: '100', fxHide: 'slideUp', btns: {
+                'ok': function () {
+
+                    var data = {
+                        OfertasExcluidas: ofertasExcluidas,
+                        OfertasNoExcluidas: ofertasNoExcluidas,
+                        Id_Categoria: Id_Categoria
+                    };
+
+                    var ExcluirFPOptions = {};
+                    ExcluirFPOptions.url = "/MejoraBasica/ActualizarEclusionFichaProducto";
+                    ExcluirFPOptions.type = "POST";
+                    ExcluirFPOptions.data = JSON.stringify(data);
+                    ExcluirFPOptions.datatype = "json";
+                    ExcluirFPOptions.contentType = "application/json";
+                    ExcluirFPOptions.success = function (dataRespuesta) {
+                        $('#wModal_SiNo').wModal({
+                            offset: '100', fxHide: 'slideUp', btns: {
+                                'ok': function () {
+                                    this.hide();
+                                },
+                            }
+                        });
+                        $('#wModal_SiNo').wModal('show', { msg: dataRespuesta.MensajeRespuesta });
+
+                        if (!dataRespuesta.TieneError) {
+                            setTimeout(function () {
+                                Buscar();
+                            }, 3000);
+                        }
+                    };
+                    ExcluirFPOptions.error = function () { alert("Error al Aprobar las Fichas-producto listadas!!"); };
+                    $.ajax(ExcluirFPOptions);
+                    this.hide();
+                },
+                'cancel': function () { this.hide(); }
+            }
+        });
+
+        var descripcionAcuerdoMarco = $("#ajaxAcuerdo option:selected").text();
+        var mensaje = "<p style='color:red;font-size: 14px;'>¡Alerta!</p>";
+        mensaje += "<p style= 'text-align: justify'>Con esta acción, su representada solicita perder la adjudicación de las fichas-producto vigentes mediante la <span style='color:red'>exclusión de sus ofertas seleccionadas</span> (" + cantidadFichasProductoExcluidas + " Fichas-producto); en caso desmarque las Fichas-producto, se procederá a registrar el desistimiento de exclusión de las mismas siempre que aún no se hayan ejecutado; se precisa que las exclusiones de ofertas seleccionadas se harán efectivas el último día del mes; Si desea volver ofertar una ficha-producto no adjudicada, puede hacerlo conforme al procedimiento de incorporación de ofertas conforme a lo establecido en la documentación asociada al Acuerdo Marco " + descripcionAcuerdoMarco + ".</p>";
+        $('#wModal_confirmacion').wModal('show', { msg: mensaje });
+        event.preventDefault();
+    });
+    //RATG R-011162-2022-Exclusion-de-Ofertas-y-Preaprobación-de-FP FIN
+</script>
+
+<form action="/MejoraBasica/_ListaProductosOfertados?N_Acuerdo=249&amp;N_Catalogo=252&amp;N_Categoria=11736&amp;C_Descripcion=&amp;_=1785968891825" method="post">    <br>
+    <div class="panel panel-default">
+        <!-- /.panel-heading -->
+        <div class="panel-heading">
+            <h5>Listado de fichas-producto</h5>
+
+            
+        </div>
+
+        <div class="panel-body">
+            <div id="TablaProductos_wrapper" class="dataTables_wrapper form-inline dt-bootstrap no-footer"><div class="row"><div class="col-sm-6"><div class="dataTables_length" id="TablaProductos_length"><label>Mostrar <select name="TablaProductos_length" aria-controls="TablaProductos" class="form-control input-sm"><option value="10">10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option></select> Registros</label></div></div><div class="col-sm-6"><div id="TablaProductos_filter" class="dataTables_filter"><label>Buscar:<input type="search" class="form-control input-sm" placeholder="" aria-controls="TablaProductos"></label></div></div></div><div class="row"><div class="col-sm-12"><table id="TablaProductos" class="table table-bordered table-hover dataTable no-footer dtr-inline" style="width: 100%;" role="grid" aria-describedby="TablaProductos_info">
+                <thead>
+                    <tr role="row"><th class="text-center sorting_asc" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Imagen: activate to sort column descending" style="width: 80px;">Imagen</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Ficha-producto: activate to sort column ascending" style="width: 392px;">Ficha-producto</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Estado: activate to sort column ascending" style="width: 38px;">Estado</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Moneda: activate to sort column ascending" style="width: 45px;">Moneda</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Precio unitario vigente: activate to sort column ascending" style="width: 50px;">Precio unitario vigente</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Precio unitario por publicar: activate to sort column ascending" style="width: 55px;">Precio unitario por publicar</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Existencias vigentes: activate to sort column ascending" style="width: 67px;">Existencias vigentes</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Existencias por publicar: activate to sort column ascending" style="width: 69px;">Existencias por publicar</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Detalle: activate to sort column ascending" style="width: 39px;">Detalle</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Mejoras: activate to sort column ascending" style="width: 46px;">Mejoras</th><th class="text-center sorting" tabindex="0" aria-controls="TablaProductos" rowspan="1" colspan="1" aria-label="Excluir ofertas: activate to sort column ascending" style="width: 44px;">Excluir ofertas</th></tr>
+                </thead>
+                <tbody>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                <tr class="gradeA odd" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2141312-20250520-212531.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2141312-20250520-212531.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I7-14700 RAM: 8 GB DDR5 4800 600 MHz ALMACENAMIENTO: 512 GB SSD PANTALLA: LCD CON RETROILUMINACION LED 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: WINDOWS 11 PRO 64 BITS ESPAÑOL UNIDAD OPTICA: SI TECLADO: SI MOUSE: SI SUITE OFIMATICA: NO G. F: 36 MESES CARRY-IN UNIDAD ADVANCE AIO AP6780 PCAD2AP6B70W1NC SIST. MANEJO RAEE: COLECTIVO
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+1062.61                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+0                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(2141312);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(83414873);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(83414873);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA even" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2140377-20250520-135204.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2140377-20250520-135204.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I7-13700 RAM: 32 GB DDR5 4800 600 MHz ALMACENAMIENTO: 1 TB SSD PANTALLA: LCD CON RETROILUMINACION LED 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: WINDOWS 11 PRO 64 BITS ESPAÑOL UNIDAD OPTICA: SI TECLADO: SI MOUSE: SI SUITE OFIMATICA: NO G. F: 36 MESES CARRY-IN UNIDAD ADVANCE AIO AP6770 PCAD2AP6B70S3NT SIST. MANEJO RAEE: COLECTIVO
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+1157.01                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+0                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(2140377);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(83414871);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(83414871);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA odd" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2140328-20250520-133520.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2140328-20250520-133520.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I7-13700 RAM: 32 GB DDR5 4800 600 MHz ALMACENAMIENTO: 1 TB SSD PANTALLA: LCD CON RETROILUMINACION LED 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: UBUNTU 21.04 LTS HIRSUTE HIPPO 64 BITS ESPAÑOL UNIDAD OPTICA: SI TECLADO: SI MOUSE: SI SUITE OFIMATICA: NO G. F: 36 MESES CARRY-IN UNIDAD ADVANCE AIO AO6770 PCAD2AO6B70S3NT SIST. MANEJO RAEE: COLECTIVO
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+998.23                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+0                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(2140328);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(83414870);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(83414870);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA even" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2140022-20250520-094329.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2140022-20250520-094329.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I7-13700 RAM: 8 GB DDR5 4800 600 MHz ALMACENAMIENTO: 1 TB SSD PANTALLA: LCD CON RETROILUMINACION LED 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: UBUNTU 21.04 LTS HIRSUTE HIPPO 64 BITS ESPAÑOL UNIDAD OPTICA: SI TECLADO: SI MOUSE: SI SUITE OFIMATICA: NO G. F: 36 MESES CARRY-IN UNIDAD ADVANCE AIO AO6770 PCAD2AO6B70S1NT SIST. MANEJO RAEE: COLECTIVO
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+911.96                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+0                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(2140022);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(83414869);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(83414869);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA odd" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/1605215-20240610-150958.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/1605215-20240610-150958.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I7-14700 RAM: 32 GB DDR5 4800 2400 MHz ALMACENAMIENTO: 1 TB SSD PANTALLA: LCD CON RETROILUMINACION LED 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: WINDOWS 11 PRO 64 BITS ESPAÑOL UNIDAD OPTICA: SI TECLADO: SI MOUSE: SI SUITE OFIMATICA: NO G. F: 36 MESES ON-SITE UNIDAD HP HP PROONE 440 23.8 INCH G9 ALL-IN-ONE DESKTOP PC A02DMLA#ABM-M
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+1851.00                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+0                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(1605215);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(68775835);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(68775835);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA even" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/1605158-20240610-142239.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/1605158-20240610-142239.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I5-14500 RAM: 32 GB DDR5 4800 2400 MHz ALMACENAMIENTO: 1 TB SSD PANTALLA: LCD CON RETROILUMINACION LED 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: WINDOWS 11 PRO 64 BITS ESPAÑOL UNIDAD OPTICA: NO TECLADO: SI MOUSE: SI SUITE OFIMATICA: NO G. F: 36 MESES ON-SITE UNIDAD HP HP PROONE 440 23.8 INCH G9 ALL-IN-ONE DESKTOP PC A02DKLA#ABM-M
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+1618.00                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+1                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(1605158);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(68777734);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(68777734);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA odd" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/1665044-20240720-174221.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/1665044-20240720-174221.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I7-13700 RAM: 16 GB DDR5 5600 2800 MHz ALMACENAMIENTO: 1 TB SSD PANTALLA: LCD CON RETROILUMINACION LED TACTIL 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: WINDOWS 11 PRO 64 BITS ESPAÑOL UNIDAD OPTICA: SI TECLADO: SI MOUSE: SI SUITE OFIMATICA PRE-INSTALADA: MICROSOFT OFFICE HOME &amp; BUSINESS 2021 G. F: 36 MESES ON-SITE UNIDAD LENOVO THINKCENTRE M90A GEN 5 M90AG5I7416201T-OH SIST. MANEJO RAEE: COLECTIVO
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+1560.00                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+0                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(1665044);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(76423785);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(76423785);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA even" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2086037.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2086037.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I7-14700 RAM: 16 GB DDR5 4800 2400 MHz ALMACENAMIENTO: 1 TB SSD PANTALLA: LCD CON RETROILUMINACION LED 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: WINDOWS 11 PRO 64 BITS ESPAÑOL UNIDAD OPTICA: SI TECLADO: SI MOUSE: SI SUITE OFIMATICA: NO G. F: 36 MESES ON-SITE UNIDAD HP HP PROONE 440 23.8 INCH G9 ALL-IN-ONE DESKTOP PC BT1D4LS#ABM SIST. MANEJO RAEE: COLECTIVO
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+1645.00                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+0                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(2086037);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(81779452);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(81779452);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA odd" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2085990.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2085990.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I7-14700 RAM: 16 GB DDR5 4800 2400 MHz ALMACENAMIENTO: 1 TB SSD PANTALLA: LCD CON RETROILUMINACION LED TACTIL 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: WINDOWS 11 PRO 64 BITS ESPAÑOL UNIDAD OPTICA: NO TECLADO: SI MOUSE: SI SUITE OFIMATICA PRE-INSTALADA: MICROSOFT OFFICE HOME &amp; BUSINESS 2024 G. F: 36 MESES ON-SITE UNIDAD HP HP PROONE 440 23.8 INCH G9 ALL-IN-ONE DESKTOP PC AV1B4LS#ABM-OH4. SIST. MANEJO RAEE: COLECTIVO
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+1800.00                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+0                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(2085990);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(81779468);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(81779468);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr><tr class="gradeA even" role="row">
+                            <td class="sorting_1">
+                                <div class="ImagenLista">
+                                        <a class="fancybox" href="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2083679-20250410-173123.jpg" title=""><img id="output" src="https://saeusceprod01.blob.core.windows.net/contproveedor/Imagenes/Productos/2083679-20250410-173123.jpg"></a>
+                                </div>
+                            </td>
+                            <td>
+                                COMPUTADORA TODO EN UNO : PROCESADOR: INTEL CORE I5-14500 RAM: 16 GB DDR5 4800 2400 MHz ALMACENAMIENTO: 1 TB M.2 SSD NVMe PANTALLA: LCD CON RETROILUMINACION LED 23.8" 1920X1080 PIXELES LAN: SI WLAN: SI USB: SI VGA: NO HDMI: SI SIST. OPER: WINDOWS 11 PRO 64 BITS ESPAÑOL UNIDAD OPTICA: NO TECLADO: SI MOUSE: SI SUITE OFIMATICA PRE-INSTALADA: MICROSOFT OFFICE HOME &amp; BUSINESS 2024 G. F: 36 MESES ON-SITE UNIDAD DELL OPTIPLEX ALL IN ONE PLUS 7420 4HDT742PA-5161SOH3-VP SIST. MANEJO RAEE: COLECTIVO
+                            </td>
+                            <td>
+                                VIGENTE
+                            </td>
+                            <td>
+                                USD
+                            </td>
+                            <td class="text-right">
+2075.00                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td class="text-right">
+1                            </td>
+                            <td class="text-right">
+                            </td>
+                            <td>
+                                <a href="#" onclick="fnDetalleRegistro(2083679);">Detalle</a>
+                            </td>
+                            <td>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnReducirPrecio(78305239);">Precio Unitario</a>
+                                </div>
+                                <br>
+                                <div>
+                                    
+                                        <a href="#" onclick="fnModificarStock(78305239);">Existencias</a>
+                                </div>
+                            </td>
+
+                            
+                            <td class="text-center">
+                                <br>
+
+                            </td>
+                            
+                        </tr></tbody>
+            </table></div></div><div class="row"><div class="col-sm-6"><div class="dataTables_info" id="TablaProductos_info" role="status" aria-live="polite">Mostrando 1 a 10 de 1,242 Registros</div></div><div class="col-sm-6"><div class="dataTables_paginate paging_simple_numbers" id="TablaProductos_paginate"><ul class="pagination"><li class="paginate_button previous disabled" aria-controls="TablaProductos" tabindex="0" id="TablaProductos_previous"><a href="#">Anterior</a></li><li class="paginate_button active" aria-controls="TablaProductos" tabindex="0"><a href="#">1</a></li><li class="paginate_button " aria-controls="TablaProductos" tabindex="0"><a href="#">2</a></li><li class="paginate_button " aria-controls="TablaProductos" tabindex="0"><a href="#">3</a></li><li class="paginate_button " aria-controls="TablaProductos" tabindex="0"><a href="#">4</a></li><li class="paginate_button " aria-controls="TablaProductos" tabindex="0"><a href="#">5</a></li><li class="paginate_button disabled" aria-controls="TablaProductos" tabindex="0" id="TablaProductos_ellipsis"><a href="#">…</a></li><li class="paginate_button " aria-controls="TablaProductos" tabindex="0"><a href="#">125</a></li><li class="paginate_button next" aria-controls="TablaProductos" tabindex="0" id="TablaProductos_next"><a href="#">Siguiente</a></li></ul></div></div></div></div> <!-- /.table-responsive -->
+        </div> <!-- /.panel-body -->
+    </div>
+</form></div>
+    </div>
+
+    <footer class="pie">
+        <div class="pie-central">
+            <div class="pie-izquierda">
+                <img class="pie-logo" src="/Archivos/Imagenes/General/isotipo_PeruCompras.svg">
+            </div>
+            <div class="pie-derecha">
+                <p class="pie-texto">© 2020 - Catálogos Electrónicos Perú Compras - Todos los derechos reservados</p>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+    </footer>
+
+    <div id="divMsgGeneral" style="position: fixed; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 3100; filter: alpha(opacity=65); -moz-opacity: 65; opacity: 1; background: #0000007a; display: none;">
+        <div style="top: 0; left: 0; bottom: 0; right: 0; position: fixed; display: flex; justify-content: center; align-items: center;">
+            <div style="width:35%; max-width: 500px; min-height:150px">
+                <div class="panel panel-default" style="text-align:center; -webkit-box-shadow: 0 3px 9px rgb(0 0 0 / 50%); box-shadow: 0 3px 9px rgb(0 0 0 / 50%);">
+                    <div class="panel-heading" style="background-color: #fff">
+                        <h5>Catálogos Electrónicos - Mensaje de notificación</h5>
+                    </div>
+                    <div class="panel-body" style="max-height: calc(100vh - 200px);overflow-y: auto;">
+                        <div class="alert alert-success">
+                            <strong>¡Correcto!</strong> se proceso de forma satisfactoria
+                        </div>
+                    </div>
+                    <div class="panel-footer" style="background-color: #fff">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <button class="btn btn-primary btn_cerrar" data-dismiss="modal"> Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="divLoader" style="position: fixed;top:0px;left:0px;width: 100%;height: 100%;z-index:3200;filter:alpha(opacity=65);-moz-opacity:65;opacity: 1;background: #0000007a;display:none;">
+        <div class="divLoader" style="position:fixed;top:50%;left:50%;"></div>
+    </div>
+
+
+    <div id="divPopUpConfirmacion" class="modal fade" role="dialog" aria-hidden="true" tabindex="-1" style="z-index:99999999999999999999999999999999999">
+        <div class="modal-dialog modal-sm">
+            <!-- Modal content-->
+            <div id="modalContent" class="modal-content">
+                <div class="modal-header">
+                    Catálogos Electrónicos <br>
+                    Mensaje de Notificación
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body contenido">
+                </div>
+                <div class="modal-footer">
+                    <button value="No" class="btn btn-primary text-center btnCMNO" data-dismiss="modal" aria-hidden="true" onclick="GeneralModel.confirmacionPopUp(this,false);">
+                        <span class="glyphicon glyphicon-remove"></span>&nbsp;No
+                    </button>
+                    <button value="No" class="btn btn-primary text-center btnCMSI" data-dismiss="modal" aria-hidden="true" onclick="GeneralModel.confirmacionPopUp(this,true);">
+                        <span class="glyphicon glyphicon-ok"></span>&nbsp;Si
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/bundles/jquery?v=O4ZpckRZkdVVr0hJRxb1G_8rFYv-VTl8LURYiPNfeOI1"></script>
+
+    <script src="/bundles/bootstrap?v=S9-VFjJll7-h6B6vedKZxuNRBdqXLY3XTPKv3OQRv1w1"></script>
+
+    <script src="/bundles/fancybox?v=20lDfm9ePzqNWZXQna5iWBQJsgTb2Aqd8NnPGHjdrEA1"></script>
+
+    <script src="/bundles/modalj?v=0gk26uJw9nVvQZENg59NqQoOfvvYhsWhv0o1Ux6TLIE1"></script>
+
+    <script src="/bundles/numeros?v=BtVGXXU6RDBVJ_MkDaVKPwXHH4qyZIqixRZKrlBwhpg1"></script>
+
+
+    <!--Select 2-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+    <script src="/Scripts/admin2/metisMenu/metisMenu.min.js"></script>
+    <script src="/Scripts/admin2/dist/sb-admin-2.min.js"></script>
+    <!--mask input-->
+    <script src="/Scripts/jquery.inputmask.min.js"></script>
+    <!-- DataTables JavaScript -->
+    <script src="/Scripts/admin2/datatables/jquery.dataTables.min.js"></script>
+    <script src="/Scripts/admin2/datatables/dataTables.bootstrap.min.js"></script>
+    <script src="/Scripts/admin2/datatables/dataTables.responsive.js"></script>
+
+    
+    <link href="/Content/select2.css" rel="stylesheet">
+    <script src="/Scripts/select2.js"></script>
+    <script type="text/javascript">
+        //RATG R-011162-2022-Exclusion-de-Ofertas-y-Preaprobación-de-FP INICIO
+        var ofertasExcluidas = [];
+        var ofertasNoExcluidas = [];
+        var Id_Categoria = 0;
+        //RATG R-011162-2022-Exclusion-de-Ofertas-y-Preaprobación-de-FP FIN
+
+        $(document).ready(function () {
+            $(document).ajaxSuccess(function (event, request, settings) {
+                if (request.getResponseHeader("X-Responded-JSON") != null && JSON.parse(request.getResponseHeader("X-Responded-JSON")).status == "401") {
+                    window.location.assign("/Accesos");
+                }
+            });
+
+            $('#ajaxAcuerdo').select2({
+                minimumResultsForSearch: 1
+            });
+
+            if (0 == 1){
+                $("#MensajeModal").modal('show');
+            }
+
+            if (0 == 1){
+                $("#MensajeModal2").modal('show');
+            }
+
+            if ('0' == '1'){
+                $('#ajaxAcuerdo').val('');
+                ListarCatalogos($("#ajaxAcuerdo").val(), 'ACTIVO', '', '');
+            }
+            else{
+                $('#ajaxAcuerdo').val('0');
+                $("#ajaxCatalogo").empty();
+                $("#ajaxCategoria").empty();
+            }
+
+            $("#ajaxAcuerdo").change(function () {
+                //Opcional, por si hay error en la ejecucion del Ajax, se limpian los datos igual.
+                $("#ajaxCatalogo").empty();
+                $("#ajaxCategoria").empty();
+                $("#ajaxCatalogo").append("<option value=0>Seleccione Catálogo</option>");
+                $("#ajaxCategoria").append("<option value=0>Seleccione Categoría</option>");
+
+                ListarCatalogos($("#ajaxAcuerdo").val(), 'ACTIVO', '', '');
+            });
+
+            $("#ajaxCatalogo").change(function () {
+                //Opcional, por si hay error en la ejecucion del Ajax, se limpian los datos igual.
+                $("#ajaxCategoria").empty();
+                $("#ajaxCategoria").append("<option value=0>Seleccione Categoría</option>");
+
+                ListarCategorias($("#ajaxCatalogo").val(), 0, 'ACTIVO', '1', '');
+            });
+
+            $("#ajaxCategoria").change(function () {
+                //Opcional, por si hay error en la ejecucion del Ajax, se limpian los datos igual.
+                $("#OfertasPanelDiv").html('');
+            });
+
+            $("#btnBuscar").click(function (evento) {
+                Buscar();
+            });
+        });
+
+        function Buscar() {
+            //RATG R-011162-2022-Exclusion-de-Ofertas-y-Preaprobación-de-FP INICIO
+            ofertasExcluidas = [];
+            ofertasNoExcluidas = [];
+            Id_Categoria = 0;
+            //RATG R-011162-2022-Exclusion-de-Ofertas-y-Preaprobación-de-FP FIN
+
+            $("#OfertasPanelDiv").empty();
+            if ($("#ajaxAcuerdo").val() > 0) {
+                if ($("#ajaxCatalogo").val() > 0) {
+                    if ($("#ajaxCategoria").val() > 0) {
+                        $("#divBuscar_ajax").show();
+                        ListarProductosOfertados($("#ajaxAcuerdo").val(), $("#ajaxCatalogo").val(), $("#ajaxCategoria").val(), document.getElementById("C_Descripcion").value);
+                    } else {
+                        $('#wModal_SiNo').wModal('show', { msg: "Seleccione una Categoría" });
+                        $("#ajaxCategoria").focus();
+                    }
+                } else {
+                    $('#wModal_SiNo').wModal('show', { msg: "Seleccione un Catálogo" });
+                    $("#ajaxCatalogo").focus();
+                }
+            } else {
+                $('#wModal_SiNo').wModal('show', { msg: "Seleccione un Acuerdo" });
+                $("#ajaxAcuerdo").focus();
+            }
+        };
+
+        function ListarCatalogos(Acuerdo, Estado, ncatalogo, ncategoria) {
+            var CatalogoOptions = {};
+            CatalogoOptions.url = "/General/ListaJ_CatalogoAcuerdo";
+            CatalogoOptions.type = "POST";
+            CatalogoOptions.data = JSON.stringify({ N_Acuerdo: Acuerdo, C_Estado: Estado });
+            CatalogoOptions.datatype = "json";
+            CatalogoOptions.contentType = "application/json";
+            CatalogoOptions.success = function (lstCatalogos) {
+                $("#ajaxCatalogo").empty();
+                $("#ajaxCategoria").empty();
+                $("#ajaxCatalogo").append("<option value=0>Seleccione Catálogo</option>");
+                $("#ajaxCategoria").append("<option value=0>Seleccione Categoría</option>");
+
+                $.each(lstCatalogos, function (i, valCatalogo) {
+                    $("#ajaxCatalogo").append("<option value=\"" + valCatalogo.Value + "\">" + valCatalogo.Text + "</option>");
+                });
+                $("#OfertasPanelDiv").html('');
+
+                //Si hay TempData["N_Catalogo"] entonces invocar a Listar categorias
+                if (ncatalogo != '')
+                {
+                    $('#ajaxCatalogo').val(ncatalogo);
+                    ListarCategorias($("#ajaxCatalogo").val(), 0, 'ACTIVO', '1', ncategoria);
+                }
+            };
+            CatalogoOptions.error = function () { alert("Error al obtener Catálogos!!"); };
+            $.ajax(CatalogoOptions);
+        };
+
+        function ListarCategorias(Catalogo, CategoriaParent, Estado, Nivel, temcategoria) {
+            var CategoriaOptions = {};
+            CategoriaOptions.url = "/General/ListaJ_CategoriaCatalogo";
+            CategoriaOptions.type = "POST";
+            CategoriaOptions.data = JSON.stringify({ N_Catalogo: Catalogo, N_CategoriaParent: CategoriaParent, C_Estado: Estado, N_Nivel: Nivel });
+            CategoriaOptions.datatype = "json";
+            CategoriaOptions.contentType = "application/json";
+            CategoriaOptions.success = function (lstCategorias) {
+                $("#ajaxCategoria").empty();
+                $("#ajaxCategoria").append("<option value=0>Seleccione Categoría</option>");
+
+                $.each(lstCategorias, function (i, valCategoria) {
+                    $("#ajaxCategoria").append("<option value=\"" + valCategoria.Value + "\">" + valCategoria.Text + "</option>");
+                });
+
+                if (temcategoria != '')
+                {
+                    $('#ajaxCategoria').val(temcategoria);
+                    Buscar(); //Si tiene valor de TempData["N_Categoria"], entonces tiene los demas datos previos, se puede proceder a buscar
+                };
+
+                $("#OfertasPanelDiv").html('');
+            };
+            CategoriaOptions.error = function () { alert("Error al obtener Categorías!!"); };
+            $.ajax(CategoriaOptions);
+        };
+
+        function ListarProductosOfertados(N_Acuerdo, N_Catalogo, N_Categoria, C_Descripcion) {
+            $("#OfertasPanelDiv").html('');
+            var OfertasOptions = {};
+            OfertasOptions.cache = false;
+            OfertasOptions.type = "GET";
+            OfertasOptions.url = "/MejoraBasica/_ListaProductosOfertados";
+            OfertasOptions.data = { "N_Acuerdo": N_Acuerdo, "N_Catalogo": N_Catalogo, "N_Categoria": N_Categoria, "C_Descripcion": C_Descripcion };
+            OfertasOptions.success = function (lstOfertas) {
+                $("#OfertasPanelDiv").html('');
+                $("#OfertasPanelDiv").html(lstOfertas);
+                $("#mAjax_busqueda").hide();
+                $('#TablaProductos').DataTable({
+                    responsive: true
+                });
+                $("#divBuscar_ajax").hide();
+            };
+            OfertasOptions.error = function () { alert("Error al obtener Ofertas de Productos!!"); };
+            $.ajax(OfertasOptions);
+        };
+
+
+        function fnDetalleRegistro(id_productoOfertado)
+        {
+            var modal = $('#DetalleModal');
+            modal.removeData('bs.modal');
+            modal.modal({ remote: '/t_ProductoOfertado/CatalogoProductoDetails' + '?ID_CatalogoProducto=' + id_productoOfertado });
+            modal.modal('show');
+        };
+
+        function fnReducirPrecio(id_productoOfertado)
+        {
+            var modal = $('#PrecioModal');
+            modal.removeData('bs.modal');
+            modal.modal({ remote: '/MejoraBasica/ReducirPrecio' + '?ID_ProductoOfertado=' + id_productoOfertado });
+            modal.modal('show');
+        };
+
+        function fnModificarStock(id_productoOfertado)
+        {
+            var modal = $('#ExistenciasModal');
+            modal.removeData('bs.modal');
+            modal.modal({ remote: '/MejoraBasica/ModificarStock' + '?ID_ProductoOfertado=' + id_productoOfertado });
+            modal.modal('show');
+        };
+    </script>
+
+
+    <script>    
+        document.addEventListener('DOMContentLoaded', function () {
+            var script = document.createElement('script');
+            script.src = 'https://perucomprasd.ucontactcloud.com/webchatclient/integrawebchat.js';
+            script.async = true;
+            script.onload = function () {
+                initwebchat({
+                    ip: "perucompras.ucontactcloud.com",
+                    campaign: "Prueba"
+                });
+            };
+            document.body.appendChild(script);
+        });
+    </script>
+
+    <!--RATG Integracion ChatBot RQ-XXX-2023_integracion_ChatBot FIN-->
+
+<script src="https://perucomprasd.ucontactcloud.com/webchatclient/integrawebchat.js" async=""></script><style>#myIframe { position:absolute; top: 0px; left: 0px; } @media print {  #myIframe { min-width: 100% ;   max-width: 100%;  width: 100%;  border: none; } body {width: 21cm; height: 100%; max-width: 21cm; }  html {height: 100%; width: 21cm; max-width: 21cm;}  @page { margin: 0.4;} }</style></body></html>

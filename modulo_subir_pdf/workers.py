@@ -99,15 +99,23 @@ def execute_stock(app, usuario, password, acuerdo, catalogo, categoria, pausa):
             except Exception:
                 pass
         # Generar reporte SIEMPRE (incluso si se detuvo o falló)
+        elapsed_sec = None
+        if getattr(app, "_stock_process_start_time", None):
+            elapsed_sec = time.time() - app._stock_process_start_time
+            from utils_mod.excel_report_designer import format_elapsed_time
+            app._append_stock_log(f"⏱️ Tiempo total de procesamiento: {format_elapsed_time(elapsed_sec)} ({elapsed_sec:.1f}s)")
         try:
-            output_dir = os.path.dirname(app._stock_excel_path) or "."
+            output_dir = os.path.dirname(getattr(app, "_stock_excel_path", "")) or os.path.join(_PROJECT_ROOT, "reportes_auditoria")
+            os.makedirs(output_dir, exist_ok=True)
             ts = time.strftime("%Y%m%d_%H%M%S")
             report_path = os.path.join(output_dir, f"reporte_stock_{ts}.xlsx")
-            generar_reporte_excel(report_path, acuerdo, catalogo, categoria)
+            generar_reporte_excel(report_path, acuerdo, catalogo, categoria, elapsed_seconds=elapsed_sec)
             app._stock_report_path = report_path
+            app._last_report_path = report_path
+            app._last_report_dir = output_dir
             app.lbl_stock_report.configure(text=os.path.basename(report_path),
                                             text_color="#5dade2")
-            app._append_stock_log(f"📊 Reporte: {report_path}")
+            app._append_stock_log(f"📊 Reporte guardado en: {report_path}")
         except Exception as rep_err:
             app._append_stock_log(f"⚠ No se pudo generar reporte: {rep_err}")
         app._stock_pw = None

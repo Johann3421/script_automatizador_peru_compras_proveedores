@@ -184,10 +184,17 @@ def build_precios_json_tab(app, parent):
     ).pack(side="left", padx=(0, 4), fill="x", expand=True)
 
     ctk.CTkButton(
-        btn_row_p, text="📄 Informe PDF", height=32,
+        btn_row_p, text="📂 Abrir Reporte", height=32,
         font=ctk.CTkFont(size=11, weight="bold"),
         fg_color="#006CA8", hover_color="#00507E", text_color="#FFFFFF",
-        command=lambda: _export_precios_audit_report(app, fmt="pdf")
+        command=lambda: app._open_last_report() if hasattr(app, "_open_last_report") else None
+    ).pack(side="left", padx=(0, 4), fill="x", expand=True)
+
+    ctk.CTkButton(
+        btn_row_p, text="📁 Carpeta", height=32,
+        font=ctk.CTkFont(size=11, weight="bold"),
+        fg_color=C["border"], hover_color=C["card2"], text_color=C["txt"],
+        command=lambda: app._open_reports_folder() if hasattr(app, "_open_reports_folder") else None
     ).pack(side="left", fill="x", expand=True)
 
     _load_and_populate_catalog_menu(app)
@@ -221,7 +228,11 @@ def _export_precios_audit_report(app, fmt="excel"):
         ok, msg = export_pdf_report(rows, summary, path, modulo_nombre="Subida de Precios JSON")
 
     if ok:
-        messagebox.showinfo("Auditor Precios JSON", f"¡Informe de Auditoría de Precios generado exitosamente!\n\nUbicación:\n{msg}")
+        app._last_report_path = path
+        app._last_report_dir = os.path.dirname(path)
+        from utils_mod.excel_report_designer import open_file_in_system
+        if messagebox.askyesno("Auditor Precios JSON", f"¡Informe de Auditoría de Precios generado exitosamente!\n\nUbicación:\n{msg}\n\n¿Deseas abrir el archivo ahora?"):
+            open_file_in_system(path)
     else:
         messagebox.showerror("Error en Auditoría", f"Ocurrió un error al generar el informe:\n{msg}")
 
