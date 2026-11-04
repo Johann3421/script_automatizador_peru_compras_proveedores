@@ -20,7 +20,7 @@ import json
 from typing import Callable, Optional, Dict, Any, List
 
 
-BASE_URL = "https://www.catalogos.perucompras.gob.pe"
+BASE_URL = "https://catalogos.perucompras.gob.pe"
 MEJORA_URL = f"{BASE_URL}/MejoraBasica"
 
 

@@ -9,7 +9,7 @@ venv/
 
 # Build / distribucion (instaladores, comprimidos)
 build/
-build_installer/
+build_installer/Output/
 dist/
 Output/
 *.tar.gz
@@ -50,7 +50,7 @@ tesseract/
 
 # Installer temporal y binarios finales
 installer_tmp/
-installer/
+installer/Output/
 
 # Dumps masivos JSON de extracción
 modulo_subir_pdf/output_extract/
@@ -58,3 +58,10 @@ modulo_subir_pdf/discovery_output/
 modulo_subir_pdf/discovery_v2_output/
 *precios_fichas_*.json
 
+
+# Reportes generados
+modulo_subir_pdf/reportes_auditoria/*.json
+modulo_subir_pdf/reportes_auditoria/*.xlsx
+
+# Auditoria autogenerada temporal
+docs/audit/

@@ -1,0 +1,9 @@
+LICENCIA DE USO - PeruComprasBot
+
+Copyright (c) THE KING COMPUTER E.I.R.L.
+
+Se concede permiso para usar este software exclusivamente en los equipos de
+THE KING COMPUTER E.I.R.L. y sus clientes autorizados. Queda prohibida la
+distribución, copia o modificación no autorizada del programa.
+
+Este software se proporciona "tal cual", sin garantía de ningún tipo.

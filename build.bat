@@ -29,25 +29,13 @@ echo ============================================================
 echo Directorio Raiz: %ROOT%
 echo.
 
-:: PASO 1: Compilar paquete standalone con PyInstaller
-:: Ejecuta build_exe.py -> genera dist/PeruComprasBot/ (Standalone)
-echo [1/2] Compilando ejecutable principal (build_exe.py)...
+:: PASO 1: Compilar paquete standalone y generar Instalador Windows Oficial
+:: Ejecuta build_exe.py -> genera dist/PeruComprasBot/ y compila installer/Output/Script_Peru_Compras_Setup.exe
+echo [1/1] Compilando ejecutable standalone y generando Instalador Windows Oficial (build_exe.py)...
 python "%ROOT%\build_exe.py"
 if errorlevel 1 (
     echo.
-    echo ❌ ERROR: Fallo build_exe.py durante la compilacion PyInstaller.
-    pause
-    exit /b 1
-)
-
-:: PASO 2: Compilar instalador liviano auto-contenido
-:: Ejecuta build_installer.py -> genera dist/Instalar_PeruComprasBot_v1.4.exe (~15 MB)
-echo.
-echo [2/2] Compilando instalador liviano distribuible (build_installer.py)...
-python "%ROOT%\build_installer.py"
-if errorlevel 1 (
-    echo.
-    echo ❌ ERROR: Fallo build_installer.py
+    echo ❌ ERROR: Fallo build_exe.py durante la compilacion.
     pause
     exit /b 1
 )
@@ -55,13 +43,8 @@ if errorlevel 1 (
 echo.
 echo ============================================================
 echo   BUILD COMPLETADO EXITOSAMENTE
-echo   Los archivos generados se encuentran en:
-echo   %ROOT%\dist\
-echo
-echo   Para compilar el Instalador Windows (.exe unico con Inno Setup):
-echo     1. Ir a la carpeta: %ROOT%\installer\
-echo     2. Ejecutar: ISCC.exe setup.iss
-echo     3. El instalador final estara en: %ROOT%\installer\Output\
+echo   El Instalador Final Listo para Distribuir se encuentra en:
+echo   %ROOT%\installer\Output\Script_Peru_Compras_Setup.exe
 echo ============================================================
 echo.
 pause

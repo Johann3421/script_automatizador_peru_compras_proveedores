@@ -3350,15 +3350,77 @@ class SubirPdfWebApi:
         self._app._stock_excel_path = path
         return {"path": path, "name": os.path.basename(path), "sheets": get_sheets(path), "rows": rows}
 
-    # JSON de Precios
+    # Precios (Excel / JSON)
+    def _parse_precios_excel(self, path: str) -> list:
+        import openpyxl
+        wb = openpyxl.load_workbook(path, data_only=True)
+        ws = wb.active
+
+        h_row = 1
+        for r in range(1, min(ws.max_row + 1, 15)):
+            txt_count = sum(1 for c in range(1, ws.max_column + 1) if isinstance(ws.cell(row=r, column=c).value, str) and ws.cell(row=r, column=c).value.strip())
+            if txt_count >= 2:
+                h_row = r
+                break
+
+        headers = [str(ws.cell(row=h_row, column=c).value or "").strip() for c in range(1, ws.max_column + 1)]
+
+        parte_idx = -1
+        precio_idx = -1
+        desc_idx = -1
+
+        for idx, h in enumerate(headers):
+            hl = h.lower().replace("_", " ").replace("-", " ").strip()
+            if any(k in hl for k in ["parte", "part", "codigo", "mpn", "nro"]):
+                if parte_idx == -1: parte_idx = idx + 1
+            elif any(k in hl for k in ["precio", "monto", "price", "oferta"]):
+                if precio_idx == -1: precio_idx = idx + 1
+            elif any(k in hl for k in ["descrip", "nombre", "producto"]):
+                if desc_idx == -1: desc_idx = idx + 1
+
+        if parte_idx == -1: parte_idx = 1
+        if precio_idx == -1: precio_idx = 2 if ws.max_column >= 2 else 1
+
+        rows = []
+        for r in range(h_row + 1, ws.max_row + 1):
+            v_parte = ws.cell(row=r, column=parte_idx).value
+            v_precio = ws.cell(row=r, column=precio_idx).value
+            v_desc = ws.cell(row=r, column=desc_idx).value if desc_idx != -1 else ""
+            if v_parte is None and v_precio is None:
+                continue
+            parte_str = str(v_parte or "").strip()
+            if not parte_str:
+                continue
+            try:
+                p_clean = str(v_precio or "0").replace(",", ".").replace(" ", "")
+                precio_num = float(p_clean)
+            except Exception:
+                precio_num = 0.0
+
+            rows.append({
+                "parte": parte_str,
+                "nro_parte": parte_str,
+                "precio": precio_num,
+                "N_PrecioOfertado": precio_num,
+                "C_Descripcion": str(v_desc or parte_str).strip(),
+                "C_Estado": "Pendiente",
+                "C_MonedaOfertada": "USD",
+                "_excel_row": r
+            })
+        wb.close()
+        return rows
+
     def select_json_file(self, *a):
         import tkinter as tk
         from tkinter import filedialog
         import json
         root = tk.Tk(); root.withdraw(); root.attributes("-topmost", True)
         path = filedialog.askopenfilename(
-            title="Seleccionar Archivo JSON o Excel de Precios",
-            filetypes=[("Archivos JSON (*.json)", "*.json"), ("Archivos Excel (*.xlsx, *.xls)", "*.xlsx *.xls"), ("Todos los archivos", "*.*")]
+            title="Seleccionar Archivo Excel o JSON de Precios",
+            filetypes=[("Archivos de Precios (*.xlsx, *.xls, *.json)", "*.xlsx *.xls *.json"),
+                       ("Archivos Excel (*.xlsx, *.xls)", "*.xlsx *.xls"),
+                       ("Archivos JSON (*.json)", "*.json"),
+                       ("Todos los archivos", "*.*")]
         )
         root.destroy()
         if not path:
@@ -3374,14 +3436,51 @@ class SubirPdfWebApi:
                 elif isinstance(raw_data, dict):
                     rows = raw_data.get("data", raw_data.get("fichas", [raw_data]))
             else:
-                from tab_precios_json import parse_excel_precios
-                rows = parse_excel_precios(path)
+                rows = self._parse_precios_excel(path)
             
             self._app._precios_json_path = path
             self._app._precios_json_data = rows
             return {"path": path, "name": os.path.basename(path), "rows": rows}
         except Exception as e:
             return {"error": str(e), "path": path, "name": os.path.basename(path), "rows": []}
+
+    def download_precios_template(self, *a):
+        import tkinter as tk
+        from tkinter import filedialog
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+        root = tk.Tk(); root.withdraw(); root.attributes("-topmost", True)
+        path = filedialog.asksaveasfilename(
+            title="Guardar Plantilla Excel de Precios",
+            defaultextension=".xlsx",
+            filetypes=[("Archivos Excel (*.xlsx)", "*.xlsx")],
+            initialfile="plantilla_precios.xlsx"
+        )
+        root.destroy()
+        if not path:
+            return {"status": "cancelled"}
+        try:
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Precios"
+            ws.append(["Numero_Parte", "Precio", "Descripcion"])
+            header_fill = PatternFill(start_color="002A54", end_color="002A54", fill_type="solid")
+            header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+            for col in range(1, 4):
+                cell = ws.cell(row=1, column=col)
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal="center")
+            ws.append(["07JUM487", 1580.00, "COMPUTADORA DE ESCRITORIO I7 16GB 1TB"])
+            ws.append(["17JUM6E0", 1450.50, "COMPUTADORA DE ESCRITORIO I7 8GB 1TB"])
+            ws.append(["07NUM45F", 1890.00, "COMPUTADORA DE ESCRITORIO I7 32GB 1TB"])
+            ws.column_dimensions["A"].width = 22
+            ws.column_dimensions["B"].width = 16
+            ws.column_dimensions["C"].width = 50
+            wb.save(path)
+            return {"status": "ok", "path": path}
+        except Exception as e:
+            return {"status": "error", "msg": str(e)}
 
     def load_sheet(self, sheet_name=None, *a):
         if not getattr(self._app, "_excel_path", "") or not sheet_name:
@@ -3499,10 +3598,14 @@ class SubirPdfWebApi:
         try:
             params = params or {}
             user_val, pass_val = _get_user_pass(self._app, params)
+            if not pass_val:
+                return {"status": "error", "msg": "Por favor ingrese la contraseña de Perú Compras antes de iniciar."}
+
             acuerdo_val = str(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES").strip()
             catalogo_val = str(params.get("cat") or "COMPUTADORAS DE ESCRITORIO").strip()
             categoria_val = str(params.get("catg") or "COMPUTADORA TODO EN UNO").strip()
             visible = bool(params.get("visible", False))
+            auto_enviar = bool(params.get("auto_enviar", False))
 
             if params.get("data") and isinstance(params["data"], list):
                 self._app._precios_json_data = params["data"]
@@ -3534,7 +3637,7 @@ class SubirPdfWebApi:
                     except Exception as ex:
                         pass
 
-            combos = getattr(self._app, "_stock_combos_data", {})
+            combos = getattr(self._app, "_catalog_data", None) or getattr(self._app, "_stock_combos_data", {})
             n_acuerdo = workers._get_id_acuerdo(combos, acuerdo_val) if hasattr(workers, '_get_id_acuerdo') else "249"
             n_catalogo = workers._get_id_catalogo(combos, acuerdo_val, catalogo_val) if hasattr(workers, '_get_id_catalogo') else "252"
             n_categoria = workers._get_id_categoria(combos, acuerdo_val, catalogo_val, categoria_val) if hasattr(workers, '_get_id_categoria') else "11736"
@@ -3543,7 +3646,7 @@ class SubirPdfWebApi:
                 target=workers.execute_iniciar_precios,
                 args=(self._app, user_val, pass_val, not visible, _log,
                       precios_data, n_acuerdo, n_catalogo, n_categoria,
-                      self._app._json_stop_event),
+                      self._app._json_stop_event, auto_enviar),
                 daemon=True
             ).start()
 
@@ -3552,13 +3655,148 @@ class SubirPdfWebApi:
             print(f"[ERROR start_json_process] {e}")
             return {"status": "error", "msg": str(e)}
 
+    def confirmar_oferta_manual(self, *a):
+        try:
+            import workers
+            page = getattr(self._app, "_precios_page", None)
+            if not page:
+                return {"status": "error", "msg": "No hay sesión activa de navegador esperando confirmación."}
+            win = getattr(self, '_window', None) or getattr(getattr(self, '_app', None), '_window', None)
+            def _log(app_inst, msg):
+                try: print(f"[CONFIRMACION OFERTA] {msg}")
+                except Exception: pass
+                if win:
+                    try:
+                        import json
+                        win.evaluate_js(f"logJsonConsole({json.dumps(str(msg))});")
+                    except Exception: pass
+            import threading
+            def _run():
+                try:
+                    _log(self._app, "🚀 Confirmando y enviando ofertas al portal...")
+                    exito = workers._ejecutar_confirmacion_oferta(page, _log, self._app)
+                    if exito:
+                        _log(self._app, "🎉 ¡Ofertas confirmadas y enviadas con éxito a Perú Compras!")
+                        if win:
+                            win.evaluate_js("mostrarBotonConfirmarOferta(false);")
+                    else:
+                        _log(self._app, "⚠ No se pudo confirmar la oferta automáticamente en el portal.")
+                except Exception as e:
+                    _log(self._app, f"❌ Error al confirmar oferta: {e}")
+                finally:
+                    try:
+                        b = getattr(self._app, "_precios_browser", None)
+                        if b: b.close()
+                    except Exception: pass
+                    try:
+                        pw = getattr(self._app, "_precios_pw", None)
+                        if pw: pw.stop()
+                    except Exception: pass
+                    self._app._precios_browser = None
+                    self._app._precios_page = None
+                    self._app._precios_pw = None
+            threading.Thread(target=_run, daemon=True).start()
+            return {"status": "started"}
+        except Exception as e:
+            return {"status": "error", "msg": str(e)}
+
     def stop_json_process(self, *a):
         try:
+            stopped = False
             if hasattr(self._app, "_json_stop_event") and self._app._json_stop_event:
                 self._app._json_stop_event.set()
-                print("[SUBIDA PRECIOS JSON] Detención solicitada por el usuario.")
+                stopped = True
+            if hasattr(self._app, "stop_event") and self._app.stop_event:
+                self._app.stop_event.set()
+                stopped = True
+            try:
+                b = getattr(self._app, "_precios_browser", None)
+                if b: b.close()
+                pw = getattr(self._app, "_precios_pw", None)
+                if pw: pw.stop()
+                self._app._precios_browser = None
+                self._app._precios_page = None
+                self._app._precios_pw = None
+            except Exception: pass
+            print("[SUBIDA PRECIOS JSON] Detención solicitada por el usuario.")
+            win = getattr(self, '_window', None) or getattr(getattr(self, '_app', None), '_window', None)
+            if win:
+                win.evaluate_js("mostrarBotonConfirmarOferta(false); logJsonConsole('🛑 Proceso detenido por el usuario.', 'log-err');")
             return {"status": "stopped"}
         except Exception as e:
+            return {"status": "error", "msg": str(e)}
+
+    def extract_json_portal(self, params=None, *a):
+        try:
+            params = params or {}
+            user_val, pass_val = _get_user_pass(self._app, params)
+            if not pass_val:
+                win = getattr(self, '_window', None) or getattr(getattr(self, '_app', None), '_window', None)
+                if win:
+                    win.evaluate_js("logJsonConsole('❌ Por favor ingrese la contraseña de Perú Compras para extraer del portal.', 'log-err');")
+                return {"status": "error", "msg": "Contraseña requerida"}
+
+            acuerdo_val = str(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES").strip()
+            catalogo_val = str(params.get("cat") or "COMPUTADORAS DE ESCRITORIO").strip()
+            categoria_val = str(params.get("catg") or "COMPUTADORA TODO EN UNO").strip()
+            visible = bool(params.get("visible", False))
+
+            import threading
+            import workers
+
+            evt = threading.Event()
+            self._app.stop_event = evt
+            self._app._json_stop_event = evt
+            self._app.captcha_bridge = getattr(self._app, "captcha_bridge", None)
+
+            def _log(msg):
+                try:
+                    print(f"[EXTRACTOR JSON] {msg}")
+                except Exception:
+                    pass
+                win = getattr(self, '_window', None) or getattr(getattr(self, '_app', None), '_window', None)
+                if win:
+                    try:
+                        js_msg = json.dumps(str(msg))
+                        win.evaluate_js(f"logJsonConsole({js_msg});")
+                    except Exception:
+                        pass
+
+            def _done(fichas, out_file):
+                win = getattr(self, '_window', None) or getattr(getattr(self, '_app', None), '_window', None)
+                if fichas:
+                    self._app._precios_json_data = fichas
+                    if win:
+                        try:
+                            js_data = json.dumps(fichas)
+                            win.evaluate_js(f"window._lastLoadedJsonRows = {js_data}; renderJsonTable(window._lastLoadedJsonRows);")
+                            win.evaluate_js(f"document.getElementById('jsonFilePath').value = 'Extraído de Perú Compras ({len(fichas)} fichas)';")
+                            win.evaluate_js(f"document.getElementById('jsonBadge').className = 'status-badge ok';")
+                            win.evaluate_js(f"document.getElementById('jsonBadge').innerText = '✓ Dataset en memoria: {len(fichas)} ofertas';")
+                            win.evaluate_js(f"logJsonConsole('✅ Se cargaron {len(fichas)} fichas en la tabla listas para procesar.', 'log-ok');")
+                        except Exception as ex:
+                            print(f"[ERROR _done evaluate_js] {ex}")
+                else:
+                    if win:
+                        try:
+                            win.evaluate_js("logJsonConsole('❌ No se obtuvieron fichas del catálogo.', 'log-err');")
+                        except Exception:
+                            pass
+
+            combos = getattr(self._app, "_catalog_data", None) or getattr(self._app, "_stock_combos_data", {})
+            n_acuerdo = workers._get_id_acuerdo(combos, acuerdo_val) if hasattr(workers, '_get_id_acuerdo') else "249"
+            n_catalogo = workers._get_id_catalogo(combos, acuerdo_val, catalogo_val) if hasattr(workers, '_get_id_catalogo') else "252"
+            n_categoria = workers._get_id_categoria(combos, acuerdo_val, catalogo_val, categoria_val) if hasattr(workers, '_get_id_categoria') else "11736"
+
+            threading.Thread(
+                target=workers.execute_json_extractor,
+                args=(self._app, user_val, pass_val, n_acuerdo, n_catalogo, n_categoria, _done, _log, not visible),
+                daemon=True
+            ).start()
+
+            return {"status": "started"}
+        except Exception as e:
+            print(f"[ERROR extract_json_portal] {e}")
             return {"status": "error", "msg": str(e)}
 
     def run_tool_test(self, params=None, *a):

@@ -16,7 +16,7 @@ Flujo:
 import time, re, concurrent.futures, threading
 import httpx
 
-BASE_URL = "https://www.catalogos.perucompras.gob.pe"
+BASE_URL = "https://catalogos.perucompras.gob.pe"
 URL_TABLA = f"{BASE_URL}/t_ProductoOfertadoAmp/_CatalogoProductoIndexJson"
 URL_INSERTA = f"{BASE_URL}/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP"
 

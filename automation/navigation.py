@@ -3,8 +3,8 @@ import time
 from playwright.sync_api import Page, TimeoutError as PlaywrightTimeout
 from utils.logger import LogWriter
 
-CATALOGO_URL = "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp"
-CATALOGO_INDEX_URL = "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
+CATALOGO_URL = "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp"
+CATALOGO_INDEX_URL = "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
 
 # Timeout base por operación (ms). Se dobla en cada reintento.
 _BASE_TIMEOUT = 60_000

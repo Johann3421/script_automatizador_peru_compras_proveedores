@@ -40,7 +40,7 @@ def execute_stock(app, usuario, password, acuerdo, catalogo, categoria, pausa):
     STOP_EVENT = app._stock_stop_event
     # LogWriter puente → reenvía a la UI (pestaña 2)
     log = _make_stock_log(app._append_stock_log)
-    pw = browser = page = None
+    pw = browser = None
     app._stock_pw = None
     app._stock_browser = None
     try:
@@ -1236,6 +1236,279 @@ def _buscar_match_local(producto_pc, precios_data):
     return None
 
 
+def _build_datatable_payload(n_acuerdo, n_catalogo, n_categoria, start=0, length=100, search=""):
+    cols = ["C_Imagen", "C_Descripcion", "C_ArchivoDescriptivo",
+            "C_MonedaOfertada", "N_PrecioOfertado", "N_CatalogoProducto", "C_Estado"]
+    params = {
+        "draw": "1", "order[0][column]": "0", "order[0][dir]": "asc",
+        "start": str(start), "length": str(length),
+        "search[value]": search, "search[regex]": "false",
+        "N_Acuerdo": str(n_acuerdo), "N_Catalogo": str(n_catalogo),
+        "N_Categoria": str(n_categoria), "C_Descripcion": search,
+    }
+    for i, col in enumerate(cols):
+        for key, val in {
+            f"columns[{i}][data]": col, f"columns[{i}][name]": col,
+            f"columns[{i}][searchable]": "true",
+            f"columns[{i}][orderable]": "true",
+            f"columns[{i}][search][value]": "",
+            f"columns[{i}][search][regex]": "false",
+        }.items():
+            params[key] = val
+    return params
+
+
+def _download_all_catalog_products(page, url_endpoint, raw_body, total_records_val,
+                                  n_acuerdo, n_catalogo, n_categoria, log_fn,
+                                  stop_evt=None, page_size=100,
+                                  initial_products=None) -> list:
+    """
+    Descarga todos los productos de _CatalogoProductoIndexJson usando la sesión de Playwright.
+    Soporta payload interceptado o construcción directa con _build_datatable_payload.
+    Reutiliza initial_products si ya fueron capturados por el navegador para evitar doble petición.
+    """
+    from urllib.parse import parse_qs, urlencode
+    import time
+
+    endpoint = url_endpoint or "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/_CatalogoProductoIndexJson"
+    use_direct = not bool(raw_body)
+    if use_direct:
+        log_fn(f"ℹ️ Usando payload directo estructurado (Acuerdo [{n_acuerdo}], Catálogo [{n_catalogo}], Categoría [{n_categoria}])...")
+
+    all_products = []
+    total = total_records_val or 0
+    if initial_products:
+        all_products.extend(initial_products)
+        total = total_records_val or len(initial_products)
+        log_fn(f"📊 Catálogo inicial capturado desde navegador: {len(all_products)}/{total} fichas")
+
+    parsed_params = parse_qs(raw_body) if not use_direct else None
+
+    req_headers = {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept": "application/json, text/javascript, */*; q=0.01",
+        "Origin": "https://catalogos.perucompras.gob.pe",
+        "Referer": "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
+    }
+
+    # Lote 0 (inicial) solo si no teníamos initial_products
+    if not all_products:
+        if use_direct:
+            p0 = _build_datatable_payload(n_acuerdo, n_catalogo, n_categoria, start=0, length=page_size)
+            body0 = urlencode(p0)
+        else:
+            parsed_params['start'] = ['0']
+            parsed_params['length'] = [str(page_size)]
+            parsed_params['draw'] = ['1']
+            body0 = urlencode(parsed_params, doseq=True)
+
+        log_fn("📡 Consultando catálogo en Perú Compras vía API...")
+        for intento in range(1, 4):
+            if stop_evt and stop_evt.is_set():
+                break
+            try:
+                resp0 = page.request.post(
+                    endpoint,
+                    headers=req_headers,
+                    data=body0,
+                    timeout=60000
+                )
+                if resp0.status == 200:
+                    data0 = resp0.json()
+                    recs0 = data0.get("data", [])
+                    total = int(data0.get("recordsTotal") or data0.get("recordsFiltered") or len(recs0) or total)
+                    all_products.extend(recs0)
+                    log_fn(f"📊 Total registros en Perú Compras: {total}")
+                    log_fn(f"   📥 Primer lote descargado: {len(all_products)}/{total}")
+                    break
+                else:
+                    log_fn(f"⚠️ Reintento {intento}/3 en consulta inicial: Status {resp0.status}")
+                    time.sleep(2)
+            except Exception as e0:
+                if intento < 3:
+                    log_fn(f"⏳ Reintento {intento}/3 tras demora en respuesta del portal ({e0})...")
+                    time.sleep(3)
+                else:
+                    log_fn(f"❌ Error en petición inicial de catálogo tras 3 intentos: {e0}")
+
+    if total == 0 and not all_products:
+        return []
+
+    # Bucle paginado para lotes restantes
+    start = len(all_products)
+    draw = 2
+    while start < total:
+        if stop_evt and stop_evt.is_set():
+            log_fn("🛑 Descarga detenida por el usuario.")
+            break
+
+        if use_direct:
+            p = _build_datatable_payload(n_acuerdo, n_catalogo, n_categoria, start=start, length=page_size)
+            p["draw"] = str(draw)
+            body = urlencode(p)
+        else:
+            parsed_params['start'] = [str(start)]
+            parsed_params['length'] = [str(page_size)]
+            parsed_params['draw'] = [str(draw)]
+            body = urlencode(parsed_params, doseq=True)
+
+        exito_lote = False
+        for intento in range(1, 3):
+            try:
+                resp = page.request.post(
+                    endpoint,
+                    headers=req_headers,
+                    data=body,
+                    timeout=45000
+                )
+                if resp.status == 200:
+                    data = resp.json()
+                    records = data.get("data", [])
+                    if not records:
+                        exito_lote = True
+                        break
+                    all_products.extend(records)
+                    log_fn(f"   📥 Lote descargado: {len(all_products)}/{total}")
+                    exito_lote = True
+                    break
+                else:
+                    time.sleep(1.5)
+            except Exception as e:
+                if intento == 2:
+                    log_fn(f"   ❌ Error en lote {start}: {e}")
+                time.sleep(2)
+
+        if not exito_lote:
+            break
+
+        start += page_size
+        draw += 1
+        time.sleep(0.3)
+
+    return all_products
+
+
+def _buscar_ficha_en_portal(page, n_acuerdo, n_catalogo, n_categoria, parte_busqueda):
+    """
+    Busca puntualmente un producto por su part number vía API dentro del navegador.
+    Tarda ~0.4s porque filtra en la BD del portal por C_Descripcion.
+    """
+    payload = _build_datatable_payload(n_acuerdo, n_catalogo, n_categoria, start=0, length=10, search=parte_busqueda)
+    try:
+        res = page.evaluate("""(params) => {
+            return new Promise((resolve) => {
+                if (typeof $ !== 'undefined') {
+                    $.ajax({
+                        url: '/t_ProductoOfertadoAmp/_CatalogoProductoIndexJson',
+                        type: 'POST',
+                        data: params,
+                        success: function(r) { resolve(r && r.data ? r.data : []); },
+                        error: function() { resolve([]); }
+                    });
+                } else {
+                    fetch('/t_ProductoOfertadoAmp/_CatalogoProductoIndexJson', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: new URLSearchParams(params)
+                    }).then(r => r.json().then(j => resolve(j && j.data ? j.data : [])))
+                      .catch(() => resolve([]));
+                }
+            });
+        }""", payload)
+        if isinstance(res, list) and res:
+            return res
+    except Exception:
+        pass
+    return []
+
+
+def _resolver_catalogo_productos(page, acuerdo_val, catalogo_val, categoria_val,
+                                  precios_data, log_fn, stop_event=None) -> list:
+    """
+    Resuelve el catálogo de productos de forma ultrarrápida (Zero Wait):
+    1. Si todas las filas ya traen N_CatalogoProducto / ID_CatalogoProducto, no requiere catálogo.
+    2. Carga caché local en 0.01s (Fichas_Portal_{acuerdo}_{catalogo}_{categoria}.json o reciente).
+    3. Si algún ítem falta en caché, busca puntualmente on-demand en el portal (0.4s por ítem).
+    4. Cero tiempos muertos de 60s ni caídas por timeouts.
+    """
+    import os, glob, json
+
+    # 1. Comprobar si todas las filas ya traen el ID directo
+    if precios_data and all(bool(r.get("N_CatalogoProducto") or r.get("ID_CatalogoProducto")) for r in precios_data):
+        log_fn("⚡ Todas las filas cuentan con ID de catálogo directo. Saltando búsqueda en catálogo.")
+        return []
+
+    # 2. Localizar archivo de caché local
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    rep_dir = os.path.join(base_dir, "reportes_auditoria")
+    
+    cache_file = os.path.join(rep_dir, f"Fichas_Portal_{acuerdo_val}_{catalogo_val}_{categoria_val}.json")
+    if not os.path.exists(cache_file):
+        cands = sorted(glob.glob(os.path.join(rep_dir, "Fichas_Portal_*.json")), key=os.path.getmtime, reverse=True)
+        if cands:
+            cache_file = cands[0]
+
+    all_products = []
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, list) and data:
+                all_products = data
+                log_fn(f"⚡ Catálogo en caché cargado en 0.01s: {len(all_products)} fichas ({os.path.basename(cache_file)}).")
+        except Exception as e:
+            log_fn(f"⚠️ Error leyendo caché local ({e}).")
+
+    # 3. Comprobar qué productos del usuario no tienen match
+    unmatched = []
+    for r in precios_data:
+        if not (r.get("N_CatalogoProducto") or r.get("ID_CatalogoProducto")):
+            if not _buscar_match_exacto(r, all_products):
+                unmatched.append(r)
+
+    # 4. Si faltan productos, buscarlos puntualmente on-demand (tarda < 1s por ítem)
+    if unmatched:
+        log_fn(f"🔎 Realizando búsqueda puntual on-demand para {len(unmatched)} productos...")
+        nuevos_encontrados = False
+        for idx, u in enumerate(unmatched, 1):
+            if stop_event and stop_event.is_set():
+                break
+            parte = str(
+                u.get("Numero_Parte") or
+                u.get("Parte") or
+                u.get("nro_parte") or
+                u.get("nro_parte_o_cdigo_nico_de_identificacin") or
+                u.get("parte") or ""
+            ).strip()
+            if not parte:
+                continue
+
+            resultados = _buscar_ficha_en_portal(page, acuerdo_val, catalogo_val, categoria_val, parte)
+            if resultados:
+                for res in resultados:
+                    n_res = str(res.get("N_CatalogoProducto") or "")
+                    if not any(str(p.get("N_CatalogoProducto")) == n_res for p in all_products):
+                        all_products.append(res)
+                        nuevos_encontrados = True
+                log_fn(f"   [{idx}/{len(unmatched)}] ✅ Encontrado on-demand '{parte}' -> Ficha #{resultados[0].get('N_CatalogoProducto')}")
+            else:
+                log_fn(f"   [{idx}/{len(unmatched)}] ⚠ No encontrado en portal: '{parte}'")
+
+        # Actualizar caché si encontramos nuevas fichas
+        if nuevos_encontrados and cache_file:
+            try:
+                with open(cache_file, "w", encoding="utf-8") as f:
+                    json.dump(all_products, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+
+    return all_products
+
+
 def execute_test_precios(app, usuario, password, headless, log_func,
                          precios_data, acuerdo_val, catalogo_val, categoria_val):
     """
@@ -1278,7 +1551,7 @@ def execute_test_precios(app, usuario, password, headless, log_func,
 
         log_func(app, "✅ Login OK. Navegando a t_ProductoOfertadoAmp...")
         page.goto(
-            "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp",
+            "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp",
             wait_until="networkidle", timeout=60_000
         )
         time.sleep(2)
@@ -1327,107 +1600,55 @@ def execute_test_precios(app, usuario, password, headless, log_func,
         time.sleep(2)
 
         # ── 4. Click Iniciar Búsqueda y esperar tabla ─────────────────────
+        # ── 4. Click Iniciar Búsqueda y esperar botón ─────────────────────
         log_func(app, "🔍 Haciendo click en Iniciar Búsqueda...")
         page.click("#btnBuscar")
-        time.sleep(4)
+        time.sleep(3)
 
+        btn_oferta = False
+        for intento in range(3):
+            try:
+                page.wait_for_selector("#btnNuevoProducto", timeout=15_000)
+                btn_oferta = True
+                log_func(app, "✅ Botón 'Agregar oferta' (#btnNuevoProducto) listo.")
+                break
+            except Exception:
+                log_func(app, f"⏳ Reintentando búsqueda ({intento+1}/3)...")
+                try: page.click("#btnBuscar")
+                except Exception: pass
+                time.sleep(3)
+
+        # ── 5. Acceso a CatalogoProductoIndex ────────────────────────────────
+        log_func(app, "📂 Accediendo al catálogo de ofertas...")
         try:
-            page.wait_for_selector("#btnNuevoProducto", timeout=10_000)
-            log_func(app, "✅ Botón 'Agregar oferta' visible.")
-        except Exception:
-            log_func(app, "⚠ Botón 'Agregar oferta' no apareció, continuando...")
-
-        # ── 5. Interceptar payload del primer request AJAX ─────────────────
-        captured_payload = {}
-        total_records = [0]
-
-        def handle_request(req):
-            if "_CatalogoProductoIndexJson" in req.url:
-                captured_payload["body"] = req.post_data
-                captured_payload["url"] = req.url
-
-        def handle_response(response):
-            if "_CatalogoProductoIndexJson" in response.url:
+            if btn_oferta and page.locator("#btnNuevoProducto").first.is_visible():
+                log_func(app, "👉 Clic en botón 'Agregar oferta'...")
+                page.locator("#btnNuevoProducto").first.click(force=True)
                 try:
-                    data = response.json()
-                    total_records[0] = data.get("recordsTotal", 0)
+                    page.wait_for_url("**CatalogoProductoIndex**", timeout=8_000)
                 except Exception:
                     pass
-
-        page.on("request", handle_request)
-        page.on("response", handle_response)
-
-        try:
-            log_func(app, "📂 Navegando a CatalogoProductoIndex...")
-            with page.expect_response(lambda r: "_CatalogoProductoIndexJson" in r.url, timeout=45000):
+            else:
+                log_func(app, "👉 Navegando a CatalogoProductoIndex...")
                 page.goto(
-                    "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex",
-                    wait_until="domcontentloaded", timeout=60_000
+                    "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex",
+                    wait_until="domcontentloaded", timeout=30_000
                 )
         except Exception as e:
-            log_func(app, f"⚠ Error esperando respuesta de red: {e}")
+            log_func(app, f"⚠️ Aviso navegando a catálogo: {e}")
 
-        page.remove_listener("request", handle_request)
-        page.remove_listener("response", handle_response)
+        # ── 6. Resolución Instantánea de Catálogo (Zero Wait) ────────────────
+        all_products = _resolver_catalogo_productos(
+            page,
+            acuerdo_val,
+            catalogo_val,
+            categoria_val,
+            precios_data,
+            lambda m: log_func(app, m),
+            stop_event=None
+        )
 
-        raw_body = captured_payload.get("body")
-        url_endpoint = captured_payload.get("url")
-
-        if not raw_body or not url_endpoint:
-            log_func(app, "❌ Error: No se pudo capturar el payload de red. Abortando.")
-            re_enable()
-            return
-
-        # ── 6. Descarga mediante peticiones directas API (Velocidad Máxima) ─
-        log_func(app, "📡 Descargando todos los registros mediante llamadas API directas...")
-        parsed_params = parse_qs(raw_body)
-        total = total_records[0]
-        log_func(app, f"📊 Total registros en Perú Compras: {total}")
-
-        all_products = []
-        PAGE_SIZE = 100  # Lote estable
-        start = 0
-        draw = 1
-
-        while start < total:
-            # Modificar parámetros de paginación
-            parsed_params['start'] = [str(start)]
-            parsed_params['length'] = [str(PAGE_SIZE)]
-            parsed_params['draw'] = [str(draw)]
-            
-            # Re-codificar a urlencoded
-            new_body = urlencode(parsed_params, doseq=True)
-
-            # Petición POST directa usando el cliente de Playwright (comparte sesión/cookies)
-            resp = page.request.post(
-                url_endpoint,
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Referer": "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
-                },
-                data=new_body,
-                timeout=20000
-            )
-
-            if resp.status == 200:
-                try:
-                    data = resp.json()
-                    records = data.get("data", [])
-                    all_products.extend(records)
-                    log_func(app, f"   Descargados: {len(all_products)}/{total}")
-                except Exception as je:
-                    log_func(app, f"   ❌ Error parseando JSON en lote {start}: {je}")
-                    break
-            else:
-                log_func(app, f"   ❌ Error de red en lote {start}: Status {resp.status}")
-                break
-
-            start += PAGE_SIZE
-            draw += 1
-            time.sleep(0.3)  # Pausa mínima de seguridad
-
-        log_func(app, f"\n✅ Descarga completa: {len(all_products)} productos")
+        log_func(app, f"✅ Catálogo listo para matching: {len(all_products)} fichas disponibles.")
 
         # ── 7. Matching con JSON local ─────────────────────────────────────
         log_func(app, f"\n🔎 Buscando matches contra {len(precios_data)} fichas locales...")
@@ -1435,15 +1656,15 @@ def execute_test_precios(app, usuario, password, headless, log_func,
         matches_found = 0
         no_match = 0
 
-        for producto_pc in all_products:
-            match = _buscar_match_pc(producto_pc, precios_data)
+        for rec in precios_data:
+            match = _buscar_match_pc(rec, all_products)
             if match:
                 matches_found += 1
             else:
                 no_match += 1
 
-        log_func(app, f"✅ Matches encontrados: {matches_found}/{len(all_products)}")
-        log_func(app, f"⚠ Sin match:           {no_match}/{len(all_products)}")
+        log_func(app, f"✅ Matches encontrados: {matches_found}/{len(precios_data)}")
+        log_func(app, f"⚠ Sin match:           {no_match}/{len(precios_data)}")
         log_func(app, "\n✅ TEST completado. Revisa los logs.")
 
     except Exception as e:
@@ -1459,30 +1680,51 @@ def execute_test_precios(app, usuario, password, headless, log_func,
 #  TRABAJADORES DE SUBIDA DE PRECIOS REAL
 # ═══════════════════════════════════════════════════════════════════
 
-def _clean_match_str(s):
-    return re.sub(r'[^A-Z0-9]', '', (s or "").upper().strip())
+def _buscar_match_exacto(rec_local, all_products):
+    """
+    Busca coincidencia EXACTA del número de parte en el catálogo de Perú Compras.
+    No permite coincidencias parciales, sub-cadenas ambiguas ni falsos positivos.
+    """
+    import re
+    nro_local = str(
+        rec_local.get("nro_parte_o_cdigo_nico_de_identificacin") or
+        rec_local.get("nro_parte") or
+        rec_local.get("parte") or
+        rec_local.get("Parte") or
+        rec_local.get("Numero_Parte") or
+        rec_local.get("ID_CatalogoProducto") or
+        rec_local.get("ID_ProductoOfertado") or ""
+    ).strip()
 
-def _buscar_match_pc(rec_local, all_products):
-    nro_local = str(rec_local.get("nro_parte_o_cdigo_nico_de_identificacin") or rec_local.get("nro_parte") or rec_local.get("ID_CatalogoProducto") or rec_local.get("ID_ProductoOfertado") or "").strip()
-    desc_local = str(rec_local.get("descripcin_fichaproducto") or rec_local.get("descripcion_fichaproducto") or rec_local.get("C_Descripcion") or rec_local.get("parte") or "").strip()
-    
-    clean_nro = _clean_match_str(nro_local)
-    clean_desc = _clean_match_str(desc_local)
+    if not nro_local:
+        return None
+
+    parte_norm = nro_local.upper().strip()
+    parte_clean = re.sub(r'[^A-Z0-9]', '', parte_norm)
+
+    # Regex para token exacto delimitado por no-alfanuméricos (evita que '07JUM487' coincida con '07JUM4879' o 'X07JUM487')
+    pattern = re.compile(r'(?<![A-Za-z0-9])' + re.escape(parte_norm) + r'(?![A-Za-z0-9])', re.IGNORECASE)
+    pattern_clean = re.compile(r'(?<![A-Za-z0-9])' + re.escape(parte_clean) + r'(?![A-Za-z0-9])') if parte_clean else None
 
     for p in all_products:
-        desc_pc = str(p.get("C_Descripcion") or "").strip()
         nro_pc = str(p.get("N_CatalogoProducto") or "").strip()
-        clean_pc = _clean_match_str(desc_pc)
+        # 1. Coincidencia exacta con ID de catálogo
+        if nro_pc and (nro_local == nro_pc or (parte_clean and parte_clean == nro_pc)):
+            return p
 
-        if nro_local and nro_pc and nro_local == nro_pc:
+        desc_pc = str(p.get("C_Descripcion") or "")
+        # 2. Token exacto en la descripción del producto
+        if pattern.search(desc_pc):
             return p
-        if clean_nro and len(clean_nro) >= 4 and (clean_nro in clean_pc or clean_pc in clean_nro):
+
+        # 3. Token limpio exacto (sin guiones o signos)
+        if pattern_clean and pattern_clean.search(desc_pc):
             return p
-        if clean_nro and len(clean_nro) >= 6 and clean_nro[:8] in clean_pc:
-            return p
-        if clean_desc and len(clean_desc) >= 10 and (clean_desc in clean_pc or clean_pc in clean_desc):
-            return p
+
     return None
+
+# Alias para compatibilidad hacia atrás
+_buscar_match_pc = _buscar_match_exacto
 
 def _interpret_response_precios(text: str) -> str:
     t = text.lower()
@@ -1497,12 +1739,12 @@ def _interpret_response_precios(text: str) -> str:
 def _enviar_oferta_precios(page, log_func, app):
     # Confirmar oferta llamando a los posibles endpoints
     for suffix in ["/EnviarOferta", "/Enviar_Oferta", "/ConfirmarOferta"]:
-        url = f"https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp{suffix}"
+        url = f"https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp{suffix}"
         try:
             resp = page.request.post(url, headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
                 "X-Requested-With": "XMLHttpRequest",
-                "Referer": "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
+                "Referer": "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
             }, timeout=30000)
             if resp.status == 200:
                 log_func(app, f"✅ API: Oferta confirmada vía {suffix} (Respuesta: {resp.text()[:150]})")
@@ -1513,8 +1755,332 @@ def _enviar_oferta_precios(page, log_func, app):
     log_func(app, "❌ No se pudo confirmar la oferta automáticamente por API.")
     return False
 
+
+def _ejecutar_confirmacion_oferta(page, log_func, app) -> bool:
+    """
+    Ejecuta el envío de oferta en el portal y confirma el diálogo modal 'OK'.
+    """
+    if not page:
+        log_func(app, "❌ No hay página de navegador activa.")
+        return False
+    import time
+    try:
+        log_func(app, "🖱 Haciendo click en 'Enviar oferta' en el portal...")
+        page.evaluate("""() => {
+            if (typeof EnviarOferta === 'function') EnviarOferta();
+            else if (typeof fn_EnviarOferta === 'function') fn_EnviarOferta();
+            const btn = document.querySelector('#btn_enviarOferta2, #btn_enviarOferta, #btnEnviarOferta, [onclick*="EnviarOferta"]');
+            if (btn) btn.click();
+        }""")
+        time.sleep(3.0)
+
+        log_func(app, "🖱 Confirmando diálogo modal de notificación 'OK' en Perú Compras...")
+        modal_closed = page.evaluate("""() => {
+            let done = false;
+            if (typeof ocultarMensajeCantidadUnidadesPresentacion === 'function') {
+                try { ocultarMensajeCantidadUnidadesPresentacion(); done = true; } catch(e){}
+            }
+            const okBtn = document.querySelector('._wModal_btn_ok, ._wModal_btn_blue, ._wModal_btn');
+            if (okBtn) {
+                try { okBtn.click(); done = true; } catch(e){}
+            }
+            const allElems = Array.from(document.querySelectorAll('div._wModal_btn, button, a, div'));
+            const target = allElems.find(el => {
+                const t = (el.textContent || '').trim().toUpperCase();
+                return (t === 'OK' || t === 'ACEPTAR' || t === 'SÍ' || t === 'SI') && el.offsetWidth > 0;
+            });
+            if (target) {
+                try { target.click(); done = true; } catch(e){}
+            }
+            document.querySelectorAll('.modal-backdrop, #_wModal_bg, ._wModal_bg, ._wModal_holder').forEach(el => el.remove());
+            document.body.style.overflow = '';
+            document.body.classList.remove('modal-open');
+            return done;
+        }""")
+
+        if modal_closed:
+            log_func(app, "✅ Ofertas enviadas y confirmadas en el portal (OK).")
+            res = True
+        else:
+            log_func(app, "⚠️ No se detectó modal UI. Ejecutando confirmación fallback por API...")
+            res = _enviar_oferta_precios(page, log_func, app)
+
+        time.sleep(2.0)
+        log_func(app, "🔄 Refrescando tabla de ofertas en el portal...")
+        page.evaluate("""() => {
+            if (typeof BuscarCatProducto === 'function') BuscarCatProducto();
+            else if (typeof Buscar_CatProducto === 'function') Buscar_CatProducto();
+        }""")
+        time.sleep(1.5)
+        return res
+    except Exception as e:
+        log_func(app, f"❌ Error en confirmación final ({e}). Intentando fallback por API...")
+        return _enviar_oferta_precios(page, log_func, app)
+
+
+def generar_reporte_excel_precios(report_rows, metadata, output_dir=None):
+    """
+    Genera un libro de Excel profesional, ejecutivo y detallado con:
+    - Encabezado institucional Perú Compras.
+    - Metadatos del proceso (Acuerdo, Catálogo, Categoría, Fecha/Hora).
+    - Tarjetas KPI de resumen ejecutivo (Total, Exitosos, Sin Coincidencia, Errores, Efectividad).
+    - Tabla estructurada con filtros automáticos, paneles congelados y formato de moneda.
+    - Diagnósticos amigables en lenguaje humano para el usuario promedio.
+    """
+    import os
+    from datetime import datetime
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Resultados Subida"
+    ws.views.sheetView[0].showGridLines = True
+
+    # Colores Institucionales y de Estado
+    C_NAVY_DK    = "002A54"  # Azul institucional oscuro
+    C_NAVY_MD    = "004077"  # Azul medio
+    C_WHITE      = "FFFFFF"
+    C_GRAY_BG    = "F8F9FA"  # Fila zebra
+    C_BORDER     = "D1D5DB"  # Borde tenue
+    
+    C_TOTAL_BG   = "EBF3FB"
+    C_TOTAL_TXT  = "1B365D"
+    C_OK_BG      = "D4EDDA"
+    C_OK_TXT     = "155724"
+    C_WARN_BG    = "FFF3CD"
+    C_WARN_TXT   = "856404"
+    C_ERR_BG     = "F8D7DA"
+    C_ERR_TXT    = "721C24"
+
+    thin_border = Border(
+        left=Side(style='thin', color=C_BORDER),
+        right=Side(style='thin', color=C_BORDER),
+        top=Side(style='thin', color=C_BORDER),
+        bottom=Side(style='thin', color=C_BORDER)
+    )
+
+    # 1. Encabezado Institucional
+    ws.merge_cells("A1:I1")
+    title_cell = ws["A1"]
+    title_cell.value = "PERÚ COMPRAS  —  REPORTE OFICIAL DE AUDITORÍA Y SUBIDA DE OFERTAS"
+    title_cell.font = Font(name="Calibri", size=15, bold=True, color=C_WHITE)
+    title_cell.fill = PatternFill(start_color=C_NAVY_DK, end_color=C_NAVY_DK, fill_type="solid")
+    title_cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 36
+
+    ws.merge_cells("A2:I2")
+    sub_cell = ws["A2"]
+    sub_cell.value = "SISTEMA DE AUTOMATIZACIÓN DE CATÁLOGOS ELECTRÓNICOS  |  CONTROL DE CARGA DE PRECIOS"
+    sub_cell.font = Font(name="Calibri", size=10, bold=False, italic=True, color="D0E1F9")
+    sub_cell.fill = PatternFill(start_color=C_NAVY_MD, end_color=C_NAVY_MD, fill_type="solid")
+    sub_cell.alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[2].height = 20
+
+    ws.row_dimensions[3].height = 10  # Espaciador
+
+    # 2. Metadatos
+    font_lbl = Font(name="Calibri", size=10, bold=True, color="333333")
+    font_val = Font(name="Calibri", size=10, bold=False, color="111111")
+    fill_meta = PatternFill(start_color="F4F6F9", end_color="F4F6F9", fill_type="solid")
+
+    meta_items = [
+        ("Fecha / Hora:", metadata.get("fecha_hora", datetime.now().strftime("%Y-%m-%d %H:%M:%S")), "Acuerdo Marco:", str(metadata.get("acuerdo", "-"))),
+        ("Catálogo:", str(metadata.get("catalogo", "-")), "Categoría:", str(metadata.get("categoria", "-"))),
+        ("Total Productos Portal:", f"{metadata.get('total_portal', len(report_rows))} fichas", "Moneda Catálogo:", str(metadata.get("moneda_default", "USD")))
+    ]
+
+    for row_idx, (l1, v1, l2, v2) in enumerate(meta_items, start=4):
+        ws.row_dimensions[row_idx].height = 18
+        
+        ws[f"A{row_idx}"].value = l1
+        ws[f"A{row_idx}"].font = font_lbl
+        ws[f"A{row_idx}"].fill = fill_meta
+        ws[f"A{row_idx}"].alignment = Alignment(horizontal="right", vertical="center")
+        
+        ws[f"B{row_idx}"].value = v1
+        ws[f"B{row_idx}"].font = font_val
+        ws[f"B{row_idx}"].alignment = Alignment(horizontal="left", vertical="center")
+        
+        ws[f"C{row_idx}"].value = l2
+        ws[f"C{row_idx}"].font = font_lbl
+        ws[f"C{row_idx}"].fill = fill_meta
+        ws[f"C{row_idx}"].alignment = Alignment(horizontal="right", vertical="center")
+        
+        ws[f"D{row_idx}"].value = v2
+        ws[f"D{row_idx}"].font = font_val
+        ws[f"D{row_idx}"].alignment = Alignment(horizontal="left", vertical="center")
+
+        for col in ["A", "B", "C", "D"]:
+            ws[f"{col}{row_idx}"].border = thin_border
+
+    # 3. Tarjetas KPI
+    total_items = len(report_rows)
+    oks = sum(1 for r in report_rows if str(r.get("estado_raw") or r.get("estado", "")).upper() == "OK")
+    no_matches = sum(1 for r in report_rows if str(r.get("estado_raw") or r.get("estado", "")).upper() in ["NO ENCONTRADO", "NO_ENCONTRADO"])
+    errors = total_items - oks - no_matches
+    efectividad = f"{(oks / total_items * 100):.1f}%" if total_items > 0 else "0.0%"
+
+    kpi_defs = [
+        ("F4", "TOTAL PROCESADOS", str(total_items), C_TOTAL_BG, C_TOTAL_TXT),
+        ("G4", "OFERTAS EXITOSAS", str(oks), C_OK_BG, C_OK_TXT),
+        ("H4", "SIN COINCIDENCIA", str(no_matches), C_WARN_BG, C_WARN_TXT),
+        ("I4", "RECHAZADOS / ERROR", str(errors), C_ERR_BG, C_ERR_TXT),
+    ]
+
+    for cell_id, title, val, bg, txt in kpi_defs:
+        col = cell_id[0]
+        c_title = ws[f"{col}4"]
+        c_title.value = title
+        c_title.font = Font(name="Calibri", size=8, bold=True, color=txt)
+        c_title.fill = PatternFill(start_color=bg, end_color=bg, fill_type="solid")
+        c_title.alignment = Alignment(horizontal="center", vertical="center")
+        c_title.border = thin_border
+
+        c_val = ws[f"{col}5"]
+        c_val.value = val
+        c_val.font = Font(name="Calibri", size=14, bold=True, color=txt)
+        c_val.fill = PatternFill(start_color=bg, end_color=bg, fill_type="solid")
+        c_val.alignment = Alignment(horizontal="center", vertical="center")
+        c_val.border = thin_border
+
+    ws.merge_cells("F6:I6")
+    c_efec = ws["F6"]
+    c_efec.value = f"EFECTIVIDAD GENERAL: {efectividad} ({oks} de {total_items} productos ofertados con éxito)"
+    c_efec.font = Font(name="Calibri", size=9, bold=True, color=C_NAVY_DK)
+    c_efec.fill = PatternFill(start_color="E9ECEF", end_color="E9ECEF", fill_type="solid")
+    c_efec.alignment = Alignment(horizontal="center", vertical="center")
+    for col_letter in ["F", "G", "H", "I"]:
+        ws[f"{col_letter}6"].border = thin_border
+
+    ws.row_dimensions[7].height = 12
+
+    # 4. Encabezados de la Tabla
+    headers = [
+        ("N°", 6, "center"),
+        ("N° DE PARTE", 18, "center"),
+        ("DESCRIPCIÓN EN CATÁLOGO OFICIAL (PERÚ COMPRAS)", 48, "left"),
+        ("DESCRIPCIÓN LOCAL / REFERENCIA", 28, "left"),
+        ("ID CATÁLOGO PORTAL", 18, "center"),
+        ("MONEDA", 10, "center"),
+        ("PRECIO OFERTADO", 18, "right"),
+        ("ESTADO DEL PROCESO", 28, "center"),
+        ("DIAGNÓSTICO Y RESPUESTA DEL SISTEMA", 46, "left"),
+    ]
+
+    ws.row_dimensions[8].height = 28
+    font_th = Font(name="Calibri", size=10, bold=True, color=C_WHITE)
+    fill_th = PatternFill(start_color=C_NAVY_DK, end_color=C_NAVY_DK, fill_type="solid")
+
+    for col_idx, (h_title, _, _) in enumerate(headers, start=1):
+        c = ws.cell(row=8, column=col_idx, value=h_title)
+        c.font = font_th
+        c.fill = fill_th
+        c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        c.border = Border(
+            left=Side(style='thin', color='FFFFFF'),
+            right=Side(style='thin', color='FFFFFF'),
+            top=Side(style='thin', color=C_NAVY_DK),
+            bottom=Side(style='medium', color=C_NAVY_DK)
+        )
+
+    # 5. Filas de Datos
+    font_data = Font(name="Calibri", size=9, color="222222")
+    font_part = Font(name="Calibri", size=10, bold=True, color="1B365D")
+    fill_zebra = PatternFill(start_color=C_GRAY_BG, end_color=C_GRAY_BG, fill_type="solid")
+    fill_white = PatternFill(start_color=C_WHITE, end_color=C_WHITE, fill_type="solid")
+
+    for idx, r in enumerate(report_rows, start=1):
+        row_num = 8 + idx
+        ws.row_dimensions[row_num].height = 22
+        row_fill = fill_zebra if (idx % 2 == 0) else fill_white
+
+        raw_st = str(r.get("estado_raw") or r.get("estado", "")).upper().strip()
+        resp_srv = str(r.get("respuesta_servidor", "")).strip()
+
+        if raw_st == "OK":
+            st_human = "✅ SUBIDO CON ÉXITO"
+            diag_human = "Precio registrado e incorporado correctamente en el portal."
+            fill_st = PatternFill(start_color=C_OK_BG, fill_type="solid")
+            font_st = Font(name="Calibri", size=9, bold=True, color=C_OK_TXT)
+        elif raw_st in ["NO ENCONTRADO", "NO_ENCONTRADO"]:
+            st_human = "⚠️ NO ENCONTRADO EN CATEGORÍA"
+            diag_human = f"El número de parte no existe en las fichas descargadas de la categoría seleccionada ({metadata.get('categoria', 'portal')})."
+            fill_st = PatternFill(start_color=C_WARN_BG, fill_type="solid")
+            font_st = Font(name="Calibri", size=9, bold=True, color=C_WARN_TXT)
+        elif raw_st == "EXCEDE":
+            st_human = "❌ RECHAZADO: EXCEDE MÁXIMO"
+            diag_human = f"El portal rechazó la oferta porque supera el precio tope permitido. {resp_srv}"
+            fill_st = PatternFill(start_color=C_ERR_BG, fill_type="solid")
+            font_st = Font(name="Calibri", size=9, bold=True, color=C_ERR_TXT)
+        elif raw_st == "INFERIOR":
+            st_human = "❌ RECHAZADO: PRECIO MUY BAJO"
+            diag_human = f"El portal rechazó la oferta por ser inferior al umbral mínimo permitido. {resp_srv}"
+            fill_st = PatternFill(start_color=C_ERR_BG, fill_type="solid")
+            font_st = Font(name="Calibri", size=9, bold=True, color=C_ERR_TXT)
+        else:
+            st_human = f"❌ ERROR: {raw_st}" if raw_st else "❌ ERROR"
+            diag_human = resp_srv if resp_srv else "Falla en el procesamiento de la oferta."
+            fill_st = PatternFill(start_color=C_ERR_BG, fill_type="solid")
+            font_st = Font(name="Calibri", size=9, bold=True, color=C_ERR_TXT)
+
+        precio_val = r.get("precio_ofertado", r.get("precio_usd", 0.0))
+        try:
+            precio_val = float(precio_val)
+        except Exception:
+            precio_val = 0.0
+
+        moneda = str(r.get("moneda") or metadata.get("moneda_default", "USD")).upper()
+        desc_cat = r.get("descripcion_catalogo") or ""
+        desc_loc = r.get("descripcion_local") or r.get("descripcion") or ""
+
+        values = [
+            (idx, "center", font_data, row_fill, None),
+            (r.get("nro_parte", "-"), "center", font_part, row_fill, None),
+            (desc_cat if desc_cat else "—", "left", font_data, row_fill, None),
+            (desc_loc if desc_loc else "—", "left", font_data, row_fill, None),
+            (str(r.get("id_catalogo_producto") or "—"), "center", font_data, row_fill, None),
+            (moneda, "center", font_data, row_fill, None),
+            (precio_val, "right", font_data, row_fill, '"$"#,##0.00' if moneda == "USD" else '"S/"#,##0.00'),
+            (st_human, "center", font_st, fill_st, None),
+            (diag_human, "left", font_data, row_fill, None),
+        ]
+
+        for col_idx, (val, align, font_c, fill_c, num_fmt) in enumerate(values, start=1):
+            cell = ws.cell(row=row_num, column=col_idx, value=val)
+            cell.font = font_c
+            cell.fill = fill_c
+            cell.alignment = Alignment(horizontal=align, vertical="center")
+            cell.border = thin_border
+            if num_fmt:
+                cell.number_format = num_fmt
+
+    # 6. Ajustes de Usabilidad
+    last_row = 8 + len(report_rows)
+    ws.freeze_panes = "A9"
+    if len(report_rows) > 0:
+        ws.auto_filter.ref = f"A8:I{last_row}"
+
+    for col_idx, (_, width, _) in enumerate(headers, start=1):
+        col_letter = get_column_letter(col_idx)
+        ws.column_dimensions[col_letter].width = width
+
+    # 7. Guardar Archivo
+    if not output_dir:
+        output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reportes_auditoria")
+    os.makedirs(output_dir, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    report_name = f"reporte_subida_precios_{timestamp}.xlsx"
+    final_path = os.path.join(output_dir, report_name)
+    wb.save(final_path)
+
+    return final_path
+
+
 def execute_iniciar_precios(app, usuario, password, headless, log_func,
-                            precios_data, acuerdo_val, catalogo_val, categoria_val, stop_event=None):
+                            precios_data, acuerdo_val, catalogo_val, categoria_val, stop_event=None, auto_enviar=False):
     from automation.browser import init_browser, close_browser
     from automation.login import do_login
     from urllib.parse import parse_qs, urlencode
@@ -1523,7 +2089,8 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
     from openpyxl.styles import PatternFill, Font, Alignment
     from datetime import datetime
 
-    pw = browser = None
+    pw = browser = page = None
+    oks = 0
 
     def re_enable():
         if hasattr(app, "btn_test_precios") and hasattr(app.btn_test_precios, "configure"):
@@ -1534,6 +2101,9 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
     try:
         log_func(app, "🚀 Inicializando navegador Playwright en segundo plano...")
         pw, browser, page = init_browser(headless=headless)
+        app._precios_pw = pw
+        app._precios_browser = browser
+        app._precios_page = page
         if not headless:
             try: page.set_viewport_size({"width": 1920, "height": 1080})
             except Exception: pass
@@ -1561,7 +2131,7 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
 
         log_func(app, "✅ Login OK. Navegando a t_ProductoOfertadoAmp...")
         page.goto(
-            "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp",
+            "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp",
             wait_until="domcontentloaded", timeout=60_000
         )
         time.sleep(2)
@@ -1609,103 +2179,55 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
         """)
         time.sleep(2)
 
-        # ── 4. Click Iniciar Búsqueda y esperar tabla ─────────────────────
+        # ── 4. Click Iniciar Búsqueda y esperar botón ─────────────────────
         log_func(app, "🔍 Haciendo click en Iniciar Búsqueda...")
         page.click("#btnBuscar")
-        time.sleep(4)
+        time.sleep(3)
 
+        btn_oferta = False
+        for intento in range(3):
+            try:
+                page.wait_for_selector("#btnNuevoProducto", timeout=15_000)
+                btn_oferta = True
+                log_func(app, "✅ Botón 'Agregar oferta' (#btnNuevoProducto) listo.")
+                break
+            except Exception:
+                log_func(app, f"⏳ Reintentando búsqueda ({intento+1}/3)...")
+                try: page.click("#btnBuscar")
+                except Exception: pass
+                time.sleep(3)
+
+        # ── 5. Acceso a CatalogoProductoIndex ────────────────────────────────
+        log_func(app, "📂 Accediendo al catálogo de ofertas...")
         try:
-            page.wait_for_selector("#btnNuevoProducto", timeout=10_000)
-            log_func(app, "✅ Botón 'Agregar oferta' visible.")
-        except Exception:
-            log_func(app, "⚠ Botón 'Agregar oferta' no apareció, continuando...")
-
-        # ── 5. Interceptar payload del primer request AJAX ─────────────────
-        captured_payload = {}
-        total_records = [0]
-
-        def handle_request(req):
-            if "_CatalogoProductoIndexJson" in req.url:
-                captured_payload["body"] = req.post_data
-                captured_payload["url"] = req.url
-
-        def handle_response(response):
-            if "_CatalogoProductoIndexJson" in response.url:
+            if btn_oferta and page.locator("#btnNuevoProducto").first.is_visible():
+                log_func(app, "👉 Clic en botón 'Agregar oferta'...")
+                page.locator("#btnNuevoProducto").first.click(force=True)
                 try:
-                    data = response.json()
-                    total_records[0] = data.get("recordsTotal", 0)
+                    page.wait_for_url("**CatalogoProductoIndex**", timeout=8_000)
                 except Exception:
                     pass
-
-        page.on("request", handle_request)
-        page.on("response", handle_response)
-
-        try:
-            log_func(app, "📂 Navegando a CatalogoProductoIndex...")
-            with page.expect_response(lambda r: "_CatalogoProductoIndexJson" in r.url, timeout=45000):
+            else:
+                log_func(app, "👉 Navegando a CatalogoProductoIndex...")
                 page.goto(
-                    "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex",
-                    wait_until="domcontentloaded", timeout=60_000
+                    "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex",
+                    wait_until="domcontentloaded", timeout=30_000
                 )
         except Exception as e:
-            log_func(app, f"⚠ Error esperando respuesta de red: {e}")
+            log_func(app, f"⚠️ Aviso navegando a catálogo: {e}")
 
-        page.remove_listener("request", handle_request)
-        page.remove_listener("response", handle_response)
+        # ── 6. Resolución Instantánea de Catálogo (Zero Wait) ────────────────
+        all_products = _resolver_catalogo_productos(
+            page,
+            acuerdo_val,
+            catalogo_val,
+            categoria_val,
+            precios_data,
+            lambda m: log_func(app, m),
+            stop_event=stop_event
+        )
 
-        raw_body = captured_payload.get("body")
-        url_endpoint = captured_payload.get("url")
-
-        if not raw_body or not url_endpoint:
-            log_func(app, "❌ Error: No se pudo capturar el payload de red. Abortando.")
-            re_enable()
-            return
-
-        # ── 6. Descarga completa del catálogo ──────────────────────────────
-        log_func(app, "📡 Descargando catálogo completo de Perú Compras...")
-        parsed_params = parse_qs(raw_body)
-        total = total_records[0]
-        log_func(app, f"📊 Total registros en Perú Compras: {total}")
-
-        all_products = []
-        PAGE_SIZE = 100
-        start = 0
-        draw = 1
-
-        while start < total:
-            parsed_params['start'] = [str(start)]
-            parsed_params['length'] = [str(PAGE_SIZE)]
-            parsed_params['draw'] = [str(draw)]
-            new_body = urlencode(parsed_params, doseq=True)
-
-            resp = page.request.post(
-                url_endpoint,
-                headers={
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-Requested-With": "XMLHttpRequest",
-                    "Referer": "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex"
-                },
-                data=new_body,
-                timeout=20000
-            )
-
-            if resp.status == 200:
-                try:
-                    data = resp.json()
-                    records = data.get("data", [])
-                    all_products.extend(records)
-                except Exception as je:
-                    log_func(app, f"   ❌ Error parseando JSON en lote {start}: {je}")
-                    break
-            else:
-                log_func(app, f"   ❌ Error de red en lote {start}: Status {resp.status}")
-                break
-
-            start += PAGE_SIZE
-            draw += 1
-            time.sleep(0.3)
-
-        log_func(app, f"✅ Catálogo descargado: {len(all_products)} productos")
+        log_func(app, f"✅ Catálogo listo para matching: {len(all_products)} fichas disponibles.")
 
         # ── 7. Bucle de Subida de Precios ──────────────────────────────────
         log_func(app, f"🚀 Iniciando inserción de precios para {len(precios_data)} fichas locales...")
@@ -1715,25 +2237,65 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
         errors = 0
         no_matches = 0
 
-        url_insert = "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP"
+        url_insert = "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/Inserta_ProductoOfertadoTMP"
 
         for idx, rec in enumerate(precios_data, 1):
             if stop_event and stop_event.is_set():
                 log_func(app, "🛑 Inserción de precios detenida por el usuario.")
                 break
 
-            desc_local = rec.get("descripcin_fichaproducto") or rec.get("descripcion_fichaproducto") or rec.get("C_Descripcion") or rec.get("parte") or ""
-            nro_local = rec.get("nro_parte_o_cdigo_nico_de_identificacin") or rec.get("nro_parte") or rec.get("ID_CatalogoProducto") or rec.get("ID_ProductoOfertado") or ""
+            desc_local = (
+                rec.get("Descripcion") or
+                rec.get("descripcion") or
+                rec.get("descripcin_fichaproducto") or
+                rec.get("descripcion_fichaproducto") or
+                rec.get("C_Descripcion") or
+                rec.get("parte") or ""
+            )
+            nro_local = (
+                rec.get("Numero_Parte") or
+                rec.get("Parte") or
+                rec.get("nro_parte") or
+                rec.get("nro_parte_o_cdigo_nico_de_identificacin") or
+                rec.get("ID_CatalogoProducto") or
+                rec.get("ID_ProductoOfertado") or ""
+            )
             
-            # Prioridad de subida: precio_max > precio_referencia > N_PrecioOfertado > precio
-            precio_max = rec.get("precio_max")
-            if precio_max is None or precio_max == 0:
-                precio_max = rec.get("precio_referencia") or rec.get("N_PrecioOfertado") or rec.get("precio") or 0.0
+            # Prioridad de precio:
+            # 1. Si viene precio directo (Excel o JSON con Precio/precio/N_PrecioOfertado > 0), usarlo tal cual.
+            # 2. Si viene precio_max / precio_referencia (CEAM soles), aplicar fórmula _calcular_precio_dolar.
+            p_directo = rec.get("precio") or rec.get("Precio") or rec.get("N_PrecioOfertado")
+            p_ceam = rec.get("precio_max") or rec.get("precio_referencia")
 
-            precio_usd = _calcular_precio_dolar(precio_max)
+            try:
+                p_dir_val = float(p_directo) if p_directo is not None else 0.0
+            except (ValueError, TypeError):
+                p_dir_val = 0.0
 
-            # Buscar match en el catálogo descargado
-            cat_match = _buscar_match_pc(rec, all_products)
+            try:
+                p_ceam_val = float(p_ceam) if p_ceam is not None else 0.0
+            except (ValueError, TypeError):
+                p_ceam_val = 0.0
+
+            if p_dir_val > 0:
+                precio_usd = round(p_dir_val, 2)
+                precio_max = p_dir_val
+            elif p_ceam_val > 0:
+                precio_usd = _calcular_precio_dolar(p_ceam_val)
+                precio_max = p_ceam_val
+            else:
+                precio_usd = 0.0
+                precio_max = 0.0
+
+            # Buscar match en el catálogo descargado (coincidencia EXACTA por N_CatalogoProducto o token delimitado)
+            cat_match = _buscar_match_exacto(rec, all_products)
+            if not cat_match and (rec.get("N_CatalogoProducto") or rec.get("ID_CatalogoProducto")):
+                cat_match = {
+                    "N_CatalogoProducto": str(rec.get("N_CatalogoProducto") or rec.get("ID_CatalogoProducto")),
+                    "C_MonedaOfertada": str(rec.get("moneda") or rec.get("Moneda") or "USD"),
+                    "C_Descripcion": str(rec.get("descripcion") or rec.get("Descripcion") or rec.get("parte") or "")
+                }
+
             
             status = "PENDIENTE"
             server_response = ""
@@ -1816,16 +2378,18 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
                         break
             else:
                 status = "NO ENCONTRADO"
-                server_response = "No se localizó descripción/número de parte en Perú Compras"
-                no_matches += 1
+            desc_cat = str(cat_match.get("C_Descripcion") or "") if cat_match else ""
+            moneda_final = str(cat_match.get("C_MonedaOfertada") or "USD") if cat_match else "USD"
 
             report_rows.append({
-                "descripcion": desc_local,
+                "item": idx,
                 "nro_parte": nro_local,
-                "precio_max_soles": precio_max,
-                "precio_usd": precio_usd,
+                "descripcion_catalogo": desc_cat,
+                "descripcion_local": desc_local,
+                "precio_ofertado": precio_usd,
+                "moneda": moneda_final,
                 "id_catalogo_producto": catalogo_id,
-                "estado": status,
+                "estado_raw": status,
                 "respuesta_servidor": server_response
             })
             
@@ -1834,146 +2398,64 @@ def execute_iniciar_precios(app, usuario, password, headless, log_func,
 
         # ── 8. Enviar/Confirmar Oferta Final ────────────────────────────────
         if oks > 0:
-            log_func(app, f"💾 Confirmando y enviando {oks} ofertas ingresadas exitosamente...")
-            try:
-                # 1. Click en el botón Enviar Oferta (físico + JS)
-                log_func(app, "🖱 Haciendo click en 'Enviar oferta'...")
-                page.evaluate("""() => {
-                    if (typeof EnviarOferta === 'function') EnviarOferta();
-                    else if (typeof fn_EnviarOferta === 'function') fn_EnviarOferta();
-                    const btn = document.querySelector('#btn_enviarOferta2, #btn_enviarOferta, #btnEnviarOferta, [onclick*="EnviarOferta"]');
-                    if (btn) btn.click();
-                }""")
-                time.sleep(3.0)
-                
-                # 2. Confirmar modal de notificación (click en "OK" / ._wModal_btn_ok / ocultarMensajeCantidadUnidadesPresentacion)
-                log_func(app, "🖱 Confirmando diálogo modal 'OK' de notificación en Perú Compras...")
-                
-                modal_closed = page.evaluate("""() => {
-                    let done = false;
-                    // a) Ejecutar función JS nativa del modal si está disponible
-                    if (typeof ocultarMensajeCantidadUnidadesPresentacion === 'function') {
-                        try { ocultarMensajeCantidadUnidadesPresentacion(); done = true; } catch(e){}
-                    }
-                    
-                    // b) Buscar y presionar el botón OK de ._wModal_holder
-                    const okBtn = document.querySelector('._wModal_btn_ok, ._wModal_btn_blue, ._wModal_btn');
-                    if (okBtn) {
-                        try { okBtn.click(); done = true; } catch(e){}
-                    }
-                    
-                    // c) Buscar cualquier elemento visible con texto 'OK'
-                    const allElems = Array.from(document.querySelectorAll('div._wModal_btn, button, a, div'));
-                    const target = allElems.find(el => {
-                        const t = (el.textContent || '').trim().toUpperCase();
-                        return (t === 'OK' || t === 'ACEPTAR' || t === 'SÍ' || t === 'SI') && el.offsetWidth > 0;
-                    });
-                    if (target) {
-                        try { target.click(); done = true; } catch(e){}
-                    }
-                    
-                    // d) Limpiar backdrops flotantes
-                    document.querySelectorAll('.modal-backdrop, #_wModal_bg, ._wModal_bg, ._wModal_holder').forEach(el => el.remove());
-                    document.body.style.overflow = '';
-                    document.body.classList.remove('modal-open');
-                    
-                    return done;
-                }""")
-                
-                if modal_closed:
-                    log_func(app, "✅ Ofertas enviadas y confirmadas en el portal (ocultarMensajeCantidadUnidadesPresentacion / OK).")
-                else:
-                    log_func(app, "⚠️ No se detectó modal UI. Ejecutando confirmación fallback por API...")
-                    _enviar_oferta_precios(page, log_func, app)
-                
-                time.sleep(3.0)
-                
-                # 3. Refrescar la tabla en la interfaz para mostrar las ofertas enviadas
-                log_func(app, "🔄 Refrescando tabla de ofertas en la pantalla...")
-                page.evaluate("""() => {
-                    if (typeof BuscarCatProducto === 'function') BuscarCatProducto();
-                    else if (typeof Buscar_CatProducto === 'function') Buscar_CatProducto();
-                }""")
-                time.sleep(3.0)
-                
-            except Exception as e:
-                log_func(app, f"❌ Error en confirmación final ({e}). Intentando fallback por API...")
-                _enviar_oferta_precios(page, log_func, app)
+            if auto_enviar:
+                log_func(app, f"💾 Confirmando y enviando {oks} ofertas ingresadas exitosamente...")
+                _ejecutar_confirmacion_oferta(page, log_func, app)
+            else:
+                log_func(app, f"\n⏸ PRECIOS INSERTADOS EN BORRADOR ({oks} exitosos):")
+                log_func(app, "👉 Modo verificación activo: Las ofertas NO han sido enviadas aún.")
+                log_func(app, "   1. Revisa los precios en el portal o en el reporte Excel adjunto.")
+                log_func(app, "   2. Para confirmar y enviar definitivamente, haz clic en '🚀 CONFIRMAR Y ENVIAR OFERTA AHORA'.")
+                try:
+                    page.evaluate("""() => {
+                        if (typeof BuscarCatProducto === 'function') BuscarCatProducto();
+                        else if (typeof Buscar_CatProducto === 'function') Buscar_CatProducto();
+                    }""")
+                except Exception:
+                    pass
+                win = getattr(app, '_window', None)
+                if win:
+                    try: win.evaluate_js("mostrarBotonConfirmarOferta(true);")
+                    except Exception: pass
         else:
             log_func(app, "⚠ No se insertó ningún precio exitosamente. Saltando confirmación final.")
 
-        # ── 9. Generar Reporte Excel ───────────────────────────────────────
-        log_func(app, "📊 Generando reporte Excel de resultados...")
+        # ── 9. Generar Reporte Excel Estructurado y Ejecutivo ──────────────
+        log_func(app, "📊 Generando reporte Excel ejecutivo y estructurado...")
         
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Resultados Subida"
-        
-        # Estilos
-        font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-        fill_header = PatternFill(start_color="2C3E50", end_color="2C3E50", fill_type="solid")
-        
-        fill_ok = PatternFill(start_color="D4EDDA", end_color="D4EDDA", fill_type="solid")
-        fill_error = PatternFill(start_color="F8D7DA", end_color="F8D7DA", fill_type="solid")
-        fill_warn = PatternFill(start_color="FFF3CD", end_color="FFF3CD", fill_type="solid")
-        
-        headers = ["Descripción Ficha", "Número de Parte", "Precio Máx (S/)", "Precio USD Calculado", "ID Catálogo Producto", "Estado Subida", "Respuesta Servidor"]
-        ws.append(headers)
-        
-        for col_idx in range(1, len(headers) + 1):
-            cell = ws.cell(row=1, column=col_idx)
-            cell.font = font_header
-            cell.fill = fill_header
-            cell.alignment = Alignment(horizontal="center")
-            
-        for r in report_rows:
-            ws.append([
-                r["descripcion"],
-                r["nro_parte"],
-                r["precio_max_soles"],
-                r["precio_usd"],
-                r["id_catalogo_producto"],
-                r["estado"],
-                r["respuesta_servidor"]
-            ])
-            
-            curr_row = ws.max_row
-            status_cell = ws.cell(row=curr_row, column=6)
-            
-            # Colorear según estado
-            if r["estado"] == "OK":
-                status_cell.fill = fill_ok
-            elif r["estado"] in ["ERROR", "EXCEDE", "INFERIOR"]:
-                status_cell.fill = fill_error
-            elif r["estado"] == "NO ENCONTRADO":
-                status_cell.fill = fill_warn
-                
-        # Autoajustar columnas
-        for col in ws.columns:
-            max_len = max(len(str(cell.value or '')) for cell in col)
-            col_letter = openpyxl.utils.get_column_letter(col[0].column)
-            ws.column_dimensions[col_letter].width = min(max(max_len + 3, 10), 50)
-            
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        report_name = f"reporte_subida_precios_{timestamp}.xlsx"
-        report_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), report_name)
-        wb.save(report_path)
+        meta = {
+            "acuerdo": acuerdo_val,
+            "catalogo": catalogo_val,
+            "categoria": categoria_val,
+            "total_portal": len(all_products),
+            "moneda_default": "USD",
+            "fecha_hora": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reportes_auditoria")
+        report_path = generar_reporte_excel_precios(report_rows, meta, reports_dir)
         
         log_func(app, f"\n✅ PROCESO COMPLETADO:")
         log_func(app, f"   - Exitosos: {oks}")
-        log_func(app, f"   - Fallidos: {errors}")
+        log_func(app, f"   - Rechazados/Fallidos: {errors}")
         log_func(app, f"   - Sin coincidencia: {no_matches}")
-        log_func(app, f"\n📂 Reporte generado en:")
-        log_func(app, f"   {report_path}")
+        log_func(app, f"\n📂 Reporte generado en:\n   {report_path}")
 
     except Exception as e:
         import traceback
         log_func(app, f"❌ Error crítico en subida: {e}")
         log_func(app, traceback.format_exc())
     finally:
-        if browser and pw:
-            try: close_browser(pw, browser)
-            except: pass
+        if auto_enviar or oks == 0:
+            if browser and pw:
+                try: close_browser(pw, browser)
+                except: pass
+                app._precios_browser = None
+                app._precios_page = None
+                app._precios_pw = None
+        else:
+            app._precios_browser = browser
+            app._precios_page = page
+            app._precios_pw = pw
         re_enable()
 
 
@@ -2159,26 +2641,65 @@ def execute_auditor(app, usuario, password, acuerdo, catalogo, categoria, on_don
 
 
 def _get_id_acuerdo(combos, acuerdo_text):
-    for a in combos.get("acuerdos", []):
-        if a.get("text") == acuerdo_text:
-            return a.get("value", "249")
+    if not acuerdo_text:
+        return "249"
+    s = str(acuerdo_text).strip()
+    if s.isdigit():
+        return s
+    if " - " in s and s.split(" - ")[0].strip().isdigit():
+        return s.split(" - ")[0].strip()
+    if isinstance(combos, dict):
+        ac = combos.get("acuerdo")
+        if isinstance(ac, dict) and ac.get("value"):
+            return str(ac.get("value"))
+        for a in combos.get("acuerdos", []):
+            if a.get("text") == s or a.get("value") == s:
+                return str(a.get("value", "249"))
     return "249"
 
 def _get_id_catalogo(combos, acuerdo_text, catalogo_text):
-    acuerdo_id = _get_id_acuerdo(combos, acuerdo_text)
-    for c in combos.get("combinaciones", []):
-        if (c.get("acuerdo", {}).get("value") == acuerdo_id
-                and c.get("catalogo", {}).get("text") == catalogo_text):
-            return c.get("catalogo", {}).get("value", "252")
+    if not catalogo_text:
+        return "252"
+    s = str(catalogo_text).strip()
+    if s.isdigit():
+        return s
+    if " - " in s and s.split(" - ")[0].strip().isdigit():
+        return s.split(" - ")[0].strip()
+    if isinstance(combos, dict):
+        # Buscar en combinaciones (formato combinaciones_computadoras.json)
+        s_upper = s.upper()
+        for c in combos.get("combinaciones", []):
+            c_text = str(c.get("text") or "").strip().upper()
+            c_val = str(c.get("value") or "").strip()
+            if s_upper in (c_text, c_val) or s_upper == c_text.split(" - ")[0]:
+                return c_val
+            # Formato viejo con dict anidado
+            if isinstance(c.get("catalogo"), dict):
+                cat_dict = c["catalogo"]
+                if cat_dict.get("text") == s or cat_dict.get("value") == s:
+                    return str(cat_dict.get("value", "252"))
     return "252"
 
 def _get_id_categoria(combos, acuerdo_text, catalogo_text, categoria_text):
-    acuerdo_id = _get_id_acuerdo(combos, acuerdo_text)
-    for c in combos.get("combinaciones", []):
-        if (c.get("acuerdo", {}).get("value") == acuerdo_id
-                and c.get("catalogo", {}).get("text") == catalogo_text
-                and c.get("categoria", {}).get("text") == categoria_text):
-            return c.get("categoria", {}).get("value", "11736")
+    if not categoria_text:
+        return "11736"
+    s = str(categoria_text).strip()
+    if s.isdigit():
+        return s
+    if " - " in s and s.split(" - ")[0].strip().isdigit():
+        return s.split(" - ")[0].strip()
+    if isinstance(combos, dict):
+        s_upper = s.upper()
+        for c in combos.get("combinaciones", []):
+            for ch in c.get("children", []):
+                ch_text = str(ch.get("text") or "").strip().upper()
+                ch_val = str(ch.get("value") or "").strip()
+                if s_upper in (ch_text, ch_val) or s_upper == ch_text.split(" - ")[0]:
+                    return ch_val
+            if isinstance(c.get("categoria"), dict):
+                catg_dict = c["categoria"]
+                if catg_dict.get("text") == s or catg_dict.get("value") == s:
+                    return str(catg_dict.get("value", "11736"))
     return "11736"
 
 
@@ -2252,44 +2773,193 @@ def _detect_key(d: dict, candidates: list) -> str:
 
 
 def execute_json_extractor(app, usuario, password, acuerdo, catalogo, categoria, on_done, on_log, headless=True):
-    """Ejecuta la extracción masiva E2E del dataset JSON del portal utilizando perucompras_core."""
-    from automation.perucompras_core import extraer_json_catalogo
+    """
+    Extrae el dataset JSON completo de productos ofertables desde t_ProductoOfertadoAmp.
+    Navega con Playwright, aplica filtros, entra a Agregar oferta y descarga los lotes vía API.
+    """
+    from automation.browser import init_browser, close_browser
+    from automation.login import do_login
+    from urllib.parse import parse_qs, urlencode
 
     usuario = usuario or "estalin.huamali01"
     on_log(f"🔍 [EXTRACTOR] Conectando a Perú Compras con usuario '{usuario}'...")
 
-    combos = getattr(app, "_stock_combos_data", {})
-    n_acuerdo = _get_id_acuerdo(combos, acuerdo) or 249
-    n_catalogo = _get_id_catalogo(combos, acuerdo, catalogo) or 252
-    n_categoria = _get_id_categoria(combos, acuerdo, catalogo, categoria) or 11736
+    combos = getattr(app, "_catalog_data", None) or getattr(app, "_stock_combos_data", {})
+    n_acuerdo = _get_id_acuerdo(combos, acuerdo) or "249"
+    n_catalogo = _get_id_catalogo(combos, acuerdo, catalogo) or "252"
+    n_categoria = _get_id_categoria(combos, acuerdo, catalogo, categoria) or "11736"
+
+    on_log(f"📋 Parámetros de extracción: Acuerdo={n_acuerdo}, Catálogo={n_catalogo}, Categoría={n_categoria}")
 
     out_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reportes_auditoria")
     os.makedirs(out_folder, exist_ok=True)
     ts = time.strftime("%Y%m%d_%H%M%S")
     out_file = os.path.join(out_folder, f"Fichas_Portal_{ts}.json")
 
-    stop_evt = getattr(app, "stop_event", None)
+    stop_evt = getattr(app, "stop_event", None) or getattr(app, "_json_stop_event", None)
 
-    fichas = extraer_json_catalogo(
-        usuario=usuario,
-        password=password,
-        n_acuerdo=n_acuerdo,
-        n_catalogo=n_catalogo,
-        n_categoria=n_categoria,
-        acuerdo_texto=acuerdo,
-        catalogo_texto=catalogo,
-        categoria_texto=categoria,
-        output_path=out_file,
-        captcha_bridge=getattr(app, "captcha_bridge", None),
-        stop_event=stop_evt,
-        log_func=on_log,
-        headless=headless
-    )
+    pw = browser = page = None
+    try:
+        pw, browser, page = init_browser(headless=headless)
+        if not headless:
+            try: page.set_viewport_size({"width": 1920, "height": 1080})
+            except Exception: pass
 
-    if fichas:
-        on_log(f"✅ Extracción completada exitosamente. Total: {len(fichas)} fichas.")
-        on_log(f"💾 Guardado en: {out_file}")
-        on_done(fichas, out_file)
-    else:
-        on_log("❌ No se pudieron extraer fichas del portal.")
+        class _LogAdapter:
+            def info(self, m): on_log(str(m).strip())
+            def ok(self, m): on_log(f"✅ {str(m).strip()}")
+            def warn(self, m): on_log(f"⚠️ {str(m).strip()}")
+            def warning(self, m): on_log(f"⚠️ {str(m).strip()}")
+            def error(self, m): on_log(f"❌ {str(m).strip()}")
+            def success(self, m): on_log(f"✅ {str(m).strip()}")
+            def write(self, t):
+                c = str(t).strip()
+                if c: on_log(c)
+            def flush(self): pass
+
+        captcha_b = getattr(app, 'captcha_bridge', None)
+        if not do_login(page, usuario, password, "", _LogAdapter(), stop_evt, captcha_b):
+            on_log("❌ Falló el login en Perú Compras.")
+            on_done([], "")
+            return
+
+        on_log("✅ Login exitoso. Navegando al catálogo de ofertas...")
+        page.goto("https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp", wait_until="domcontentloaded", timeout=60_000)
+        time.sleep(2)
+
+        # 1. Seleccionar Acuerdo
+        wait_for_options_precios(page, '#ajaxAcuerdo', timeout=20)
+        on_log(f"🔧 Seleccionando Acuerdo [{n_acuerdo}]...")
+        page.evaluate(f"""() => {{
+            const sel = document.querySelector('#ajaxAcuerdo');
+            if (sel) {{ sel.value = '{n_acuerdo}'; sel.dispatchEvent(new Event('change', {{bubbles: true}})); }}
+        }}""")
+
+        # 2. Seleccionar Catálogo
+        wait_for_options_precios(page, '#ajaxCatalogo', timeout=25)
+        on_log(f"🔧 Seleccionando Catálogo [{n_catalogo}]...")
+        page.evaluate(f"""() => {{
+            const sel = document.querySelector('#ajaxCatalogo');
+            if (sel) {{ sel.value = '{n_catalogo}'; sel.dispatchEvent(new Event('change', {{bubbles: true}})); }}
+        }}""")
+
+        # 3. Seleccionar Categoría
+        wait_for_options_precios(page, '#ajaxCategoria', timeout=25)
+        on_log(f"🔧 Seleccionando Categoría [{n_categoria}]...")
+        page.evaluate(f"""() => {{
+            const sel = document.querySelector('#ajaxCategoria');
+            if (sel) {{ sel.value = '{n_categoria}'; sel.dispatchEvent(new Event('change', {{bubbles: true}})); }}
+        }}""")
+        time.sleep(2)
+
+        # 4. Iniciar Búsqueda y esperar botón Agregar oferta
+        on_log("🔍 Haciendo click en Iniciar Búsqueda...")
+        page.click("#btnBuscar")
+        time.sleep(3)
+
+        btn_oferta = False
+        for intento in range(3):
+            try:
+                page.wait_for_selector("#btnNuevoProducto", timeout=15_000)
+                btn_oferta = True
+                on_log("✅ Botón 'Agregar oferta' (#btnNuevoProducto) listo.")
+                break
+            except Exception:
+                on_log(f"⏳ Reintentando búsqueda ({intento+1}/3)...")
+                try: page.click("#btnBuscar")
+                except Exception: pass
+                time.sleep(3)
+
+        # 5. Intentar intercepción y acceso a CatalogoProductoIndex
+        captured_payload = {}
+        total_records = [0]
+        captured_initial_products = []
+
+        def handle_request(req):
+            if "_catalogoproductoindexjson" in req.url.lower():
+                captured_payload["body"] = req.post_data
+                captured_payload["url"] = req.url.replace("www.catalogos.perucompras.gob.pe", "catalogos.perucompras.gob.pe")
+
+        def handle_response(response):
+            if "_catalogoproductoindexjson" in response.url.lower():
+                try:
+                    data = response.json()
+                    total_records[0] = int(data.get("recordsTotal") or data.get("recordsFiltered") or 0)
+                    recs = data.get("data", [])
+                    if isinstance(recs, list) and recs:
+                        captured_initial_products.extend(recs)
+                except Exception:
+                    pass
+
+        page.on("request", handle_request)
+        page.on("response", handle_response)
+
+        on_log("📂 Accediendo al catálogo de ofertas...")
+        try:
+            if btn_oferta and page.locator("#btnNuevoProducto").first.is_visible():
+                on_log("👉 Clic en botón 'Agregar oferta'...")
+                page.locator("#btnNuevoProducto").first.click(force=True)
+                try:
+                    page.wait_for_url("**CatalogoProductoIndex**", timeout=8_000)
+                except Exception:
+                    pass
+            else:
+                on_log("👉 Navegando a CatalogoProductoIndex...")
+                page.goto(
+                    "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp/CatalogoProductoIndex",
+                    wait_until="domcontentloaded", timeout=30_000
+                )
+
+            deadline = time.time() + 8
+            while time.time() < deadline:
+                if captured_initial_products or (captured_payload.get("body") and captured_payload.get("url")):
+                    break
+                time.sleep(0.5)
+        except Exception as e:
+            on_log(f"⚠️ Aviso navegando a catálogo: {e}")
+
+        try:
+            page.remove_listener("request", handle_request)
+            page.remove_listener("response", handle_response)
+        except Exception:
+            pass
+
+        # 6. Descarga mediante peticiones directas API
+        all_products = _download_all_catalog_products(
+            page,
+            captured_payload.get("url"),
+            captured_payload.get("body"),
+            total_records[0],
+            n_acuerdo,
+            n_catalogo,
+            n_categoria,
+            on_log,
+            stop_evt=stop_evt,
+            page_size=100,
+            initial_products=captured_initial_products
+        )
+
+        if all_products:
+            on_log(f"✅ Extracción completada exitosamente. Total: {len(all_products)} fichas.")
+            try:
+                with open(out_file, "w", encoding="utf-8") as f:
+                    json.dump(all_products, f, ensure_ascii=False, indent=2)
+                on_log(f"💾 Guardado en: {out_file}")
+                # Actualizar también caché específica de combinación
+                cat_cache = os.path.join(out_folder, f"Fichas_Portal_{n_acuerdo}_{n_catalogo}_{n_categoria}.json")
+                with open(cat_cache, "w", encoding="utf-8") as f:
+                    json.dump(all_products, f, ensure_ascii=False, indent=2)
+            except Exception as fe:
+                on_log(f"⚠️ No se pudo guardar archivo en disco: {fe}")
+            on_done(all_products, out_file)
+        else:
+            on_log("❌ No se pudieron extraer fichas del portal.")
+            on_done([], "")
+
+    except Exception as e:
+        on_log(f"❌ Error en execute_json_extractor: {e}")
         on_done([], "")
+    finally:
+        if pw and browser:
+            try: close_browser(pw, browser)
+            except Exception: pass

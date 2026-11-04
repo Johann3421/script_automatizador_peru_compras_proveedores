@@ -9,6 +9,12 @@ import sys
 import subprocess
 import shutil
 
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='backslashreplace')
+    sys.stderr.reconfigure(encoding='utf-8', errors='backslashreplace')
+except Exception:
+    pass
+
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 DIST_DIR = os.path.join(PROJECT_DIR, "dist")
 BUILD_DIR = os.path.join(PROJECT_DIR, "build")
@@ -22,18 +28,21 @@ def run(cmd, **kwargs):
 
 def find_playwright_browsers():
     """Encuentra la carpeta de navegadores de Playwright sin importar el módulo."""
+    repo_dir = os.path.join(PROJECT_DIR, "browsers")
+    if os.path.isdir(repo_dir):
+        return repo_dir
     local = os.environ.get("LOCALAPPDATA", "")
     pw_dir = os.path.join(local, "ms-playwright")
     if os.path.isdir(pw_dir):
         return pw_dir
-    repo_dir = os.path.join(PROJECT_DIR, "browsers")
-    if os.path.isdir(repo_dir):
-        return repo_dir
     return None
 
 
 def find_tesseract_files():
     """Encuentra archivos de Tesseract para empaquetar."""
+    repo_dir = os.path.join(PROJECT_DIR, "tesseract")
+    if os.path.isdir(repo_dir):
+        return repo_dir
     paths = [
         r"C:\Program Files\Tesseract-OCR",
     ]
@@ -119,9 +128,9 @@ def build():
 
     # Incluir Playwright browsers
     if pw_dir:
-        dest_name = "playwright_browsers"
+        dest_name = "browsers"
         pyi_args += ["--add-data", f"{pw_dir};{dest_name}"]
-        print("  Incluyendo Playwright browsers")
+        print(f"  Incluyendo Playwright browsers ({pw_dir})")
 
     # Hidden imports necesarios
     hidden_imports = [
@@ -190,12 +199,68 @@ def build():
             f.write(f'@echo off\nstart "" "{EXE_NAME}\\{EXE_NAME}.exe"\n')
         print(f"  Launcher .bat creado: {bat_path}")
 
-
     print("\n" + "=" * 60)
-    print(f"  BUILD COMPLETADO")
+    print(f"  BUILD DE EJECUTABLE STANDALONE COMPLETADO")
     print(f"  Salida: {dist_exe_dir}")
     print(f"  Ejecutable: {dist_exe_dir}\\{EXE_NAME}.exe")
     print("=" * 60)
+
+    # Compilar instalador final con Inno Setup
+    compile_inno_setup()
+
+
+def compile_inno_setup():
+    iscc_paths = [
+        r"C:\InnoSetup6\ISCC.exe",
+        r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+        r"C:\Program Files\Inno Setup 6\ISCC.exe",
+        shutil.which("ISCC.exe") or ""
+    ]
+    iscc_exe = None
+    for p in iscc_paths:
+        if p and os.path.isfile(p):
+            iscc_exe = p
+            break
+
+    if not iscc_exe:
+        print("\n  [INFO] Inno Setup (ISCC.exe) no detectado en las rutas estándar. Omitiendo instalador único.")
+        return False
+
+    iss_file = os.path.join(PROJECT_DIR, "installer", "setup.iss")
+    if not os.path.isfile(iss_file):
+        print(f"\n  [WARN] No se encontró el script de Inno Setup: {iss_file}")
+        return False
+
+    # Actualizar setup_config.iss con la ruta absoluta de SourceDir
+    cfg_file = os.path.join(PROJECT_DIR, "installer", "setup_config.iss")
+    dist_source = os.path.join(DIST_DIR, EXE_NAME)
+    try:
+        with open(cfg_file, "w", encoding="utf-8") as f:
+            f.write(f'#define SourceDir "{dist_source}"\n')
+    except Exception as e:
+        print(f"  Aviso escribiendo setup_config.iss: {e}")
+
+    print("\n" + "=" * 60)
+    print("  FASE 2: COMPILANDO INSTALADOR WINDOWS (INNO SETUP)")
+    print("=" * 60)
+    print(f"  Compilador: {iscc_exe}")
+    print(f"  Script:     {iss_file}")
+
+    cmd = [iscc_exe, "/Qp", iss_file]
+    run(cmd)
+
+    output_installer = os.path.join(PROJECT_DIR, "installer", "Output", "Script_Peru_Compras_Setup.exe")
+    if os.path.isfile(output_installer):
+        size_mb = os.path.getsize(output_installer) / (1024 * 1024)
+        print("\n" + "=" * 60)
+        print("  [OK] INSTALADOR FINAL GENERADO EXITOSAMENTE")
+        print("=" * 60)
+        print(f"  Archivo: {output_installer}")
+        print(f"  Tamano:  {size_mb:.1f} MB")
+        print("  Listo para distribuir a cualquier PC nueva sin dependencias previas.")
+        print("=" * 60 + "\n")
+        return True
+    return False
 
 
 if __name__ == "__main__":

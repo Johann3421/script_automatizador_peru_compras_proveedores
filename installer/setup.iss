@@ -71,6 +71,11 @@ function NeedsChromiumInstall: Boolean;
 var
   NodeExe, CliJs: String;
 begin
+  if DirExists(ExpandConstant('{app}\browsers')) or DirExists(ExpandConstant('{app}\_internal\browsers')) then
+  begin
+    Result := False;
+    Exit;
+  end;
   NodeExe := ExpandConstant('{app}\_internal\playwright\driver\node.exe');
   CliJs   := ExpandConstant('{app}\_internal\playwright\driver\package\cli.js');
   Result := FileExists(NodeExe) and FileExists(CliJs);

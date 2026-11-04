@@ -9,9 +9,9 @@ from playwright.sync_api import Page
 
 from utils.logger import LogWriter
 
-LOGIN_URL = "https://www.catalogos.perucompras.gob.pe/AccesoGeneral"
-CATALOGO_URL = "https://www.catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp"
-DASHBOARD_URL = "https://www.catalogos.perucompras.gob.pe/"
+LOGIN_URL = "https://catalogos.perucompras.gob.pe/AccesoGeneral"
+CATALOGO_URL = "https://catalogos.perucompras.gob.pe/t_ProductoOfertadoAmp"
+DASHBOARD_URL = "https://catalogos.perucompras.gob.pe/"
 
 # Ruta de Tesseract: portable (junto al .exe) o del sistema
 import sys, os
@@ -173,6 +173,10 @@ def do_login(
 
     retry = 0
     while not stop_event.is_set():
+        if page.is_closed():
+            log.info("⏹ Navegador cerrado, finalizando login.")
+            return False
+
         retry += 1
         log.info(f"🔑 Intento de login #{retry}")
 
@@ -193,8 +197,11 @@ def do_login(
             return True
 
         if is_fatal_credentials:
-            log.error("❌ Se detienen los reintentos debido a credenciales rechazadas por el portal.")
+            log.error("❌ Se detienen los reintentos debido a credenciales rechazadas o cierre del navegador.")
             return False
+
+        if stop_event.is_set() or page.is_closed():
+            break
 
         log.info(f"Reintentando login (intento #{retry + 1})...")
         try:
@@ -328,5 +335,8 @@ def _attempt_login_once(
 
     except Exception as e:
         log.error(f"Excepción en intento de login: {e}")
+        err_msg = str(e).lower()
+        if "closed" in err_msg or "target" in err_msg:
+            return False, True
         return False, False
 

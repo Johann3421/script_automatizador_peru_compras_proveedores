@@ -456,16 +456,17 @@
     <div id="view-json" class="view-pane">
       <div class="two-col-layout">
         <div class="left-col">
-          <div class="sec-header">SUBIDA MASIVA DE PRECIOS Y OFERTAS JSON</div>
+          <div class="sec-header">SUBIDA MASIVA DE PRECIOS Y OFERTAS (EXCEL / JSON)</div>
           <div class="file-panel">
             <div class="file-row">
-              <label style="color: var(--text-sec); font-weight: 600;">Archivo JSON:</label>
-              <input type="text" id="jsonFilePath" class="file-input" readonly placeholder="Seleccionar archivo JSON de Precios...">
+              <label style="color: var(--text-sec); font-weight: 600;">Archivo Precios:</label>
+              <input type="text" id="jsonFilePath" class="file-input" readonly placeholder="Seleccionar archivo Excel (.xlsx) o JSON de Precios...">
               <button class="btn-sys" onclick="selectJsonFile()">Examinar...</button>
               <button class="btn-sys" onclick="clearJsonFile()">Limpiar</button>
-              <button class="btn-sys" style="background: #1B6B1B; color: white; font-weight: bold;" onclick="extractJsonFromPortal()">📡 EXTRAER TODOS LOS PRECIOS (JSON PORTAL)</button>
+              <button class="btn-sys" style="background: #004B87; color: white; font-weight: bold;" onclick="downloadPreciosTemplate()">📋 PLANTILLA EXCEL</button>
+              <button class="btn-sys" style="background: #1B6B1B; color: white; font-weight: bold;" onclick="extractJsonFromPortal()">📡 EXTRAER TODOS LOS PRECIOS (PORTAL)</button>
             </div>
-            <div id="jsonBadge" class="status-badge warn">⚠️ Cargar JSON o generar oferta desde catálogo</div>
+            <div id="jsonBadge" class="status-badge warn">⚠️ Cargar Excel/JSON o extraer catálogo desde el portal</div>
           </div>
           <div class="grid-container">
             <table>
@@ -491,6 +492,41 @@
           <div class="sec-header" style="background: var(--azul-pc); color: white;">PARÁMETROS SUBIDA JSON</div>
           <div class="inspector-body">
             <div class="form-group">
+              <label>Usuario Perú Compras:</label>
+              <input type="text" id="jsonUser" class="form-control" placeholder="Usuario Perú Compras">
+            </div>
+
+            <div class="form-group">
+              <label>Contraseña:</label>
+              <input type="password" id="jsonPass" class="form-control" placeholder="Contraseña">
+            </div>
+
+            <div class="form-group">
+              <label><input type="checkbox" id="chkJsonVisible"> Mostrar navegador en pantalla</label>
+            </div>
+
+            <div class="form-group">
+              <label><input type="checkbox" id="chkAutoEnviar"> Enviar oferta automáticamente (desmarcado: queda en borrador para verificar)</label>
+            </div>
+
+            <div class="form-group">
+              <label>Acuerdo Marco:</label>
+              <select id="jsonAcuerdo" class="form-control">
+                <option value="249">EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Catálogo Electrónico:</label>
+              <select id="jsonCat" class="form-control" onchange="onJsonCatalogoChanged()"></select>
+            </div>
+
+            <div class="form-group">
+              <label>Categoría:</label>
+              <select id="jsonCategoria" class="form-control"></select>
+            </div>
+
+            <div class="form-group">
               <label style="color: var(--azul-pc); font-weight: bold;">Estrategia de Precio (CEAM Auditor):</label>
               <select id="jsonPriceStrategy" class="form-control" onchange="if(window._lastLoadedJsonRows) renderJsonTable(window._lastLoadedJsonRows)">
                 <option value="max" selected>Precio Máximo de Mercado (Más Alto — Predeterminado)</option>
@@ -499,31 +535,15 @@
                 <option value="med">Precio Mediana (Equilibrado)</option>
               </select>
             </div>
-            <div class="form-group">
-              <label>Tipo de Oferta:</label>
-              <select class="form-control">
-                <option>Oferta Individual Ficha por Ficha</option>
-                <option>Lote Masivo de Precios (API Batch)</option>
-                <option>Descuento General Porcentual</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Modo de Envío:</label>
-              <select class="form-control">
-                <option>Lote directo API Perú Compras</option>
-                <option>Secuencial con simulación browser</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Token / Endpoint API:</label>
-              <input type="text" class="form-control" value="https://catalogos.perucompras.gob.pe/api/v1/ofertas" readonly>
-            </div>
+
             <div class="form-group">
               <label>Consola Eventos JSON:</label>
               <div id="jsonLog" class="console-box"><div>[JSON] Módulo de Subida JSON listo.</div></div>
             </div>
+
             <button class="btn-sys" style="background: #1B6B1B; color: white; height: 34px; font-weight: bold; width: 100%; margin-bottom: 8px;" onclick="extractJsonFromPortal()">📡 EXTRAER TODOS LOS PRECIOS DEL PORTAL</button>
             <button class="btn-sys btn-primary" style="height: 34px;" onclick="startJsonProcess()">SUBIR PRECIOS JSON (API)</button>
+            <button id="btnConfirmarOferta" class="btn-sys" style="background: #D97706; color: white; height: 38px; font-weight: bold; width: 100%; margin-top: 8px; margin-bottom: 8px; display: none; font-size: 13px;" onclick="confirmarOfertaManual()">🚀 CONFIRMAR Y ENVIAR OFERTA AHORA</button>
             <button class="btn-sys" style="background: #8B1A1A; color: white;" onclick="stopJsonProcess()">Detener</button>
           </div>
         </div>
@@ -733,14 +753,17 @@
     function populateCatalogoDropdowns() {
       const comboCat = document.getElementById('comboCat');
       const stockCat = document.getElementById('stockCat');
+      const jsonCat = document.getElementById('jsonCat');
       if (!catalogData.combinaciones) return;
 
       const catHTML = catalogData.combinaciones.map(c => `<option value="${c.value}">${c.text}</option>`).join('');
-      comboCat.innerHTML = catHTML;
-      stockCat.innerHTML = catHTML;
+      if (comboCat) comboCat.innerHTML = catHTML;
+      if (stockCat) stockCat.innerHTML = catHTML;
+      if (jsonCat) jsonCat.innerHTML = catHTML;
 
       onCatalogoChanged();
       onStockCatalogoChanged();
+      onJsonCatalogoChanged();
     }
 
     function onCatalogoChanged() {
@@ -776,6 +799,7 @@
     function onStockCatalogoChanged() {
       const stockCat = document.getElementById('stockCat');
       const stockCatg = document.getElementById('stockCategoria');
+      if (!stockCat || !stockCatg) return;
       const selectedVal = stockCat.value;
 
       const catObj = catalogData.combinaciones.find(c => c.value === selectedVal);
@@ -783,6 +807,20 @@
         stockCatg.innerHTML = catObj.children.map(ch => `<option value="${ch.value}">${ch.text}</option>`).join('');
       } else {
         stockCatg.innerHTML = '<option value="">Todas las categorías</option>';
+      }
+    }
+
+    function onJsonCatalogoChanged() {
+      const jsonCat = document.getElementById('jsonCat');
+      const jsonCatg = document.getElementById('jsonCategoria');
+      if (!jsonCat || !jsonCatg) return;
+      const selectedVal = jsonCat.value;
+
+      const catObj = catalogData.combinaciones.find(c => c.value === selectedVal);
+      if (catObj && catObj.children) {
+        jsonCatg.innerHTML = catObj.children.map(ch => `<option value="${ch.value}">${ch.text}</option>`).join('');
+      } else {
+        jsonCatg.innerHTML = '<option value="">Todas las categorías</option>';
       }
     }
 
@@ -893,19 +931,32 @@
       `).join('');
     }
 
-    /* CARGA DE ARCHIVO EXCLUSIVO PARA MÓDULO SUBIDA DE PRECIOS JSON */
+    /* CARGA DE ARCHIVO PARA MÓDULO SUBIDA DE PRECIOS EXCEL / JSON */
     function selectJsonFile() {
       if (window.pywebview && window.pywebview.api) {
         window.pywebview.api.select_json_file().then(res => {
-          if (res && res.path) {
+          if (res && res.path && res.rows) {
             document.getElementById('jsonFilePath').value = res.name;
             const badge = document.getElementById('jsonBadge');
             badge.className = "status-badge ok";
-            badge.innerText = `✓ JSON/Excel cargado: ${res.name} (${res.rows.length} ofertas)`;
+            badge.innerText = `✓ Archivo cargado: ${res.name} (${res.rows.length} registros)`;
             
             window._lastLoadedJsonRows = res.rows;
             renderJsonTable(res.rows);
-            logJsonConsole(`[JSON OK] Archivo cargado: ${res.name} (${res.rows.length} ofertas)`, 'log-ok');
+            logJsonConsole(`[PRECIOS OK] Archivo cargado: ${res.name} (${res.rows.length} productos listos)`, 'log-ok');
+          } else if (res && res.error) {
+            logJsonConsole(`❌ Error cargando archivo: ${res.error}`, 'log-err');
+          }
+        });
+      }
+    }
+
+    function downloadPreciosTemplate() {
+      if (window.pywebview && window.pywebview.api) {
+        logJsonConsole("[PLANTILLA] Generando plantilla oficial de precios Excel...", "log-ok");
+        window.pywebview.api.download_precios_template().then(res => {
+          if (res && res.status === "ok") {
+            logJsonConsole(`✅ Plantilla Excel guardada exitosamente en:\n${res.path}`, "log-ok");
           }
         });
       }
@@ -916,8 +967,8 @@
       window._lastLoadedJsonRows = null;
       const badge = document.getElementById('jsonBadge');
       badge.className = "status-badge warn";
-      badge.innerText = "⚠️ Cargar JSON o generar oferta desde catálogo";
-      document.getElementById('jsonGridBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay archivo JSON cargado</td></tr>';
+      badge.innerText = "⚠️ Cargar Excel/JSON o extraer catálogo desde el portal";
+      document.getElementById('jsonGridBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-sec); padding: 24px;">No hay archivo de precios cargado</td></tr>';
       logJsonConsole("[JSON] Datos limpiados.");
     }
 
@@ -1080,12 +1131,15 @@
     }
 
     function startJsonProcess() {
-      const user = getValOrFallback(['stockUser', 'user', 'entryUser', 'jsonUser'], "estalin.huamali01");
-      const pass = getValOrFallback(['stockPass', 'pass', 'entryPass', 'jsonPass'], "");
-      const acuerdo = getSelectText('stockAcuerdo') || getSelectText('jsonAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
-      const cat = getSelectText('stockCat') || getSelectText('jsonCat') || "COMPUTADORAS DE ESCRITORIO";
-      const catg = getSelectText('stockCategoria') || getSelectText('jsonCategoria') || "COMPUTADORA TODO EN UNO";
-      const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
+      const user = getValOrFallback(['jsonUser', 'stockUser', 'user', 'entryUser'], "estalin.huamali01");
+      const pass = getValOrFallback(['jsonPass', 'stockPass', 'pass', 'entryPass'], "");
+      const acuerdo = getSelectText('jsonAcuerdo') || getSelectText('stockAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
+      const cat = getSelectText('jsonCat') || getSelectText('stockCat') || "COMPUTADORAS DE ESCRITORIO";
+      const catg = getSelectText('jsonCategoria') || getSelectText('stockCategoria') || "COMPUTADORA TODO EN UNO";
+      const chkJson = document.getElementById('chkJsonVisible');
+      const visible = chkJson ? chkJson.checked : (document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false);
+      const chkAuto = document.getElementById('chkAutoEnviar');
+      const auto_enviar = chkAuto ? chkAuto.checked : false;
       const priceStrategy = document.getElementById('jsonPriceStrategy') ? document.getElementById('jsonPriceStrategy').value : 'max';
 
       if (!window._lastLoadedJsonRows || window._lastLoadedJsonRows.length === 0) {
@@ -1094,7 +1148,7 @@
       }
 
       logJsonConsole(`[SUBIDA PRECIOS] Iniciando inserción masiva de ${window._lastLoadedJsonRows.length} precios (Estrategia: ${priceStrategy.toUpperCase()})...`, "log-ok");
-      pyapi('start_json_process', { user, pass, acuerdo, cat, catg, visible, priceStrategy, data: window._lastLoadedJsonRows })
+      pyapi('start_json_process', { user, pass, acuerdo, cat, catg, visible, auto_enviar, priceStrategy, data: window._lastLoadedJsonRows })
         .then(res => {
           if (res && res.status === "error") {
             logJsonConsole(`❌ Error iniciando subida: ${res.msg}`, "log-err");
@@ -1105,8 +1159,45 @@
         });
     }
 
+    function mostrarBotonConfirmarOferta(mostrar) {
+      const btn = document.getElementById('btnConfirmarOferta');
+      if (btn) {
+        btn.style.display = mostrar ? 'block' : 'none';
+        if (mostrar) {
+          try { btn.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
+        }
+      }
+    }
+
+    function confirmarOfertaManual() {
+      const btn = document.getElementById('btnConfirmarOferta');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ Confirmando y enviando ofertas...";
+      }
+      logJsonConsole("[PORTAL] Confirmando oferta definitiva en Perú Compras...", "log-ok");
+      pyapi('confirmar_oferta_manual')
+        .then(res => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "🚀 CONFIRMAR Y ENVIAR OFERTA AHORA";
+          }
+          if (res && res.status === "error") {
+            logJsonConsole(`❌ Error confirmando oferta: ${res.msg}`, "log-err");
+          }
+        })
+        .catch(err => {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = "🚀 CONFIRMAR Y ENVIAR OFERTA AHORA";
+          }
+          logJsonConsole(`❌ Error de comunicación: ${err}`, "log-err");
+        });
+    }
+
     function stopJsonProcess() {
       logJsonConsole("[JSON] Solicitud de detención de precios enviada...", "log-warn");
+      mostrarBotonConfirmarOferta(false);
       pyapi('stop_json_process');
     }
 
@@ -1119,12 +1210,13 @@
     }
 
     function extractJsonFromPortal() {
-      const user = getValOrFallback(['stockUser', 'user', 'entryUser', 'jsonUser'], "estalin.huamali01");
-      const pass = getValOrFallback(['stockPass', 'pass', 'entryPass', 'jsonPass'], "");
-      const acuerdo = getSelectText('stockAcuerdo') || getSelectText('jsonAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
-      const cat = getSelectText('stockCat') || getSelectText('jsonCat') || "COMPUTADORAS DE ESCRITORIO";
-      const catg = getSelectText('stockCategoria') || getSelectText('jsonCategoria') || "COMPUTADORA TODO EN UNO";
-      const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
+      const user = getValOrFallback(['jsonUser', 'stockUser', 'user', 'entryUser'], "estalin.huamali01");
+      const pass = getValOrFallback(['jsonPass', 'stockPass', 'pass', 'entryPass'], "");
+      const acuerdo = getSelectText('jsonAcuerdo') || getSelectText('stockAcuerdo') || "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES";
+      const cat = getSelectText('jsonCat') || getSelectText('stockCat') || "COMPUTADORAS DE ESCRITORIO";
+      const catg = getSelectText('jsonCategoria') || getSelectText('stockCategoria') || "COMPUTADORA TODO EN UNO";
+      const chkJson = document.getElementById('chkJsonVisible');
+      const visible = chkJson ? chkJson.checked : (document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false);
 
       logJsonConsole(`[JSON PORTAL] Iniciando extracción masiva del dataset JSON desde el portal (Usuario: ${user})...`, "log-ok");
       pyapi('extract_json_portal', { user, pass, acuerdo, cat, catg, visible });
