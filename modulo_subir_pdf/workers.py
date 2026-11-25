@@ -30,12 +30,17 @@ def _make_stock_log(append_fn):
 def execute_stock(app, usuario, password, acuerdo, catalogo, categoria, pausa):
     from automation.browser import init_browser, close_browser
     from automation.login import do_login
+    import automation_otro_bot.stock as stock_mod
     from automation_otro_bot.stock import (
         ejecutar_stock, paso2_navegacion_stock, paso3_filtros_stock,
         paso4_actualizar_stock, analizar_excel_stock, generar_reporte_excel,
-        RESULTADOS, STOP_EVENT,
+        RESULTADOS,
     )
-    # Estado compartido
+    # Conectar explícitamente el STOP_EVENT y limpiar estado previo de corrida
+    stock_mod.STOP_EVENT = app._stock_stop_event
+    RESULTADOS.clear()
+    app._stock_ok = 0
+    app._stock_errors = 0
     global STOP_EVENT
     STOP_EVENT = app._stock_stop_event
     # LogWriter puente → reenvía a la UI (pestaña 2)
@@ -79,10 +84,12 @@ def execute_stock(app, usuario, password, acuerdo, catalogo, categoria, pausa):
             app.progress_stock.set(
                 (app._stock_ok + app._stock_errors) / max(1, app._stock_total)
             )
+        app._stock_page = page
         exitos = paso4_actualizar_stock(
             page, app._stock_excel_df, pausa, stock_log,
             usuario, password, app.captcha_bridge,
-            acuerdo, catalogo, categoria
+            acuerdo, catalogo, categoria,
+            stop_event=app._stock_stop_event
         )
         stock_log(f"✅ {exitos}/{app._stock_total} actualizados")
     except Exception as e:
@@ -122,10 +129,94 @@ def execute_stock(app, usuario, password, acuerdo, catalogo, categoria, pausa):
         app._stock_browser = None
         app._stock_running = False
         app.btn_stock_start.configure(state="normal")
+        if hasattr(app, "btn_stock_test"):
+            app.btn_stock_test.configure(state="normal")
         app.btn_stock_stop.configure(state="disabled")
         status_text = "Detenido" if app._stock_stop_event.is_set() else "Completado"
         status_color = "#e74c3c" if app._stock_stop_event.is_set() else "#5dade2"
         app.lbl_stock_status.configure(text=status_text, text_color=status_color)
+
+
+def execute_test_stock(app, usuario, password, acuerdo, catalogo, categoria):
+    """Ejecuta una prueba unitaria del motor de stock ultra rápido actualizando solo 1 producto del Excel."""
+    from automation.browser import init_browser, close_browser
+    from automation.login import do_login
+    import automation_otro_bot.stock as stock_mod
+    from automation_otro_bot.stock import (
+        paso2_navegacion_stock, paso3_filtros_stock,
+        test_actualizar_un_producto, _get_field
+    )
+
+    stock_mod.STOP_EVENT = app._stock_stop_event
+    log = _make_stock_log(app._append_stock_log)
+    pw = browser = None
+    app._stock_pw = None
+    app._stock_browser = None
+
+    try:
+        if not getattr(app, "_stock_excel_df", None):
+            app._append_stock_log("❌ No hay productos cargados. Carga un Excel de stock primero.")
+            return
+
+        primer_item = app._stock_excel_df[0]
+        parte = str(_get_field(primer_item, ["Parte", "parte", "PARTE", "N° Parte", "num_parte", "codigo"], default="")).strip()
+        stock = _get_field(primer_item, ["Stock", "stock", "STOCK", "Cantidad", "cantidad"], default=0)
+        ficha = str(_get_field(primer_item, ["Ficha", "ficha", "FICHA", "id", "N° Ficha"], default="")).strip()
+
+        app._append_stock_log("=" * 60)
+        app._append_stock_log(f"🧪 MODO TEST ACTIVO: Probando producto 1 de {len(app._stock_excel_df)}")
+        app._append_stock_log(f"   • Parte: {parte} | Stock objetivo: {stock} | Ficha: {ficha or 'Auto'}")
+        app._append_stock_log("=" * 60)
+
+        app._append_stock_log("🚀 Iniciando navegador...")
+        headless = not bool(app.check_stock_visible.get())
+        pw, browser, page = init_browser(headless=headless)
+        app._stock_pw = pw
+        app._stock_browser = browser
+        try:
+            page.set_viewport_size({"width": 1920, "height": 1080})
+        except Exception:
+            pass
+
+        app._append_stock_log("🔐 Login en Perú Compras...")
+        ok = do_login(page, usuario, password, "", log, app._stock_stop_event, app.captcha_bridge)
+        if not ok or app._stock_stop_event.is_set():
+            app._append_stock_log("❌ Login falló")
+            return
+
+        app._append_stock_log("📍 Navegando a MejoraBasica...")
+        paso2_navegacion_stock(page)
+        app._append_stock_log(f"📋 Aplicando filtros: {acuerdo} > {catalogo} > {categoria}")
+        if not paso3_filtros_stock(page, acuerdo, catalogo, categoria):
+            app._append_stock_log("❌ No se pudieron aplicar filtros")
+            return
+
+        res = test_actualizar_un_producto(page, parte, stock, ficha, app._append_stock_log)
+        if res.get("ok"):
+            app.lbl_stock_status.configure(text="Test Exitoso", text_color="#2ecc71")
+        else:
+            app.lbl_stock_status.configure(text="Test Fallido", text_color="#e74c3c")
+
+    except Exception as e:
+        if "has been closed" in str(e).lower() or "connection closed" in str(e).lower():
+            app._append_stock_log("⏹ Test detenido o navegador cerrado.")
+        else:
+            app._append_stock_log(f"❌ Error en modo test: {e}")
+            import traceback
+            app._append_stock_log(traceback.format_exc())
+    finally:
+        if browser and pw:
+            try:
+                close_browser(pw, browser)
+            except Exception:
+                pass
+        app._stock_pw = None
+        app._stock_browser = None
+        app._stock_running = False
+        if hasattr(app, "btn_stock_start"): app.btn_stock_start.configure(state="normal")
+        if hasattr(app, "btn_stock_test"): app.btn_stock_test.configure(state="normal")
+        if hasattr(app, "btn_stock_stop"): app.btn_stock_stop.configure(state="disabled")
+
 def execute_extract(app, usuario, password, headless):
     import re, json as _json, urllib.parse
     log = LogWriter(app.log_queue)

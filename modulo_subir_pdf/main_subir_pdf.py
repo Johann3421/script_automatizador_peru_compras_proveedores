@@ -1553,15 +1553,23 @@ class SubirPdfApp(ctk.CTk):
         frame_btns.grid(row=7, column=0, padx=0, pady=(0, 8), sticky="ew")
 
         self.btn_stock_start = ctk.CTkButton(
-            frame_btns, text="Iniciar Stock", width=130, height=36,
+            frame_btns, text="Iniciar Stock", width=120, height=36,
             fg_color=C["accent"], hover_color=C["accent_h"], text_color="#FFFFFF",
             corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
             command=self._on_stock_start,
         )
         self.btn_stock_start.pack(side="left", padx=(0, 6))
 
+        self.btn_stock_test = ctk.CTkButton(
+            frame_btns, text="🧪 Probar 1 (Test)", width=130, height=36,
+            fg_color="#005A9C", hover_color="#004080", text_color="#FFFFFF",
+            corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
+            command=self._on_stock_test_start,
+        )
+        self.btn_stock_test.pack(side="left", padx=(0, 6))
+
         self.btn_stock_audit = ctk.CTkButton(
-            frame_btns, text="🔍 Auditar Portal", width=140, height=36,
+            frame_btns, text="🔍 Auditar Portal", width=130, height=36,
             fg_color="#1B6B1B", hover_color="#145214", text_color="#FFFFFF",
             corner_radius=6, font=ctk.CTkFont(size=12, weight="bold"),
             command=self._on_stock_audit_start,
@@ -1879,6 +1887,8 @@ class SubirPdfApp(ctk.CTk):
         self._stock_process_start_time = time.time()
         self._stock_stop_event.clear()
         self.btn_stock_start.configure(state="disabled")
+        if hasattr(self, "btn_stock_test"):
+            self.btn_stock_test.configure(state="disabled")
         self.btn_stock_stop.configure(state="normal")
         self.lbl_stock_status.configure(text="En ejecución...", text_color="#f39c12")
         self.lbl_stock_report.configure(text="(en proceso...)", text_color="gray60")
@@ -1890,15 +1900,66 @@ class SubirPdfApp(ctk.CTk):
             daemon=True,
         ).start()
 
+    def _on_stock_test_start(self):
+        """Handler para probar la actualización y verificación de 1 producto antes de procesar todo el archivo."""
+        if self._stock_running:
+            return
+
+        if not self._stock_excel_df:
+            self._append_stock_log("❌ Carga un Excel con productos primero")
+            return
+
+        acuerdo   = self.option_stock_acuerdo.get().strip()
+        catalogo  = self.option_stock_catalogo.get().strip()
+        categoria = self.option_stock_categoria.get().strip()
+        usuario   = self.entry_stock_user.get().strip()
+        password  = self.entry_stock_pass.get().strip()
+
+        if not usuario or not password:
+            self._append_stock_log("❌ Credenciales vacías (rellena Usuario y Contraseña)")
+            return
+        if "Seleccione" in acuerdo or "Sin datos" in acuerdo:
+            self._append_stock_log("❌ Selecciona un Acuerdo válido")
+            return
+        if "Seleccione" in catalogo or "Sin datos" in catalogo:
+            self._append_stock_log("❌ Selecciona un Catálogo válido")
+            return
+        if "Seleccione" in categoria or "Sin datos" in categoria:
+            self._append_stock_log("❌ Selecciona una Categoría válida")
+            return
+
+        self._stock_running = True
+        self._stock_stop_event.clear()
+        self.btn_stock_start.configure(state="disabled")
+        if hasattr(self, "btn_stock_test"):
+            self.btn_stock_test.configure(state="disabled")
+        self.btn_stock_stop.configure(state="normal")
+        self.lbl_stock_status.configure(text="Probando 1 producto...", text_color="#f39c12")
+
+        threading.Thread(
+            target=self._execute_stock_test,
+            args=(usuario, password, acuerdo, catalogo, categoria),
+            daemon=True,
+        ).start()
+
+    def _execute_stock_test(self, usuario, password, acuerdo, catalogo, categoria):
+        import workers
+        workers.execute_test_stock(self, usuario, password, acuerdo, catalogo, categoria)
+
     def _on_stock_stop(self):
         # PASO 1: Ignorar si ya está detenido
         if not self._stock_running:
             return
-        # PASO 2: Setear el evento de parada (workers.py lo revisa en cada iteración)
+        # PASO 2: Setear el evento de parada
         self._stock_stop_event.set()
+        try:
+            import automation_otro_bot.stock as stock_mod
+            if hasattr(stock_mod, "STOP_EVENT") and stock_mod.STOP_EVENT:
+                stock_mod.STOP_EVENT.set()
+        except Exception:
+            pass
         self.lbl_stock_status.configure(text="Deteniendo...", text_color="#e74c3c")
-        # PASO 3: Cerrar el browser forzosamente para interrumpir operaciones
-        # bloqueantes de Playwright (page.wait_for_*, page.click, etc.)
+        # PASO 3: Cerrar el browser forzosamente para interrumpir operaciones bloqueantes
         try:
             if getattr(self, "_stock_browser", None):
                 self._stock_browser.close()
@@ -3310,6 +3371,86 @@ class SubirPdfWebApi:
         self._app._excel_rows = rows
         return {"path": path, "name": os.path.basename(path), "sheets": sheets, "rows": rows}
 
+    def _parse_stock_excel_fallback(self, path: str) -> list:
+        import openpyxl
+        wb = None
+        try:
+            wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
+            ws = wb.active
+            rows = list(ws.iter_rows(values_only=True))
+        except Exception as e:
+            print(f"[ERROR _parse_stock_excel_fallback] {e}")
+            return []
+        finally:
+            if wb:
+                try:
+                    wb.close()
+                except Exception:
+                    pass
+        if not rows:
+            return []
+
+        def _norm(txt):
+            s = str(txt or "").lower().strip()
+            for a, b in [("á","a"),("é","e"),("í","i"),("ó","o"),("ú","u"),("ñ","n"),("°",""),("º","")]:
+                s = s.replace(a, b)
+            return s
+
+        def _match_alias(header_str, alias_list):
+            norm = str(header_str or "").lower().strip()
+            words = norm.replace("_", " ").replace("-", " ").replace(".", " ").split()
+            for a in alias_list:
+                if a == norm:
+                    return True
+                if len(a) <= 3:
+                    if a in words or norm.startswith(a + " ") or norm.startswith(a + "_"):
+                        return True
+                else:
+                    if a in norm:
+                        return True
+            return False
+
+        header_row_idx = 0
+        col_parte = col_stock = col_ficha = None
+        aliases_p = ["parte", "n_parte", "n° parte", "nro parte", "nro. parte", "n° de parte", "nro de parte", "part number", "part_number", "p/n", "pn", "codigo", "código", "item", "producto"]
+        aliases_s = ["stock", "cant", "cantidad", "unidades", "unidad", "existencia", "existencias", "disponible", "disponibles", "inventario", "total"]
+        aliases_f = ["ficha", "id_catalogo", "id catalogo", "catalogo_producto", "catalogoproducto", "id_producto", "id producto", "id"]
+
+        for r_idx, row in enumerate(rows[:10]):
+            c_p = c_s = c_f = None
+            for i, c in enumerate(row):
+                if c is None: continue
+                if c_p is None and _match_alias(c, aliases_p): c_p = i
+                elif c_s is None and _match_alias(c, aliases_s): c_s = i
+                elif c_f is None and _match_alias(c, aliases_f): c_f = i
+            if c_p is not None and c_s is not None:
+                header_row_idx = r_idx
+                col_parte, col_stock, col_ficha = c_p, c_s, c_f
+                break
+
+        if col_parte is None or col_stock is None:
+            col_parte = 0
+            col_stock = 1 if len(rows[0]) > 1 else 0
+
+        data = []
+        for row in rows[header_row_idx + 1:]:
+            if not row or all(c is None for c in row):
+                continue
+            p_val = str(row[col_parte]).strip() if col_parte < len(row) and row[col_parte] is not None else ""
+            if not p_val or p_val.lower() in ["none", "nan", "parte", "nro parte", "codigo"]:
+                continue
+            s_val = 0
+            if col_stock < len(row) and row[col_stock] is not None:
+                try:
+                    s_val = int(float(str(row[col_stock]).replace(",", "").strip()))
+                except Exception:
+                    s_val = 0
+            f_val = ""
+            if col_ficha is not None and col_ficha < len(row) and row[col_ficha] is not None:
+                f_val = str(row[col_ficha]).strip()
+            data.append({"Parte": p_val, "Stock": s_val, "Ficha": f_val})
+        return data
+
     # Excel Stock
     def select_stock_file(self, *a):
         import tkinter as tk
@@ -3327,28 +3468,45 @@ class SubirPdfWebApi:
         try:
             from automation_otro_bot.stock import analizar_excel_stock
             res = analizar_excel_stock(path)
-            if res and res.get("valido") and res.get("df") is not None:
-                self._app._stock_excel_df = res["df"]
-                df = res["df"]
-                for _, r in df.iterrows():
-                    rows.append({
-                        "parte": str(r.get("Parte", r.get("nro_parte", ""))),
-                        "stock": str(r.get("Stock", r.get("stock", ""))),
-                        "ficha": str(r.get("Ficha", r.get("ficha", "")))
-                    })
+            if res and res.get("valido") and res.get("df"):
+                df_data = res["df"]
+                self._app._stock_excel_df = df_data
+                for r in df_data:
+                    if isinstance(r, dict):
+                        rows.append({
+                            "parte": str(r.get("Parte") or r.get("parte") or ""),
+                            "stock": str(r.get("Stock") if r.get("Stock") is not None else (r.get("stock") if r.get("stock") is not None else "")),
+                            "ficha": str(r.get("Ficha") or r.get("ficha") or "")
+                        })
+                    elif hasattr(r, "_asdict"):
+                        d = r._asdict()
+                        rows.append({"parte": str(d.get("Parte", "")), "stock": str(d.get("Stock", "")), "ficha": str(d.get("Ficha", ""))})
             else:
-                first = get_sheets(path)[0] if get_sheets(path) else ""
-                cols = detect_columns(path, first)
-                rows = parse_excel(path, first, parte_col=cols.get("parte_col"))
-                self._app._stock_excel_df = rows
-        except Exception:
-            first = get_sheets(path)[0] if get_sheets(path) else ""
-            cols = detect_columns(path, first)
-            rows = parse_excel(path, first, parte_col=cols.get("parte_col"))
-            self._app._stock_excel_df = rows
+                # Fallback especializado en stock para no perder la columna stock
+                df_data = self._parse_stock_excel_fallback(path)
+                self._app._stock_excel_df = df_data
+                for r in df_data:
+                    rows.append({
+                        "parte": str(r.get("Parte", "")),
+                        "stock": str(r.get("Stock", "")),
+                        "ficha": str(r.get("Ficha", ""))
+                    })
+        except Exception as e:
+            print(f"[ERROR select_stock_file] {e}")
+            try:
+                df_data = self._parse_stock_excel_fallback(path)
+                self._app._stock_excel_df = df_data
+                for r in df_data:
+                    rows.append({
+                        "parte": str(r.get("Parte", "")),
+                        "stock": str(r.get("Stock", "")),
+                        "ficha": str(r.get("Ficha", ""))
+                    })
+            except Exception as ex2:
+                print(f"[ERROR select_stock_file fallback] {ex2}")
 
         self._app._stock_excel_path = path
-        return {"path": path, "name": os.path.basename(path), "sheets": get_sheets(path), "rows": rows}
+        return {"path": path, "name": os.path.basename(path), "sheets": get_sheets(path) if get_sheets(path) else [], "rows": rows}
 
     # Precios (Excel / JSON)
     def _parse_precios_excel(self, path: str) -> list:
@@ -3514,34 +3672,40 @@ class SubirPdfWebApi:
         except Exception as e:
             return {"status": "error", "msg": str(e)}
 
+    def _ensure_stock_excel_loaded(self):
+        """Carga fallback del Excel de stock si _stock_excel_df aún no fue poblado."""
+        if getattr(self._app, "_stock_excel_df", None):
+            return
+        excel_path = getattr(self._app, "_stock_excel_path", None)
+        if excel_path:
+            try:
+                from automation_otro_bot.stock import analizar_excel_stock
+                res = analizar_excel_stock(excel_path)
+                if res and res.get("valido"):
+                    self._app._stock_excel_df = res["df"]
+                    return
+            except Exception:
+                pass
+            self._app._stock_excel_df = self._parse_stock_excel_fallback(excel_path)
+        elif getattr(self._app, "_excel_rows", None):
+            self._app._stock_excel_df = self._app._excel_rows
+
+    def _apply_stock_params(self, params: dict, include_pausa: bool = False):
+        """Propaga los parámetros de la UI web hacia los widgets proxy del app."""
+        self._app.entry_stock_user = _DummyWidget(str(params.get("user") or "").strip())
+        self._app.entry_stock_pass = _DummyWidget(str(params.get("pass") or "").strip())
+        self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES")
+        self._app.option_stock_catalogo = _DummyWidget(params.get("cat") or "ESCÁNERES")
+        self._app.option_stock_categoria = _DummyWidget(params.get("catg") or "ESCANER DE PLANOS")
+        if include_pausa:
+            self._app.entry_stock_pausa = _DummyWidget(str(params.get("pausa", "2.0")))
+        self._app.check_stock_visible = _DummyWidget(params.get("visible", False))
+
     # Automatizacion Stock
     def start_stock_process(self, params=None, *a):
         try:
-            params = params or {}
-
-            # Carga fallback de data de stock si no se cargó con el dialog específico
-            if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_stock_excel_path", None):
-                try:
-                    from automation_otro_bot.stock import analizar_excel_stock
-                    res = analizar_excel_stock(self._app._stock_excel_path)
-                    if res and res.get("valido"):
-                        self._app._stock_excel_df = res["df"]
-                except Exception:
-                    pass
-
-            if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_excel_rows", None):
-                self._app._stock_excel_df = self._app._excel_rows
-
-            user_val = str(params.get("user") or "").strip()
-            pass_val = str(params.get("pass") or "").strip()
-            self._app.entry_stock_user = _DummyWidget(user_val)
-            self._app.entry_stock_pass = _DummyWidget(pass_val)
-            self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES")
-            self._app.option_stock_catalogo = _DummyWidget(params.get("cat") or "ESCÁNERES")
-            self._app.option_stock_categoria = _DummyWidget(params.get("catg") or "ESCANER DE PLANOS")
-            self._app.entry_stock_pausa = _DummyWidget(str(params.get("pausa", "2.0")))
-            self._app.check_stock_visible = _DummyWidget(params.get("visible", False))
-
+            self._ensure_stock_excel_loaded()
+            self._apply_stock_params(params or {}, include_pausa=True)
             self._app._on_stock_start()
             return {"status": "started"}
         except Exception as e:
@@ -3549,30 +3713,18 @@ class SubirPdfWebApi:
 
     def start_stock_audit(self, params=None, *a):
         try:
-            params = params or {}
-            # Carga fallback de data de stock si no se cargó con el dialog específico
-            if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_stock_excel_path", None):
-                try:
-                    from automation_otro_bot.stock import analizar_excel_stock
-                    res = analizar_excel_stock(self._app._stock_excel_path)
-                    if res and res.get("valido"):
-                        self._app._stock_excel_df = res["df"]
-                except Exception:
-                    pass
-
-            if not getattr(self._app, "_stock_excel_df", None) and getattr(self._app, "_excel_rows", None):
-                self._app._stock_excel_df = self._app._excel_rows
-
-            user_val = str(params.get("user") or "").strip()
-            pass_val = str(params.get("pass") or "").strip()
-            self._app.entry_stock_user = _DummyWidget(user_val)
-            self._app.entry_stock_pass = _DummyWidget(pass_val)
-            self._app.option_stock_acuerdo = _DummyWidget(params.get("acuerdo") or "EXT-CE-2022-5 COMPUTADORAS Y ESCÁNERES")
-            self._app.option_stock_catalogo = _DummyWidget(params.get("cat") or "ESCÁNERES")
-            self._app.option_stock_categoria = _DummyWidget(params.get("catg") or "ESCANER DE PLANOS")
-            self._app.check_stock_visible = _DummyWidget(params.get("visible", False))
-
+            self._ensure_stock_excel_loaded()
+            self._apply_stock_params(params or {})
             self._app._on_stock_audit_start()
+            return {"status": "started"}
+        except Exception as e:
+            return {"status": "error", "msg": str(e)}
+
+    def start_stock_test(self, params=None, *a):
+        try:
+            self._ensure_stock_excel_loaded()
+            self._apply_stock_params(params or {})
+            self._app._on_stock_test_start()
             return {"status": "started"}
         except Exception as e:
             return {"status": "error", "msg": str(e)}
@@ -3807,8 +3959,23 @@ class SubirPdfWebApi:
         try:
             if hasattr(self._app, "_stock_stop_event") and self._app._stock_stop_event:
                 self._app._stock_stop_event.set()
+            try:
+                import automation_otro_bot.stock as stock_mod
+                if hasattr(stock_mod, "STOP_EVENT") and stock_mod.STOP_EVENT:
+                    stock_mod.STOP_EVENT.set()
+            except Exception:
+                pass
             if hasattr(self._app, "_on_stock_stop"):
                 self._app._on_stock_stop()
+            try:
+                b = getattr(self._app, "_stock_browser", None)
+                if b:
+                    b.close()
+                pw = getattr(self._app, "_stock_pw", None)
+                if pw:
+                    pw.stop()
+            except Exception:
+                pass
             return {"status": "stopped"}
         except Exception as e:
             return {"status": "error", "msg": str(e)}
@@ -3904,6 +4071,7 @@ def run_app():
     _methods_to_bind = (
         "_load_dropdown_json", "_on_launch", "_on_stop", "_export_audit_report",
         "_on_stock_start", "_on_stock_stop", "_execute_stock",
+        "_on_stock_test_start", "_execute_stock_test",
         "_on_download_stock_template", "_execute", "_reset_after_stop",
         "_on_stock_audit_start", "_on_audit_done", "_on_extract_json_portal"
     )
@@ -3953,6 +4121,7 @@ def run_app():
     app.lbl_stock_status = _DummyWidget()
     app.lbl_stock_report = _DummyWidget()
     app.btn_stock_start = _DummyWidget()
+    app.btn_stock_test = _DummyWidget()
     app.btn_stock_stop = _DummyWidget()
     app.btn_stock_audit = _DummyWidget()
     app.lbl_audit_status = _DummyWidget()

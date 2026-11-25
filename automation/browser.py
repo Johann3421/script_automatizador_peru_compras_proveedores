@@ -40,6 +40,8 @@ def find_verified_chromium_executable() -> tuple[str | None, str | None]:
         candidates.append(os.path.join(exe_dir, "playwright_browsers"))
         candidates.append(os.path.join(exe_dir, "browsers"))
         candidates.append(os.path.join(exe_dir, "ms-playwright"))
+        candidates.append(os.path.join(exe_dir, "_internal", "browsers"))
+        candidates.append(os.path.join(exe_dir, "_internal", "ms-playwright"))
         candidates.append(os.path.join(exe_dir, "_internal", "playwright", "driver", "package", ".local-browsers"))
         candidates.append(os.path.join(meipass, "playwright_browsers"))
         candidates.append(os.path.join(meipass, "browsers"))

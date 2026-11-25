@@ -444,6 +444,7 @@
             </div>
             <div style="display: flex; gap: 8px; margin-bottom: 6px;">
               <button class="btn-sys btn-primary" style="height: 36px; flex: 1; font-weight: bold;" onclick="startStockProcess()">INICIAR ACTUALIZACIÓN DE STOCK</button>
+              <button class="btn-sys" style="height: 36px; background: #005A9C; color: white; font-weight: bold;" onclick="startStockTest()">🧪 PROBAR 1 PRODUCTO (TEST)</button>
               <button class="btn-sys" style="height: 36px; background: #1B6B1B; color: white; font-weight: bold;" onclick="startStockAudit()">🔍 AUDITAR PORTAL</button>
             </div>
             <button class="btn-sys" style="background: #8B1A1A; color: white; height: 32px;" onclick="stopStockProcess()">Detener</button>
@@ -1110,6 +1111,18 @@
 
       logStockConsole(`[STOCK] Iniciando actualización... (${acuerdo} > ${cat} > ${catg})`, "log-ok");
       pyapi('start_stock_process', { user, pass, acuerdo, cat, catg, visible, pausa });
+    }
+
+    function startStockTest() {
+      const user = document.getElementById('stockUser').value;
+      const pass = document.getElementById('stockPass').value;
+      const acuerdo = getSelectText('stockAcuerdo');
+      const cat = getSelectText('stockCat');
+      const catg = getSelectText('stockCategoria');
+      const visible = document.getElementById('chkStockVisible') ? document.getElementById('chkStockVisible').checked : false;
+
+      logStockConsole(`[STOCK TEST] Probando actualización y verificación de 1 producto en el portal...`, "log-ok");
+      pyapi('start_stock_test', { user, pass, acuerdo, cat, catg, visible });
     }
 
     function startStockAudit() {

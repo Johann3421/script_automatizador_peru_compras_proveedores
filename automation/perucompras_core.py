@@ -224,7 +224,7 @@ def consultar_json_productos(
 
     # ── ESTRATEGIA 1: Extraer y parsear directamente la tabla #TablaProductos del DOM activo
     try:
-        data_dom = page.evaluate("""() => {
+        data_dom = page.evaluate(r"""() => {
             try {
                 let rows = [];
                 if (window.jQuery && window.jQuery.fn.DataTable && window.jQuery('#TablaProductos').length) {
@@ -333,7 +333,7 @@ def consultar_json_productos(
 
         if resp.status == 200:
             html_text = resp.text()
-            data_parsed = page.evaluate("""(html) => {
+            data_parsed = page.evaluate(r"""(html) => {
                 try {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
